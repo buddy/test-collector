@@ -1,0 +1,7 @@
+/**/*.*
+!*.config.mjs
+!*.json
+!*.md
+!src/**/*
+
+package-lock.json
