@@ -1,0 +1,30 @@
+{
+  "name": "test-collector",
+  "version": "0.9.0",
+  "description": "Universal test results collector for Jest, Jasmine, Mocha, Cypress, Playwright, and Vitest that sends results to Buddy Works API in real-time",
+  "keywords": [
+    "testing",
+    "jest",
+    "jasmine",
+    "mocha",
+    "cypress",
+    "playwright",
+    "vitest",
+    "test-reporter",
+    "buddy",
+    "buddy-works",
+    "ci",
+    "ci-cd"
+  ],
+  "homepage": "https://github.com/buddy-works/test-collector#readme",
+  "bugs": "https://github.com/buddy-works/test-collector/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/buddy-works/test-collector.git"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
