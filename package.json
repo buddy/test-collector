@@ -36,7 +36,6 @@
     "format": "prettier --write --cache . && eslint . --cache --fix",
     "lint": "eslint . --cache --quiet",
     "lint:types": "tsc --skipLibCheck --noEmit",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky"
   },
   "dependencies": {
