@@ -7,9 +7,9 @@
 const config = {
   semi: false,
   singleQuote: true,
-  plugins: ["@trivago/prettier-plugin-sort-imports"],
-  importOrder: ["^node:*$", "<THIRD_PARTY_MODULES>", "^@/(.*)$", "^\\..*$"],
+  plugins: ['@trivago/prettier-plugin-sort-imports'],
+  importOrder: ['^node:*$', '<THIRD_PARTY_MODULES>', '^@/(.*)$', '^\\..*$'],
   importOrderSortSpecifiers: true,
-};
+}
 
-export default config;
+export default config
