@@ -23,10 +23,46 @@
     "url": "git+https://github.com/buddy-works/test-collector.git"
   },
   "license": "MIT",
+  "exports": {
+    "./jest": "./dist/reporters/jest/index.js",
+    "./jasmine": "./dist/reporters/jasmine/index.js",
+    "./mocha": "./dist/reporters/mocha/index.js",
+    "./cypress": "./dist/reporters/cypress/index.js",
+    "./playwright": "./dist/reporters/playwright/index.js",
+    "./vitest": "./dist/reporters/vitest/index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "axios": "1.10.0"
+  },
+  "peerDependencies": {
+    "jest": ">=24.0.0",
+    "jasmine": ">=3.0.0",
+    "mocha": ">=6.0.0",
+    "cypress": ">=10.0.0",
+    "playwright": ">=1.0.0",
+    "vitest": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "jest": {
+      "optional": true
+    },
+    "jasmine": {
+      "optional": true
+    },
+    "mocha": {
+      "optional": true
+    },
+    "cypress": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
   }
 }
