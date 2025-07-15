@@ -23,7 +23,6 @@
     "url": "git+https://github.com/buddy-works/test-collector.git"
   },
   "license": "MIT",
-  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   }
