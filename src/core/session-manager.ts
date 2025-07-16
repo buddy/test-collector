@@ -10,13 +10,14 @@ import { Logger } from '@/utils/logger'
 class BuddyUnitTestSessionManager {
   static displayName = 'BuddyUnitTestSessionManager'
 
+  #logger: Logger
+
   sessionId: string | null
   createSession: Promise<string> | null
   initialized: boolean
   hasFrameworkErrors: boolean
   hasErrorTests: boolean
   hasFailedTests: boolean
-  logger: Logger
 
   #config: BuddyUnitTestCollectorConfig | null
   get config() {
@@ -46,14 +47,14 @@ class BuddyUnitTestSessionManager {
 
       setEnv('BUDDY_SESSION_ID', this.sessionId)
       if (env.BUDDY_SESSION_ID === this.sessionId) {
-        this.logger.debug(`Session ID stored in environment variable BUDDY_SESSION_ID: ${env.BUDDY_SESSION_ID}`)
+        this.#logger.debug(`Session ID stored in environment variable BUDDY_SESSION_ID: ${env.BUDDY_SESSION_ID}`)
       } else {
-        this.logger.debug('BUDDY_SESSION_ID environment variable could not be updated to match current session ID')
+        this.#logger.debug('BUDDY_SESSION_ID environment variable could not be updated to match current session ID')
       }
 
       this.#writeSessionToFile(this.sessionId)
     } catch (error) {
-      this.logger.error('Failed to create/reopen session', error)
+      this.#logger.error('Failed to create/reopen session', error)
       throw error
     }
 
@@ -67,9 +68,9 @@ class BuddyUnitTestSessionManager {
   #writeSessionToFile(sessionId: string) {
     try {
       fs.writeFileSync(this.#getSessionFilePath(), sessionId, 'utf8')
-      this.logger.debug(`Session ID written to file: ${sessionId}`)
+      this.#logger.debug(`Session ID written to file: ${sessionId}`)
     } catch (error) {
-      this.logger.error('Failed to write session ID to file', error)
+      this.#logger.error('Failed to write session ID to file', error)
     }
   }
 
@@ -78,11 +79,11 @@ class BuddyUnitTestSessionManager {
       const filePath = this.#getSessionFilePath()
       if (fs.existsSync(filePath)) {
         const sessionId = fs.readFileSync(filePath, 'utf8').trim()
-        this.logger.debug(`Session ID read from file: ${sessionId}`)
+        this.#logger.debug(`Session ID read from file: ${sessionId}`)
         return sessionId
       }
     } catch (error) {
-      this.logger.error('Failed to read session ID from file', error)
+      this.#logger.error('Failed to read session ID from file', error)
     }
     return null
   }
@@ -92,16 +93,16 @@ class BuddyUnitTestSessionManager {
       const filePath = this.#getSessionFilePath()
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath)
-        this.logger.debug('Session file cleared')
+        this.#logger.debug('Session file cleared')
       }
     } catch (error) {
-      this.logger.error('Failed to clear session file', error)
+      this.#logger.error('Failed to clear session file', error)
     }
   }
 
   constructor() {
     const loggerName = BuddyUnitTestSessionManager.displayName
-    this.logger = new Logger(loggerName)
+    this.#logger = new Logger(loggerName)
     this.sessionId = null
     this.#config = null
     this.#apiClient = null
@@ -120,10 +121,10 @@ class BuddyUnitTestSessionManager {
       this.#apiClient = new BuddyUnitTestApiClient(this.#config)
       this.initialized = true
       const loggerNameWithContext = `${BuddyUnitTestSessionManager.displayName}_${context}`
-      this.logger = new Logger(loggerNameWithContext)
-      this.logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
+      this.#logger = new Logger(loggerNameWithContext)
+      this.#logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
     } catch (error) {
-      this.logger.error(`Failed to initialize ${BuddyUnitTestSessionManager.displayName}`, error)
+      this.#logger.error(`Failed to initialize ${BuddyUnitTestSessionManager.displayName}`, error)
       throw error
     }
   }
@@ -133,7 +134,7 @@ class BuddyUnitTestSessionManager {
     if (this.sessionId) return this.sessionId
 
     if (this.createSession) {
-      this.logger.debug('Session creation already in progress, waiting...')
+      this.#logger.debug('Session creation already in progress, waiting...')
     } else {
       this.createSession = this.#getCreateSessionPromise()
     }
@@ -154,10 +155,10 @@ class BuddyUnitTestSessionManager {
 
       if (testCase.status === TEST_STATUS.ERROR) {
         this.hasErrorTests = true
-        this.logger.debug(`Tracked ${TEST_STATUS.ERROR} test result`)
+        this.#logger.debug(`Tracked ${TEST_STATUS.ERROR} test result`)
       } else if (testCase.status === TEST_STATUS.FAILED) {
         this.hasFailedTests = true
-        this.logger.debug(`Tracked ${TEST_STATUS.FAILED} test result`)
+        this.#logger.debug(`Tracked ${TEST_STATUS.FAILED} test result`)
       }
 
       if (!sessionId) {
@@ -166,7 +167,7 @@ class BuddyUnitTestSessionManager {
 
       await this.apiClient.submitTestCase(sessionId, testCase)
     } catch (error) {
-      this.logger.error('Failed to submit test case', error)
+      this.#logger.error('Failed to submit test case', error)
       this.hasFrameworkErrors = true
     }
   }
@@ -176,13 +177,13 @@ class BuddyUnitTestSessionManager {
 
     if (!this.sessionId && env.BUDDY_SESSION_ID) {
       this.sessionId = env.BUDDY_SESSION_ID
-      this.logger.debug(`Retrieved session ID from BUDDY_SESSION_ID environment variable: ${this.sessionId}`)
+      this.#logger.debug(`Retrieved session ID from BUDDY_SESSION_ID environment variable: ${this.sessionId}`)
     }
 
     if (!this.sessionId) {
       this.sessionId = this.#readSessionFromFile()
       if (this.sessionId) {
-        this.logger.debug(`Retrieved session ID from file: ${this.sessionId}`)
+        this.#logger.debug(`Retrieved session ID from file: ${this.sessionId}`)
       }
     }
 
@@ -196,16 +197,16 @@ class BuddyUnitTestSessionManager {
           sessionStatus = TEST_STATUS.FAILED
         }
 
-        this.logger.debug(`Closing session with status: ${sessionStatus}`, {
+        this.#logger.debug(`Closing session with status: ${sessionStatus}`, {
           frameworkErrors: this.hasFrameworkErrors,
           errorTests: this.hasErrorTests,
           failedTests: this.hasFailedTests,
         })
 
         await this.apiClient.closeSession(this.sessionId, sessionStatus)
-        this.logger.info(`Session ${this.sessionId} closed successfully with status: ${sessionStatus}`)
+        this.#logger.info(`Session ${this.sessionId} closed successfully with status: ${sessionStatus}`)
       } catch (error) {
-        this.logger.error('Failed to close session', error)
+        this.#logger.error('Failed to close session', error)
       } finally {
         this.sessionId = null
         this.createSession = null
@@ -213,11 +214,11 @@ class BuddyUnitTestSessionManager {
         this.hasErrorTests = false
         this.hasFailedTests = false
         delete process.env.BUDDY_SESSION_ID
-        this.logger.debug('Session ID and tracking flags cleared')
+        this.#logger.debug('Session ID and tracking flags cleared')
         this.clearSessionFile()
       }
     } else {
-      this.logger.debug('No active session to close')
+      this.#logger.debug('No active session to close')
     }
   }
 

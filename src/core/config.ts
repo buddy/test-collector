@@ -7,8 +7,8 @@ export default class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
   static libraryName = '@buddy-works/test-collector'
 
+  #logger: Logger
   context: string
-  logger: Logger
 
   utToken: string
   debugEnabled: boolean
@@ -64,7 +64,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.context = context
 
     const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
-    this.logger = new Logger(loggerNameWithContext)
+    this.#logger = new Logger(loggerNameWithContext)
 
     this.utToken = env.BUDDY_UT_TOKEN
     this.debugEnabled = env.BUDDY_LOGGER_DEBUG
@@ -78,7 +78,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.runBranch = env.BUDDY_RUN_BRANCH ?? this.#fallback.runBranch
     this.buildUrl = env.BUDDY_RUN_URL
 
-    this.logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName}`)
+    this.#logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName}`)
   }
 
   get headers(): IncomingHttpHeaders {
@@ -98,7 +98,7 @@ export default class BuddyUnitTestCollectorConfig {
       ...(this.buildUrl && { build_url: this.buildUrl }),
     }
 
-    this.logger.debug('Generated session payload:', payload)
+    this.#logger.debug('Generated session payload:', payload)
     return payload
   }
 }

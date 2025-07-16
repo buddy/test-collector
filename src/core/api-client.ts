@@ -63,8 +63,8 @@ export default class BuddyUnitTestApiClient {
       const response = await this.#axiosInstance.post<{ id: string }>(url, this.#config.sessionPayload)
 
       const sessionId = response.data.id
-
       this.#logger.info(`Created Buddy visual tests session with ID: ${sessionId}`)
+
       return sessionId
     } catch (error) {
       this.#logger.error('Failed to create session', error)
@@ -80,8 +80,8 @@ export default class BuddyUnitTestApiClient {
       const response = await this.#axiosInstance.post<{ id: string }>(url)
 
       const newSessionId = response.data.id
-
       this.#logger.info(`Reopened session with ID: ${newSessionId}`)
+
       return newSessionId
     } catch (error) {
       this.#logger.error(`Failed to reopen session: ${sessionId}`, error)
