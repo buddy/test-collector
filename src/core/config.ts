@@ -4,20 +4,24 @@ import env from '@/utils/env'
 import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestCollectorConfig {
+  static displayName = 'BuddyUnitTestCollectorConfig'
   static libraryName = '@buddy-works/test-collector'
+
   context: string
   logger: Logger
+
   utToken: string
   debugEnabled: boolean
   apiBaseUrl: string
-  sessionId: string | undefined
-  runHash: string | undefined
-  runRefName: string | undefined
+
+  sessionId?: string
+  runHash?: string
+  runRefName?: string
   runRefType: string
-  runCommit: string | undefined
-  runPreCommit: string | undefined
-  runBranch: string | undefined
-  buildUrl: string | undefined
+  runCommit?: string
+  runPreCommit?: string
+  runBranch?: string
+  buildUrl?: string
 
   readonly #fallback = {
     runRefType: 'BRANCH',
@@ -59,8 +63,8 @@ export default class BuddyUnitTestCollectorConfig {
   constructor(context: string) {
     this.context = context
 
-    const loggerName = `${BuddyUnitTestCollectorConfig.libraryName}_${context}`
-    this.logger = new Logger(loggerName)
+    const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
+    this.logger = new Logger(loggerNameWithContext)
 
     this.utToken = env.BUDDY_UT_TOKEN
     this.debugEnabled = env.BUDDY_LOGGER_DEBUG
