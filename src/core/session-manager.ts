@@ -35,6 +35,20 @@ class BuddyUnitTestSessionManager {
     return this.#apiClient
   }
 
+  constructor() {
+    const loggerName = BuddyUnitTestSessionManager.displayName
+    this.#logger = new Logger(loggerName)
+
+    this.sessionId = null
+    this.#config = null
+    this.#apiClient = null
+    this.createSession = null
+    this.initialized = false
+    this.hasFrameworkErrors = false
+    this.hasErrorTests = false
+    this.hasFailedTests = false
+  }
+
   async #getCreateSessionPromise() {
     if (this.sessionId) return this.sessionId
 
@@ -88,7 +102,7 @@ class BuddyUnitTestSessionManager {
     return null
   }
 
-  clearSessionFile() {
+  #clearSessionFile() {
     try {
       const filePath = this.#getSessionFilePath()
       if (fs.existsSync(filePath)) {
@@ -98,19 +112,6 @@ class BuddyUnitTestSessionManager {
     } catch (error) {
       this.#logger.error('Failed to clear session file', error)
     }
-  }
-
-  constructor() {
-    const loggerName = BuddyUnitTestSessionManager.displayName
-    this.#logger = new Logger(loggerName)
-    this.sessionId = null
-    this.#config = null
-    this.#apiClient = null
-    this.createSession = null
-    this.initialized = false
-    this.hasFrameworkErrors = false
-    this.hasErrorTests = false
-    this.hasFailedTests = false
   }
 
   initialize(context = 'generic') {
@@ -215,7 +216,7 @@ class BuddyUnitTestSessionManager {
         this.hasFailedTests = false
         delete process.env.BUDDY_SESSION_ID
         this.#logger.debug('Session ID and tracking flags cleared')
-        this.clearSessionFile()
+        this.#clearSessionFile()
       }
     } else {
       this.#logger.debug('No active session to close')

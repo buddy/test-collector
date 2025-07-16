@@ -23,6 +23,27 @@ export default class BuddyUnitTestCollectorConfig {
   runBranch?: string
   buildUrl?: string
 
+  constructor(context: string) {
+    this.context = context
+
+    const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
+    this.#logger = new Logger(loggerNameWithContext)
+
+    this.utToken = env.BUDDY_UT_TOKEN
+    this.debugEnabled = env.BUDDY_LOGGER_DEBUG
+    this.apiBaseUrl = env.BUDDY_API_URL ?? this.#fallback.apiBaseUrl
+    this.sessionId = env.BUDDY_SESSION_ID
+    this.runHash = env.BUDDY_RUN_HASH
+    this.runRefName = env.BUDDY_RUN_REF_NAME
+    this.runRefType = env.BUDDY_RUN_REF_TYPE ?? this.#fallback.runRefType
+    this.runCommit = env.BUDDY_RUN_COMMIT ?? this.#fallback.runCommit
+    this.runPreCommit = env.BUDDY_RUN_PRE_COMMIT ?? this.#fallback.runPreCommit
+    this.runBranch = env.BUDDY_RUN_BRANCH ?? this.#fallback.runBranch
+    this.buildUrl = env.BUDDY_RUN_URL
+
+    this.#logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName}`)
+  }
+
   readonly #fallback = {
     runRefType: 'BRANCH',
 
@@ -58,27 +79,6 @@ export default class BuddyUnitTestCollectorConfig {
         return undefined
       }
     },
-  }
-
-  constructor(context: string) {
-    this.context = context
-
-    const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
-    this.#logger = new Logger(loggerNameWithContext)
-
-    this.utToken = env.BUDDY_UT_TOKEN
-    this.debugEnabled = env.BUDDY_LOGGER_DEBUG
-    this.apiBaseUrl = env.BUDDY_API_URL ?? this.#fallback.apiBaseUrl
-    this.sessionId = env.BUDDY_SESSION_ID
-    this.runHash = env.BUDDY_RUN_HASH
-    this.runRefName = env.BUDDY_RUN_REF_NAME
-    this.runRefType = env.BUDDY_RUN_REF_TYPE ?? this.#fallback.runRefType
-    this.runCommit = env.BUDDY_RUN_COMMIT ?? this.#fallback.runCommit
-    this.runPreCommit = env.BUDDY_RUN_PRE_COMMIT ?? this.#fallback.runPreCommit
-    this.runBranch = env.BUDDY_RUN_BRANCH ?? this.#fallback.runBranch
-    this.buildUrl = env.BUDDY_RUN_URL
-
-    this.#logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName}`)
   }
 
   get headers(): IncomingHttpHeaders {
