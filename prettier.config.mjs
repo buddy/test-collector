@@ -10,6 +10,7 @@ const config = {
   plugins: ['@trivago/prettier-plugin-sort-imports'],
   importOrder: ['^node:*$', '<THIRD_PARTY_MODULES>', '^@/(.*)$', '^\\..*$'],
   importOrderSortSpecifiers: true,
+  printWidth: 120,
 }
 
 export default config
