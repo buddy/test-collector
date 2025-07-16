@@ -6,7 +6,7 @@ interface BooleanConfig {
   type: 'boolean'
   defaultValue?: boolean
 }
-type EnvConfigSchema = Record<string, StringConfig | BooleanConfig>
+type EnvConfigSchema = Readonly<Record<string, StringConfig | BooleanConfig>>
 
 const envConfig = {
   BUDDY_UT_TOKEN: { type: 'string', required: true },
@@ -30,15 +30,9 @@ type EnvConfig = {
       : string | undefined
 }
 
-function processConfigEntry<K extends keyof typeof envConfig>(
-  key: K,
-  config: (typeof envConfig)[K],
-): EnvConfig[K] {
+function processConfigEntry<K extends keyof typeof envConfig>(key: K, config: (typeof envConfig)[K]): EnvConfig[K] {
   if (config.type === 'boolean') {
-    return getEnvFlag(
-      key as string,
-      (config as BooleanConfig).defaultValue ?? false,
-    ) as EnvConfig[K]
+    return getEnvFlag(key as string, (config as BooleanConfig).defaultValue ?? false) as EnvConfig[K]
   } else {
     const stringConfig = config as StringConfig
     if (stringConfig.required === true) {
@@ -57,7 +51,19 @@ function loadEnv(): EnvConfig {
   return Object.fromEntries(entries) as EnvConfig
 }
 
-export default loadEnv()
+function setEnv<K extends keyof typeof envConfig>(key: K, value: EnvConfig[K]): void {
+  const config = envConfig[key]
+
+  if (config.type === 'boolean') {
+    process.env[key as string] = value ? '1' : '0'
+  } else {
+    if (value === undefined) {
+      process.env[key as string] = ''
+    } else {
+      process.env[key as string] = value as string
+    }
+  }
+}
 
 function getEnv(key: string, required: true): string
 function getEnv(key: string, required?: false): string | undefined
@@ -65,9 +71,7 @@ function getEnv(key: string, required = false): string | undefined {
   const value = process.env[key]
 
   if (value === undefined && required) {
-    throw new Error(
-      `Missing required configuration. Please set the ${key} environment variable.`,
-    )
+    throw new Error(`Missing required configuration. Please set the ${key} environment variable.`)
   }
 
   return value
@@ -83,3 +87,6 @@ function getEnvFlag(key: string, defaultValue = false): boolean {
   const falseValues = ['0', 'false', 'no', 'off', '']
   return !falseValues.includes(value.toLowerCase().trim())
 }
+
+export default loadEnv()
+export { setEnv }
