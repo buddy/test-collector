@@ -30,35 +30,22 @@ export class Logger {
 
   debug(message: string, data: unknown = null) {
     if (this.debugEnabled) {
-      console.log(
-        `[${this.prefix}] DEBUG: ${message}`,
-        data ? this.#safeStringify(data) : '',
-      )
+      console.log(`[${this.prefix}] DEBUG: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
 
   info(message: string, data: unknown = null) {
-    console.log(
-      `[${this.prefix}] INFO: ${message}`,
-      data ? this.#safeStringify(data) : '',
-    )
+    console.log(`[${this.prefix}] INFO: ${message}`, data ? this.#safeStringify(data) : '')
   }
 
   warn(message: string, data: unknown = null) {
-    console.warn(
-      `[${this.prefix}] WARN: ${message}`,
-      data ? this.#safeStringify(data) : '',
-    )
+    console.warn(`[${this.prefix}] WARN: ${message}`, data ? this.#safeStringify(data) : '')
   }
 
   error(message: string, error: unknown = null) {
     console.error(
       `[${this.prefix}] ERROR: ${message}`,
-      error
-        ? error instanceof Error
-          ? error.stack
-          : this.#safeStringify(error)
-        : '',
+      error ? (error instanceof Error ? error.stack : this.#safeStringify(error)) : '',
     )
   }
 }
