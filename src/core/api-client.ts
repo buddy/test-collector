@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from 'axios'
 import BuddyUnitTestCollectorConfig from '@/core/config'
-import { ITestCase, TEST_STATUS } from '@/types'
+import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestApiClient {
@@ -89,7 +89,7 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async submitTestCase(sessionId: string, testCase: ITestCase) {
+  async submitTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase) {
     try {
       this.#logger.debug(`Submitting test case: ${testCase.name}`)
 
@@ -102,12 +102,12 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async submitTestCases(sessionId: string, testCases: ITestCase[]) {
+  async submitTestCases(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]) {
     const promises = testCases.map((testCase) => this.submitTestCase(sessionId, testCase))
     await Promise.allSettled(promises)
   }
 
-  async closeSession(sessionId: string, status = TEST_STATUS.SUCCESS) {
+  async closeSession(sessionId: string, status = BUDDY_UNIT_TEST_STATUS.PASSED) {
     try {
       this.#logger.debug(`Closing test session: ${sessionId} with status: ${status}`)
 

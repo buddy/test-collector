@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import BuddyUnitTestApiClient from '@/core/api-client'
 import BuddyUnitTestCollectorConfig from '@/core/config'
-import { ITestCase, TEST_STATUS } from '@/types'
+import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import env, { setEnv } from '@/utils/env'
 import { Logger } from '@/utils/logger'
 
@@ -148,18 +148,18 @@ class BuddyUnitTestSessionManager {
     }
   }
 
-  async submitTestCase(testCase: ITestCase) {
+  async submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
     if (!this.initialized) this.initialize()
 
     try {
       const sessionId = await this.getOrCreateSession()
 
-      if (testCase.status === TEST_STATUS.ERROR) {
+      if (testCase.status === BUDDY_UNIT_TEST_STATUS.ERROR) {
         this.hasErrorTests = true
-        this.#logger.debug(`Tracked ${TEST_STATUS.ERROR} test result`)
-      } else if (testCase.status === TEST_STATUS.FAILED) {
+        this.#logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.ERROR} test result`)
+      } else if (testCase.status === BUDDY_UNIT_TEST_STATUS.FAILED) {
         this.hasFailedTests = true
-        this.#logger.debug(`Tracked ${TEST_STATUS.FAILED} test result`)
+        this.#logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.FAILED} test result`)
       }
 
       if (!sessionId) {
@@ -190,12 +190,12 @@ class BuddyUnitTestSessionManager {
 
     if (this.sessionId) {
       try {
-        let sessionStatus = TEST_STATUS.SUCCESS
+        let sessionStatus = BUDDY_UNIT_TEST_STATUS.PASSED
 
         if (this.hasFrameworkErrors || this.hasErrorTests) {
-          sessionStatus = TEST_STATUS.ERROR
+          sessionStatus = BUDDY_UNIT_TEST_STATUS.ERROR
         } else if (this.hasFailedTests) {
-          sessionStatus = TEST_STATUS.FAILED
+          sessionStatus = BUDDY_UNIT_TEST_STATUS.FAILED
         }
 
         this.#logger.debug(`Closing session with status: ${sessionStatus}`, {
