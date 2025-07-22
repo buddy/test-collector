@@ -1,6 +1,7 @@
 // @ts-check
 import js from '@eslint/js'
 import eslintParserTypeScript from '@typescript-eslint/parser'
+import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
@@ -26,6 +27,7 @@ export default tseslint.config([
       },
     },
   },
+  eslintPluginUnicorn.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
   {
