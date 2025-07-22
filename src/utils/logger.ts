@@ -1,4 +1,4 @@
-import env from '@/utils/env'
+import env from '@/utils/environment'
 
 export class Logger {
   #prefix: string
@@ -9,12 +9,12 @@ export class Logger {
     this.#debugEnabled = env.BUDDY_LOGGER_DEBUG
   }
 
-  #safeStringify(obj: unknown): string {
-    if (obj === null || obj === undefined) return ''
+  #safeStringify(object: unknown): string {
+    if (object === null || object === undefined) return ''
 
     const cache = new Set()
     return JSON.stringify(
-      obj,
+      object,
       (_key, value) => {
         if (typeof value === 'object' && value !== null) {
           if (cache.has(value)) {
@@ -29,21 +29,21 @@ export class Logger {
     )
   }
 
-  debug(message: string, data: unknown = null) {
+  debug(message: string, data?: unknown) {
     if (this.#debugEnabled) {
       console.log(`[${this.#prefix}] DEBUG: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
 
-  info(message: string, data: unknown = null) {
+  info(message: string, data?: unknown) {
     console.log(`[${this.#prefix}] INFO: ${message}`, data ? this.#safeStringify(data) : '')
   }
 
-  warn(message: string, data: unknown = null) {
+  warn(message: string, data?: unknown) {
     console.warn(`[${this.#prefix}] WARN: ${message}`, data ? this.#safeStringify(data) : '')
   }
 
-  error(message: string, error: unknown = null) {
+  error(message: string, error: unknown) {
     console.error(
       `[${this.#prefix}] ERROR: ${message}`,
       error ? (error instanceof Error ? error.stack : this.#safeStringify(error)) : '',
