@@ -1,11 +1,12 @@
-import { TestResult } from '@jest/reporters'
+import type { TestResult } from '@jest/reporters'
 import { AssertionResult } from '@jest/test-result'
+import { RunnerTask, RunnerTaskResult } from 'vitest'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class TestResultMapper {
   static displayName = 'TestResultMapper'
-  static toXml(obj: Record<string, string>): string {
+  static toXml(obj: Record<string, string | undefined>): string {
     let xml = '<data>'
     for (const [key, value] of Object.entries(obj)) {
       if (value) {
@@ -64,7 +65,7 @@ export default class TestResultMapper {
       name: assertionResult.title,
       classname: fileNameWithoutExt,
       suiteName: fileNameWithoutExt,
-      status: status,
+      status,
       time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
       data: this.toXml(dataObj),
     } satisfies IBuddyUnitTestApiTestCase
@@ -184,91 +185,69 @@ export default class TestResultMapper {
   //     }
   //   }
 
-  //   static mapVitestResult(taskId, taskResult, task = null) {
-  //     const status =
-  //       taskResult.state === 'pass'
-  //         ? 'PASSED'
-  //         : taskResult.state === 'fail'
-  //           ? 'FAILED'
-  //           : taskResult.state === 'skip'
-  //             ? 'SKIPPED'
-  //             : 'ERROR'
+  static mapVitestResult(
+    taskId: RunnerTask['id'],
+    taskResult: RunnerTaskResult,
+    task?: RunnerTask,
+  ): IBuddyUnitTestApiTestCase {
+    const status =
+      taskResult.state === 'pass'
+        ? BUDDY_UNIT_TEST_STATUS.PASSED
+        : taskResult.state === 'fail'
+          ? BUDDY_UNIT_TEST_STATUS.FAILED
+          : taskResult.state === 'skip'
+            ? BUDDY_UNIT_TEST_STATUS.SKIPPED
+            : BUDDY_UNIT_TEST_STATUS.ERROR
 
-  //     // Create data object similar to BuddyWorks.Nunit.TestLogger
-  //     const dataObj = {
-  //       errorMessage: taskResult.errors?.length > 0 ? taskResult.errors.map((e) => e.message).join('\n') : '',
-  //       errorStackTrace: taskResult.errors?.length > 0 ? taskResult.errors.map((e) => e.stack).join('\n') : '',
-  //       messages: taskResult.name || taskId || '',
-  //     }
+    const dataObj = {
+      errorMessage: (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((e) => e.message).join('\n') : '',
+      errorStackTrace: (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((e) => e.stack).join('\n') : '',
+      messages: taskId || '',
+    }
 
-  //     // Extract test and suite names - prioritize actual task object if available
-  //     let testName = 'Unknown Test'
-  //     let suiteName = 'Unknown Suite'
+    let testName = 'Unknown Test'
+    let suiteName = 'Unknown Suite'
 
-  //     if (task) {
-  //       // Use actual task object to get proper names
-  //       testName = task.name || task.title || taskId || 'Unknown Test'
+    if (task) {
+      testName = task.name || taskId || 'Unknown Test'
 
-  //       // Try to get suite name from parent or file
-  //       if (task.suite?.name) {
-  //         suiteName = task.suite.name
-  //       } else if (task.file) {
-  //         // Extract filename from path - handle both string and object cases
-  //         let filePath = ''
-  //         if (typeof task.file === 'string') {
-  //           filePath = task.file
-  //         } else if (task.file?.filepath) {
-  //           filePath = task.file.filepath
-  //         } else if (task.file?.name) {
-  //           filePath = task.file.name
-  //         }
+      if (task.suite?.name) {
+        suiteName = task.suite.name
+      } else {
+        let filePath = ''
+        if (typeof task.file === 'string') {
+          filePath = task.file
+        } else if (task.file.filepath) {
+          filePath = task.file.filepath
+        } else if (task.file.name) {
+          filePath = task.file.name
+        }
 
-  //         if (filePath) {
-  //           const fileName = filePath.split('/').pop()
-  //           suiteName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
-  //         } else {
-  //           suiteName = 'Vitest Suite'
-  //         }
-  //       } else {
-  //         suiteName = 'Vitest Suite'
-  //       }
-  //     } else {
-  //       // Fallback: Extract test and suite names from taskResult only
-  //       if (taskResult.name) {
-  //         testName = taskResult.name
-  //       } else if (taskId) {
-  //         testName = taskId
-  //       }
+        if (filePath) {
+          const fileName = filePath.split('/').pop()
+          if (!fileName) {
+            throw new Error('File name could not be determined from task file path')
+          }
+          suiteName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
+        } else {
+          suiteName = 'Vitest Suite'
+        }
+      }
+    } else {
+      if (taskId) {
+        testName = taskId
+      }
 
-  //       // Extract suite name from various sources
-  //       if (taskResult.suite?.name) {
-  //         // Direct suite name from taskResult
-  //         suiteName = taskResult.suite.name
-  //       } else if (taskResult.file) {
-  //         // Extract suite name from file path
-  //         const fileName = taskResult.file.split('/').pop()
-  //         suiteName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
-  //       } else if (taskResult.location?.file) {
-  //         // Extract from location.file
-  //         const fileName = taskResult.location.file.split('/').pop()
-  //         suiteName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
-  //       } else if (taskResult.filepath) {
-  //         // Extract from filepath
-  //         const fileName = taskResult.filepath.split('/').pop()
-  //         suiteName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
-  //       } else {
-  //         // Default fallback
-  //         suiteName = 'Vitest Suite'
-  //       }
-  //     }
+      suiteName = 'Vitest Suite'
+    }
 
-  //     return {
-  //       name: testName,
-  //       classname: suiteName,
-  //       suite_name: suiteName,
-  //       status: status,
-  //       time: taskResult.duration ? taskResult.duration / 1000 : 0,
-  //       data: this.toXml(dataObj),
-  //     }
-  //   }
+    return {
+      name: testName,
+      classname: suiteName,
+      suiteName,
+      status,
+      time: taskResult.duration ? taskResult.duration / 1000 : 0,
+      data: this.toXml(dataObj),
+    }
+  }
 }

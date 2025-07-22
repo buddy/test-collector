@@ -1,4 +1,4 @@
-import { Config, Reporter, Test, TestResult } from '@jest/reporters'
+import type { Config, Reporter, Test, TestResult } from '@jest/reporters'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import { IBuddyUnitTestCollectorConfig } from '@/core/types'
