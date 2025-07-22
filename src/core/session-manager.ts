@@ -4,7 +4,7 @@ import path from 'node:path'
 import BuddyUnitTestApiClient from '@/core/api-client'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
-import env, { setEnv } from '@/utils/env'
+import env, { setEnv } from '@/utils/environment'
 import { Logger } from '@/utils/logger'
 
 class BuddyUnitTestSessionManager {
@@ -12,14 +12,14 @@ class BuddyUnitTestSessionManager {
 
   #logger: Logger
 
-  sessionId: string | null
-  createSession: Promise<string> | null
+  sessionId: string | undefined
+  createSession: Promise<string> | undefined
   initialized: boolean
   hasFrameworkErrors: boolean
   hasErrorTests: boolean
   hasFailedTests: boolean
 
-  #config: BuddyUnitTestCollectorConfig | null
+  #config: BuddyUnitTestCollectorConfig | undefined
   get config() {
     if (!this.#config) {
       throw new Error(`${BuddyUnitTestSessionManager.displayName} not initialized`)
@@ -27,7 +27,7 @@ class BuddyUnitTestSessionManager {
     return this.#config
   }
 
-  #apiClient: BuddyUnitTestApiClient | null
+  #apiClient: BuddyUnitTestApiClient | undefined
   get apiClient() {
     if (!this.#apiClient) {
       throw new Error(`API client not initialized in ${BuddyUnitTestSessionManager.displayName}`)
@@ -39,10 +39,10 @@ class BuddyUnitTestSessionManager {
     const loggerName = BuddyUnitTestSessionManager.displayName
     this.#logger = new Logger(loggerName)
 
-    this.sessionId = null
-    this.#config = null
-    this.#apiClient = null
-    this.createSession = null
+    this.sessionId = undefined
+    this.#config = undefined
+    this.#apiClient = undefined
+    this.createSession = undefined
     this.initialized = false
     this.hasFrameworkErrors = false
     this.hasErrorTests = false
@@ -53,11 +53,9 @@ class BuddyUnitTestSessionManager {
     if (this.sessionId) return this.sessionId
 
     try {
-      if (this.config.sessionId) {
-        this.sessionId = await this.apiClient.reopenSession(this.config.sessionId)
-      } else {
-        this.sessionId = await this.apiClient.createSession()
-      }
+      this.sessionId = await (this.config.sessionId
+        ? this.apiClient.reopenSession(this.config.sessionId)
+        : this.apiClient.createSession())
 
       setEnv('BUDDY_SESSION_ID', this.sessionId)
       if (env.BUDDY_SESSION_ID === this.sessionId) {
@@ -99,7 +97,7 @@ class BuddyUnitTestSessionManager {
     } catch (error) {
       this.#logger.error('Failed to read session ID from file', error)
     }
-    return null
+    return
   }
 
   #clearSessionFile() {
@@ -144,7 +142,7 @@ class BuddyUnitTestSessionManager {
       await this.createSession
       return this.sessionId
     } finally {
-      this.createSession = null
+      this.createSession = undefined
     }
   }
 
@@ -209,8 +207,8 @@ class BuddyUnitTestSessionManager {
       } catch (error) {
         this.#logger.error('Failed to close session', error)
       } finally {
-        this.sessionId = null
-        this.createSession = null
+        this.sessionId = undefined
+        this.createSession = undefined
         this.hasFrameworkErrors = false
         this.hasErrorTests = false
         this.hasFailedTests = false

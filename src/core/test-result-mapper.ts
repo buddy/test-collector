@@ -1,74 +1,66 @@
-import type { TestResult } from '@jest/reporters'
-import { AssertionResult } from '@jest/test-result'
+import type { TestResult as JestTestResult } from '@jest/reporters'
+import { AssertionResult as JestAssertionResult } from '@jest/test-result'
+import type { TestCase as PlaywrightTestCase, TestResult as PlaywrightTestResult } from '@playwright/test/reporter'
 import { Test as MochaTest } from 'mocha'
-import { RunnerTask, RunnerTaskResult } from 'vitest'
+import { RunnerTask as VitestRunnerTask, RunnerTaskResult as VitestRunnerTaskResult } from 'vitest'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class, unicorn/no-static-only-class
 export default class TestResultMapper {
   static displayName = 'TestResultMapper'
-  static toXml(obj: Record<string, string | undefined>): string {
+  static toXml(object: Record<string, string | undefined>): string {
     let xml = '<data>'
-    for (const [key, value] of Object.entries(obj)) {
-      if (value) {
-        xml += `<${key}><![CDATA[${value}]]></${key}>`
-      } else {
-        xml += `<${key}></${key}>`
-      }
+    for (const [key, value] of Object.entries(object)) {
+      xml += value ? `<${key}><![CDATA[${value}]]></${key}>` : `<${key}></${key}>`
     }
     xml += '</data>'
     return xml
   }
 
-  static mapJestResult(assertionResult: AssertionResult, testResult: TestResult): IBuddyUnitTestApiTestCase {
-    let status
-
+  static mapJestResult(assertionResult: JestAssertionResult, testResult: JestTestResult): IBuddyUnitTestApiTestCase {
     const isSkipped =
-      assertionResult.status === 'skipped' ||
-      assertionResult.status === 'pending' ||
-      assertionResult.status === 'todo' ||
-      assertionResult.status === 'disabled' ||
-      assertionResult.status === 'focused' ||
-      // @ts-expect-error assume exists
-      assertionResult.status === 'skip' ||
-      // @ts-expect-error assume exists
-      assertionResult.pending === true ||
-      // @ts-expect-error assume exists
-      assertionResult.todo === true ||
-      // @ts-expect-error assume exists
-      assertionResult.skip === true ||
+      ['skipped', 'pending', 'todo', 'disabled', 'focused', 'skip'].includes(assertionResult.status) ||
       (assertionResult.invocations === 0 && assertionResult.status !== 'failed')
 
-    if (assertionResult.status === 'passed') {
-      status = BUDDY_UNIT_TEST_STATUS.PASSED
-    } else if (assertionResult.status === 'failed') {
-      status = BUDDY_UNIT_TEST_STATUS.FAILED
-    } else if (isSkipped) {
-      status = BUDDY_UNIT_TEST_STATUS.SKIPPED
-    } else {
-      status = BUDDY_UNIT_TEST_STATUS.ERROR
+    function getJestStatus(assertionResult: JestAssertionResult): BUDDY_UNIT_TEST_STATUS {
+      switch (assertionResult.status) {
+        case 'passed': {
+          return BUDDY_UNIT_TEST_STATUS.PASSED
+        }
+        case 'failed': {
+          return BUDDY_UNIT_TEST_STATUS.FAILED
+        }
+        default: {
+          if (isSkipped) {
+            return BUDDY_UNIT_TEST_STATUS.SKIPPED
+          }
+          return BUDDY_UNIT_TEST_STATUS.ERROR
+        }
+      }
     }
 
-    const dataObj = {
+    const status = getJestStatus(assertionResult)
+
+    const dataObject = {
       errorMessage: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
       errorStackTrace: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
       messages: assertionResult.ancestorTitles.join(' > ') || '',
     }
 
     const fileName = testResult.testFilePath.split('/').pop()
-    const fileNameWithoutExt = fileName?.replace(/\.[^/.]+$/, '')
+    const fileNameWithoutExtension = fileName?.replace(/\.[^/.]+$/, '')
 
-    if (!fileNameWithoutExt) {
+    if (!fileNameWithoutExtension) {
       throw new Error('File name without extension could not be determined from test file path')
     }
 
     return {
       name: assertionResult.title,
-      classname: fileNameWithoutExt,
-      suiteName: fileNameWithoutExt,
+      classname: fileNameWithoutExtension,
+      suiteName: fileNameWithoutExtension,
       status,
       time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
-      data: this.toXml(dataObj),
+      data: this.toXml(dataObject),
     } satisfies IBuddyUnitTestApiTestCase
   }
 
@@ -122,7 +114,7 @@ export default class TestResultMapper {
     const status = getMochaStatus(test)
 
     // Create data object similar to BuddyWorks.Nunit.TestLogger
-    const dataObj = {
+    const dataObject = {
       errorMessage: test.err ? test.err.message : '',
       errorStackTrace: test.err ? test.err.stack : '',
       messages: test.fullTitle() || '',
@@ -136,7 +128,7 @@ export default class TestResultMapper {
       suiteName,
       status: status,
       time: test.duration ? test.duration / 1000 : 0,
-      data: this.toXml(dataObj),
+      data: this.toXml(dataObject),
     }
   }
 
@@ -171,43 +163,53 @@ export default class TestResultMapper {
   //     }
   //   }
 
-  //   static mapPlaywrightResult(test, result) {
-  //     const status =
-  //       result.status === 'passed'
-  //         ? 'PASSED'
-  //         : result.status === 'failed'
-  //           ? 'FAILED'
-  //           : result.status === 'skipped'
-  //             ? 'SKIPPED'
-  //             : result.status === 'timedOut'
-  //               ? 'FAILED'
-  //               : 'ERROR'
+  static mapPlaywrightResult(test: PlaywrightTestCase, result: PlaywrightTestResult): IBuddyUnitTestApiTestCase {
+    function getPlaywrightStatus(result: PlaywrightTestResult) {
+      switch (result.status) {
+        case 'passed': {
+          return BUDDY_UNIT_TEST_STATUS.PASSED
+        }
+        case 'failed': {
+          return BUDDY_UNIT_TEST_STATUS.FAILED
+        }
+        case 'skipped': {
+          return BUDDY_UNIT_TEST_STATUS.SKIPPED
+        }
+        case 'timedOut': {
+          return BUDDY_UNIT_TEST_STATUS.FAILED
+        }
+        default: {
+          return BUDDY_UNIT_TEST_STATUS.ERROR
+        }
+      }
+    }
 
-  //     // Create data object similar to BuddyWorks.Nunit.TestLogger
-  //     const dataObj = {
-  //       errorMessage: result.error ? result.error.message : '',
-  //       errorStackTrace: result.error ? result.error.stack : '',
-  //       messages: test.location?.file || '',
-  //     }
+    const status = getPlaywrightStatus(result)
 
-  //     const suiteName = test.parent?.title || test.location?.file?.split('/').pop() || 'Playwright Suite'
+    const dataObject = {
+      errorMessage: result.error ? result.error.message : '',
+      errorStackTrace: result.error ? result.error.stack : '',
+      messages: test.location.file || '',
+    }
 
-  //     return {
-  //       name: test.title,
-  //       classname: suiteName,
-  //       suite_name: suiteName, // Fixed: Only send suite name
-  //       status: status,
-  //       time: result.duration ? result.duration / 1000 : 0,
-  //       data: this.toXml(dataObj),
-  //     }
-  //   }
+    const suiteName = (test.parent.title || test.location.file.split('/').pop()) ?? 'Playwright Suite'
+
+    return {
+      name: test.title,
+      classname: suiteName,
+      suiteName,
+      status: status,
+      time: result.duration ? result.duration / 1000 : 0,
+      data: this.toXml(dataObject),
+    }
+  }
 
   static mapVitestResult(
-    taskId: RunnerTask['id'],
-    taskResult: RunnerTaskResult,
-    task?: RunnerTask,
+    taskId: VitestRunnerTask['id'],
+    taskResult: VitestRunnerTaskResult,
+    task?: VitestRunnerTask,
   ): IBuddyUnitTestApiTestCase {
-    function getVitestStatus(taskResult: RunnerTaskResult) {
+    function getVitestStatus(taskResult: VitestRunnerTaskResult) {
       switch (taskResult.state) {
         case 'pass': {
           return BUDDY_UNIT_TEST_STATUS.PASSED
@@ -226,9 +228,11 @@ export default class TestResultMapper {
 
     const status = getVitestStatus(taskResult)
 
-    const dataObj = {
-      errorMessage: (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((e) => e.message).join('\n') : '',
-      errorStackTrace: (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((e) => e.stack).join('\n') : '',
+    const dataObject = {
+      errorMessage:
+        (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.message).join('\n') : '',
+      errorStackTrace:
+        (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
       messages: taskId || '',
     }
 
@@ -274,7 +278,7 @@ export default class TestResultMapper {
       suiteName,
       status,
       time: taskResult.duration ? taskResult.duration / 1000 : 0,
-      data: this.toXml(dataObj),
+      data: this.toXml(dataObject),
     }
   }
 }

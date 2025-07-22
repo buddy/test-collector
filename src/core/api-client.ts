@@ -18,7 +18,7 @@ export default class BuddyUnitTestApiClient {
     const axiosOptions: CreateAxiosDefaults = {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
-      timeout: 10000,
+      timeout: 10_000,
     }
 
     this.#axiosInstance = axios.create(axiosOptions)

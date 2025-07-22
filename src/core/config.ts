@@ -1,6 +1,6 @@
-import { execSync } from 'child_process'
-import { IncomingHttpHeaders } from 'http'
-import env from '@/utils/env'
+import { execSync } from 'node:child_process'
+import { IncomingHttpHeaders } from 'node:http'
+import env from '@/utils/environment'
 import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestCollectorConfig {
@@ -58,7 +58,7 @@ export default class BuddyUnitTestCollectorConfig {
           encoding: 'utf8',
         }).trim()
       } catch {
-        return undefined
+        return
       }
     },
 
@@ -67,7 +67,7 @@ export default class BuddyUnitTestCollectorConfig {
       try {
         return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
       } catch {
-        return undefined
+        return
       }
     },
 
@@ -76,7 +76,7 @@ export default class BuddyUnitTestCollectorConfig {
       try {
         return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
       } catch {
-        return undefined
+        return
       }
     },
   }
