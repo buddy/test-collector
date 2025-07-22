@@ -1,5 +1,6 @@
 import type { TestResult } from '@jest/reporters'
 import { AssertionResult } from '@jest/test-result'
+import { Test as MochaTest } from 'mocha'
 import { RunnerTask, RunnerTaskResult } from 'vitest'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 
@@ -100,28 +101,44 @@ export default class TestResultMapper {
   //     }
   //   }
 
-  //   static mapMochaResult(test) {
-  //     const status =
-  //       test.state === 'passed' ? 'PASSED' : test.state === 'failed' ? 'FAILED' : test.pending ? 'SKIPPED' : 'ERROR'
+  static mapMochaResult(test: MochaTest): IBuddyUnitTestApiTestCase {
+    function getMochaStatus(test: MochaTest) {
+      switch (test.state) {
+        case 'passed': {
+          return BUDDY_UNIT_TEST_STATUS.PASSED
+        }
+        case 'failed': {
+          return BUDDY_UNIT_TEST_STATUS.FAILED
+        }
+        default: {
+          if (test.pending) {
+            return BUDDY_UNIT_TEST_STATUS.SKIPPED
+          }
+          return BUDDY_UNIT_TEST_STATUS.ERROR
+        }
+      }
+    }
 
-  //     // Create data object similar to BuddyWorks.Nunit.TestLogger
-  //     const dataObj = {
-  //       errorMessage: test.err ? test.err.message : '',
-  //       errorStackTrace: test.err ? test.err.stack : '',
-  //       messages: test.fullTitle?.() || '',
-  //     }
+    const status = getMochaStatus(test)
 
-  //     const suiteName = test.parent?.title || test.file || 'Unknown Suite'
+    // Create data object similar to BuddyWorks.Nunit.TestLogger
+    const dataObj = {
+      errorMessage: test.err ? test.err.message : '',
+      errorStackTrace: test.err ? test.err.stack : '',
+      messages: test.fullTitle() || '',
+    }
 
-  //     return {
-  //       name: test.title,
-  //       classname: suiteName,
-  //       suite_name: suiteName, // Fixed: Only send suite name
-  //       status: status,
-  //       time: test.duration ? test.duration / 1000 : 0,
-  //       data: this.toXml(dataObj),
-  //     }
-  //   }
+    const suiteName = test.parent?.title ?? test.file ?? 'Unknown Suite'
+
+    return {
+      name: test.title,
+      classname: suiteName,
+      suiteName,
+      status: status,
+      time: test.duration ? test.duration / 1000 : 0,
+      data: this.toXml(dataObj),
+    }
+  }
 
   //   static mapCypressResult(test) {
   //     const status =
@@ -190,14 +207,24 @@ export default class TestResultMapper {
     taskResult: RunnerTaskResult,
     task?: RunnerTask,
   ): IBuddyUnitTestApiTestCase {
-    const status =
-      taskResult.state === 'pass'
-        ? BUDDY_UNIT_TEST_STATUS.PASSED
-        : taskResult.state === 'fail'
-          ? BUDDY_UNIT_TEST_STATUS.FAILED
-          : taskResult.state === 'skip'
-            ? BUDDY_UNIT_TEST_STATUS.SKIPPED
-            : BUDDY_UNIT_TEST_STATUS.ERROR
+    function getVitestStatus(taskResult: RunnerTaskResult) {
+      switch (taskResult.state) {
+        case 'pass': {
+          return BUDDY_UNIT_TEST_STATUS.PASSED
+        }
+        case 'fail': {
+          return BUDDY_UNIT_TEST_STATUS.FAILED
+        }
+        case 'skip': {
+          return BUDDY_UNIT_TEST_STATUS.SKIPPED
+        }
+        default: {
+          return BUDDY_UNIT_TEST_STATUS.ERROR
+        }
+      }
+    }
+
+    const status = getVitestStatus(taskResult)
 
     const dataObj = {
       errorMessage: (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((e) => e.message).join('\n') : '',

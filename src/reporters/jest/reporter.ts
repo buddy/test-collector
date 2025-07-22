@@ -8,6 +8,7 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
   static displayName = 'BuddyJestReporter'
 
   #logger: Logger
+
   globalConfig: Config.GlobalConfig
   options: IBuddyUnitTestCollectorConfig
 
