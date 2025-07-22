@@ -4,6 +4,9 @@ import TestResultMapper from '@/core/test-result-mapper'
 import { IBuddyUnitTestCollectorConfig } from '@/core/types'
 import { Logger } from '@/utils/logger'
 
+/**
+ * @see {@link https://jestjs.io/docs/configuration#custom-reporters}
+ */
 export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 'onTestResult' | 'onRunComplete'> {
   static displayName = 'BuddyJestReporter'
 

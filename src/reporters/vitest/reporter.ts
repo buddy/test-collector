@@ -5,6 +5,9 @@ import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import { Logger } from '@/utils/logger'
 
+/**
+ * @see {@link https://vitest.dev/advanced/reporters}
+ */
 export default class BuddyVitestReporter implements Reporter {
   static displayName = 'BuddyVitestReporter'
 
@@ -12,13 +15,13 @@ export default class BuddyVitestReporter implements Reporter {
 
   tasks: Map<string, RunnerTask>
   processedTests: Set<unknown>
-  ctx: Vitest | null
+  context: Vitest | undefined
 
   constructor() {
     this.#logger = new Logger(BuddyVitestReporter.displayName)
     this.setupProcessExitHandlers()
     this.tasks = new Map()
-    this.ctx = null
+    this.context = undefined
     this.processedTests = new Set()
   }
 
@@ -65,27 +68,27 @@ export default class BuddyVitestReporter implements Reporter {
     })
   }
 
-  onInit(ctx: Vitest) {
+  onInit(context: Vitest) {
     this.#logger.debug('Vitest reporter initialized')
-    this.ctx = ctx
+    this.context = context
 
-    this.#logger.debug('Context properties:', Object.keys(ctx))
+    this.#logger.debug('Context properties:', Object.keys(context))
 
-    this.#logger.debug('Context state properties:', Object.keys(ctx.state))
+    this.#logger.debug('Context state properties:', Object.keys(context.state))
     this.loadTasksFromContext()
 
     this.#logger.debug(`Total tasks stored: ${String(this.tasks.size)}`)
   }
 
   loadTasksFromContext() {
-    if (!this.ctx?.state) return
+    if (!this.context?.state) return
 
     try {
-      const files = this.ctx.state.getFiles()
+      const files = this.context.state.getFiles()
       this.#logger.debug(`Found ${String(files.length)} files`)
-      files.forEach((file) => {
+      for (const file of files) {
         this.traverseTasks(file)
-      })
+      }
     } catch (error) {
       this.#logger.error('Error loading tasks from context', error)
     }
@@ -98,9 +101,9 @@ export default class BuddyVitestReporter implements Reporter {
     }
 
     if (isTestFile(task)) {
-      task.tasks.forEach((subTask) => {
+      for (const subTask of task.tasks) {
         this.traverseTasks(subTask)
-      })
+      }
     }
 
     function isTestFile(task: RunnerTestFile | RunnerTask): task is RunnerTestFile {
@@ -167,11 +170,9 @@ export default class BuddyVitestReporter implements Reporter {
   getTaskById(taskId: RunnerTask['id']): RunnerTask | undefined {
     let task = this.tasks.get(taskId)
 
-    if (!task && this.ctx?.state) {
-      if (this.ctx.state.idMap.has(taskId)) {
-        task = this.ctx.state.idMap.get(taskId)
-        this.#logger.debug(`Found task ${taskId} in context.state.idMap`)
-      }
+    if (!task && this.context?.state.idMap.has(taskId)) {
+      task = this.context.state.idMap.get(taskId)
+      this.#logger.debug(`Found task ${taskId} in context.state.idMap`)
     }
 
     return task

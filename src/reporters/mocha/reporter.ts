@@ -4,6 +4,11 @@ import TestResultMapper from '@/core/test-result-mapper'
 import { IBuddyUnitTestApiTestCase } from '@/core/types'
 import { Logger } from '@/utils/logger'
 
+const { EVENT_RUN_BEGIN, EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_PENDING } = Mocha.Runner.constants
+
+/**
+ * @see {@link https://mochajs.org/api/tutorial-custom-reporter}
+ */
 export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'> {
   static displayName = 'BuddyMochaReporter'
 
@@ -20,11 +25,12 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     this.#logger = new Logger(BuddyMochaReporter.displayName)
     this.pendingSubmissions = new Set()
 
-    this.runner.on('start', () => this.onStart.bind(this))
-    this.runner.on('pending', () => this.onTestPending.bind(this))
-    this.runner.on('pass', () => this.onTestPass.bind(this))
-    this.runner.on('fail', () => this.onTestFail.bind(this))
-    this.runner.on('end', () => this.onEnd.bind(this))
+    this.runner.on(EVENT_RUN_BEGIN, () => this.onStart.bind(this))
+    this.runner.on(EVENT_RUN_END, () => this.onEnd.bind(this))
+
+    this.runner.on(EVENT_TEST_PENDING, () => this.onTestPending.bind(this))
+    this.runner.on(EVENT_TEST_PASS, () => this.onTestPass.bind(this))
+    this.runner.on(EVENT_TEST_FAIL, () => this.onTestFail.bind(this))
   }
 
   onStart() {
@@ -42,10 +48,10 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     })
   }
 
-  onTestFail(test: Test, err: Error) {
+  onTestFail(test: Test, error: Error) {
     const submissionPromise = this.submitTestWithTracking(test, () => {
       test.state = 'failed'
-      test.err = err
+      test.err = error
       return TestResultMapper.mapMochaResult(test)
     })
 
@@ -56,7 +62,6 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
 
   onTestPending(test: Test) {
     const submissionPromise = this.submitTestWithTracking(test, () => {
-      // Explicitly set state to ensure correct mapping
       test.state = 'pending'
       test.pending = true
       return TestResultMapper.mapMochaResult(test)
@@ -67,17 +72,16 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     })
   }
 
-  async submitTestWithTracking(_test: Test, resultMapperFn: () => IBuddyUnitTestApiTestCase) {
+  async submitTestWithTracking(_test: Test, resultMapperFunction: () => IBuddyUnitTestApiTestCase) {
     const submissionId = Symbol()
     this.pendingSubmissions.add(submissionId)
 
     try {
-      const testResult = resultMapperFn()
+      const testResult = resultMapperFunction()
       await sessionManager.submitTestCase(testResult)
       this.#logger.debug(`Successfully submitted: ${testResult.name}`)
     } catch (error) {
       this.#logger.error('Error processing Mocha test result', error)
-      // Mark this as a framework error since we failed to process test results
       sessionManager.markFrameworkError()
     } finally {
       this.pendingSubmissions.delete(submissionId)
@@ -90,7 +94,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     if (this.pendingSubmissions.size > 0) {
       this.#logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
 
-      const maxWaitTime = 10000
+      const maxWaitTime = 10_000
       const startTime = Date.now()
 
       while (this.pendingSubmissions.size > 0 && Date.now() - startTime < maxWaitTime) {
