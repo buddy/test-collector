@@ -4,6 +4,8 @@ This is a Jest test setup that can optionally use the Buddy test results collect
 
 ## Setup
 
+[First build and prepare the package in parent repository.](../../README.md)
+
 Install dependencies using npm:
 
 ```bash
