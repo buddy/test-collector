@@ -10,7 +10,7 @@ export interface IBuddyUnitTestApiTestCase {
   htmlUrl?: string
   id?: string
   name: string
-  suite_name: string
+  suiteName: string
   suiteId?: string
   classname: string
   status: BUDDY_UNIT_TEST_STATUS
