@@ -2,7 +2,10 @@
 !*.config.mjs
 !*.json
 !*.md
+!*.yml
 !src/**/*
+!**/.buddy
+!**/.github
 
 package-lock.json
 .gitkeep
