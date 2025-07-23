@@ -4,12 +4,10 @@ const { describe, it, expect } = require('@jest/globals')
 // All other tests become skipped automatically
 
 describe('Focused Test Example', () => {
-  // STATUS: focused (using it.only)
   it.only('should be focused with it.only', () => {
     expect(1 + 1).toBe(2)
   })
 
-  // This will be automatically skipped when above is focused
   it('should be auto-skipped when focused test exists', () => {
     expect(2 + 2).toBe(4)
   })

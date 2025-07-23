@@ -29,9 +29,6 @@ export default class BuddyUnitTestApiClient {
         this.#logger.debug(
           `API REQUEST: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${AxiosRequest.url || 'unknown'}`,
         )
-        if (AxiosRequest.data) {
-          this.#logger.debug(`API REQUEST PAYLOAD:`, AxiosRequest.data)
-        }
         return AxiosRequest
       },
       (AxiosRequestError) => {
@@ -45,9 +42,6 @@ export default class BuddyUnitTestApiClient {
         this.#logger.debug(
           `API RESPONSE: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${AxiosResponse.config.url || 'unknown'}`,
         )
-        if (AxiosResponse.data) {
-          this.#logger.debug(`API RESPONSE PAYLOAD:`, AxiosResponse.data)
-        }
         return AxiosResponse
       },
       (AxiosResponseError: AxiosError) => {
@@ -55,9 +49,18 @@ export default class BuddyUnitTestApiClient {
         const method = String(AxiosResponseError.config?.method?.toUpperCase() || 'unknown')
         const url = String(AxiosResponseError.config?.url || 'unknown')
         this.#logger.error(`API ERROR: ${status} ${method} ${url}`, AxiosResponseError)
-        if (AxiosResponseError.response?.data) {
-          this.#logger.error(`API ERROR PAYLOAD:`, AxiosResponseError.response.data)
+
+        // Only log payloads for client/server errors (4xx/5xx)
+        const statusCode = AxiosResponseError.response?.status
+        if (statusCode && statusCode >= 400) {
+          if (AxiosResponseError.config?.data) {
+            this.#logger.error(`API ERROR REQUEST PAYLOAD:`, AxiosResponseError.config.data)
+          }
+          if (AxiosResponseError.response?.data) {
+            this.#logger.error(`API ERROR RESPONSE PAYLOAD:`, AxiosResponseError.response.data)
+          }
         }
+
         return Promise.reject(AxiosResponseError as Error)
       },
     )
