@@ -13,7 +13,9 @@ describe('Jest Status Tests - Part 1', () => {
     expect(true).toBe(false)
   })
 
-  it('should be pending without implementation')
+  it('should be pending without implementation', () => {
+    // No implementation
+  })
 
   it.todo('should be todo with it.todo')
 })
