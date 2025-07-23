@@ -16,4 +16,4 @@ if (typeof jasmine === 'undefined') {
   jasmine.getEnv().addReporter(reporter)
 }
 
-export * from './reporter'
+export { default } from './reporter'

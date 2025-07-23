@@ -1,1 +1,1 @@
-export * from './reporter'
+export { default } from './reporter'
