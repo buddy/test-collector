@@ -1,0 +1,54 @@
+- pipeline: vitest
+  refs:
+    - refs/heads/master
+  events:
+    - type: PUSH
+  fail_on_prepare_env_warning: true
+  variables:
+    - key: BUDDY_LOGGER_DEBUG
+      value: 1
+      type: VAR
+    - key: BUDDY_RUN_BRANCH
+      type: VAR
+    - key: BUDDY_RUN_COMMIT
+      type: VAR
+    - key: BUDDY_RUN_HASH
+      type: VAR
+    - key: BUDDY_RUN_PRE_COMMIT
+      type: VAR
+    - key: BUDDY_RUN_REF_NAME
+      type: VAR
+    - key: BUDDY_RUN_REF_TYPE
+      type: VAR
+    - key: BUDDY_RUN_URL
+      type: VAR
+    - key: BUDDY_SESSION_ID
+      type: VAR
+    - key: VITEST_VERSION
+      value: 3.2.4
+      type: VAR
+    - key: NODE_VERSION
+      value: 22
+      type: VAR
+  actions:
+    - action: Prepare environment for tests
+      type: BUILD
+      docker_image_name: buddy/localshell
+      docker_image_tag: ubuntu_24.04
+      execute_commands:
+        - ./prepare-package-for-tests.sh
+        - ./prepare-version.sh devDependencies vitest $VITEST_VERSION ./examples/vitest
+      setup_commands:
+        - apt-get update && apt-get -y install jq=1.6-2.1ubuntu3
+      shell: BASH
+    - action: Collect Vitest tests
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: $NODE_VERSION
+      execute_commands:
+        - cd examples/vitest
+        - rm -rf node_modules package-lock.json
+        - npm install
+        - npm test
+      shell: BASH
+      run_next: IN_SOFT_PARALLEL
