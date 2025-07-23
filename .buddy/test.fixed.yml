@@ -17,7 +17,8 @@
       docker_image_name: library/node
       docker_image_tag: 22
       execute_commands:
-        - ls
+        - ls -la
+        - cat dist/reporters/jest/reporter.js
         - cd examples/jest
         - npm install
         - npm run test:collect
