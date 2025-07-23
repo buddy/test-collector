@@ -1,7 +1,7 @@
 const { expect, test } = require('vitest')
 const { describe } = require('../prefix')
 
-describe('[Vitest] Status Tests - Part 1', () => {
+describe('Status Tests - Part 1', () => {
   test('should pass', () => {
     expect(2 + 2).toBe(4)
   })

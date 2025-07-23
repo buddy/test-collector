@@ -1,7 +1,7 @@
 const { expect, test } = require('vitest')
 const { describe } = require('../prefix')
 
-describe('[Vitest] Status Tests - Part 2', () => {
+describe('Status Tests - Part 2', () => {
   test('should pass', () => {
     expect('hello').toBe('hello')
   })
@@ -15,7 +15,7 @@ describe('[Vitest] Status Tests - Part 2', () => {
   })
 })
 
-describe.skip('[Vitest] Disabled Test Suite', () => {
+describe.skip('Disabled Test Suite', () => {
   test('should be disabled', () => {
     expect(true).toBe(true)
   })
