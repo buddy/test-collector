@@ -1,24 +1,24 @@
 - pipeline: test
   refs:
-  - refs/heads/master
+    - refs/heads/master
   events:
-  - type: PUSH
+    - type: PUSH
   fail_on_prepare_env_warning: true
   actions:
-  - action: ./prepare-package-for-tests.sh
-    type: BUILD
-    docker_image_name: buddy/localshell
-    docker_image_tag: ubuntu_24.04
-    execute_commands:
-    - ./prepare-package-for-tests.sh
-    shell: BASH
-  - action: npm test:collect
-    type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: 22
-    execute_commands:
-    - ls
-    - cd examples/jest
-    - npm install
-    - npm test:collect
-    shell: BASH
+    - action: ./prepare-package-for-tests.sh
+      type: BUILD
+      docker_image_name: buddy/localshell
+      docker_image_tag: ubuntu_24.04
+      execute_commands:
+        - ./prepare-package-for-tests.sh
+      shell: BASH
+    - action: npm test:collect
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - ls
+        - cd examples/jest
+        - npm install
+        - npm run test:collect
+      shell: BASH
