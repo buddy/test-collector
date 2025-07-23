@@ -4,6 +4,27 @@
   events:
     - type: PUSH
   fail_on_prepare_env_warning: true
+  trigger_conditions:
+    - trigger_condition: OR
+      trigger_operands:
+        - trigger_condition: ON_CHANGE_AT_PATH
+          trigger_condition_paths:
+            - /.buddy/vitest.fixed.yml
+        - trigger_condition: ON_CHANGE_AT_PATH
+          trigger_condition_paths:
+            - /src/reporters/vitest/
+        - trigger_condition: ON_CHANGE_AT_PATH
+          trigger_condition_paths:
+            - /examples/vitest/
+        - trigger_condition: ON_CHANGE_AT_PATH
+          trigger_condition_paths:
+            - /src/core/
+        - trigger_condition: ON_CHANGE_AT_PATH
+          trigger_condition_paths:
+            - /src/utils/
+        - trigger_condition: ON_CHANGE_AT_PATH
+          trigger_condition_paths:
+            - package-lock.json
   variables:
     - key: BUDDY_LOGGER_DEBUG
       value: 1
@@ -24,11 +45,11 @@
       type: VAR
     - key: BUDDY_SESSION_ID
       type: VAR
-    - key: VITEST_VERSION
-      value: 3.2.4
-      type: VAR
     - key: NODE_VERSION
       value: 22
+      type: VAR
+    - key: VITEST_VERSION
+      value: 3.2.4
       type: VAR
   actions:
     - action: Prepare environment for tests
