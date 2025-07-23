@@ -3,6 +3,8 @@
     - refs/heads/master
   events:
     - type: PUSH
+  disabled: true
+  disabled_reason: "It was initially tested, it doesn't need to run while I'm configuring other testing frameworks"
   fail_on_prepare_env_warning: true
   variables:
     - key: BUDDY_LOGGER_DEBUG
