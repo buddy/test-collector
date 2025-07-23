@@ -44,9 +44,7 @@ export class Logger {
   }
 
   error(message: string, error: unknown) {
-    console.error(
-      `[${this.#prefix}] ERROR: ${message}`,
-      error ? (error instanceof Error ? error.stack : this.#safeStringify(error)) : '',
-    )
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(`[${this.#prefix}] ERROR: ${message}${errorMessage ? ` - ${errorMessage}` : ''}`)
   }
 }

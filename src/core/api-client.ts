@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, CreateAxiosDefaults } from 'axios'
+import axios, { AxiosError, AxiosInstance, CreateAxiosDefaults } from 'axios'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import { Logger } from '@/utils/logger'
@@ -22,34 +22,33 @@ export default class BuddyUnitTestApiClient {
     }
 
     this.#axiosInstance = axios.create(axiosOptions)
-    this.#logger.debug('Axios instance created with options:', axiosOptions)
+    this.#logger.debug(`Axios instance created for ${config.apiBaseUrl}`)
 
     this.#axiosInstance.interceptors.request.use(
       (AxiosRequest) => {
-        this.#logger.debug('=== API REQUEST SUCCESS ===')
-        this.#logger.debug('AxiosRequest', AxiosRequest)
-        this.#logger.debug('=== END REQUEST SUCCESS ===')
+        this.#logger.debug(
+          `API REQUEST: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${AxiosRequest.url || 'unknown'}`,
+        )
         return AxiosRequest
       },
       (AxiosRequestError) => {
-        this.#logger.debug('=== API REQUEST REJECTED ===')
-        this.#logger.error('AxiosRequestError', AxiosRequestError)
-        this.#logger.debug('=== END REQUEST REJECTED ===')
+        this.#logger.error('API request failed', AxiosRequestError)
         return Promise.reject(AxiosRequestError as Error)
       },
     )
 
     this.#axiosInstance.interceptors.response.use(
       (AxiosResponse) => {
-        this.#logger.debug('=== API RESPONSE SUCCESS ===')
-        this.#logger.debug('AxiosResponse', AxiosResponse)
-        this.#logger.debug('=== END RESPONSE SUCCESS ===')
+        this.#logger.debug(
+          `API RESPONSE: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${AxiosResponse.config.url || 'unknown'}`,
+        )
         return AxiosResponse
       },
-      (AxiosResponseError) => {
-        this.#logger.debug('=== API RESPONSE REJECTED ===')
-        this.#logger.error('AxiosResponseError', AxiosResponseError)
-        this.#logger.debug('=== END RESPONSE REJECTED ===')
+      (AxiosResponseError: AxiosError) => {
+        const status = String(AxiosResponseError.response?.status ?? 'unknown')
+        const method = String(AxiosResponseError.config?.method?.toUpperCase() || 'unknown')
+        const url = String(AxiosResponseError.config?.url || 'unknown')
+        this.#logger.error(`API ERROR: ${status} ${method} ${url}`, AxiosResponseError)
         return Promise.reject(AxiosResponseError as Error)
       },
     )

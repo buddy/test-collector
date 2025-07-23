@@ -98,7 +98,7 @@ export default class BuddyUnitTestCollectorConfig {
       ...(this.buildUrl && { build_url: this.buildUrl }),
     }
 
-    this.#logger.debug('Generated session payload:', payload)
+    this.#logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type})`)
     return payload
   }
 }
