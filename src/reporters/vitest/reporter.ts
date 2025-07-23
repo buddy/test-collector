@@ -94,13 +94,7 @@ export default class BuddyVitestReporter implements Reporter {
   onInit(context: Vitest) {
     this.#logger.debug('Vitest reporter initialized')
     this.context = context
-
-    this.#logger.debug('Context properties:', Object.keys(context))
-
-    this.#logger.debug('Context state properties:', Object.keys(context.state))
     this.loadTasksFromContext()
-
-    this.#logger.debug(`Total tasks stored: ${String(this.tasks.size)}`)
 
     void (async () => {
       try {
@@ -118,7 +112,6 @@ export default class BuddyVitestReporter implements Reporter {
 
     try {
       const files = this.context.state.getFiles()
-      this.#logger.debug(`Found ${String(files.length)} files`)
       for (const file of files) {
         this.traverseTasks(file)
       }
@@ -130,7 +123,6 @@ export default class BuddyVitestReporter implements Reporter {
   traverseTasks(task: RunnerTestFile | RunnerTask) {
     if (task.id) {
       this.tasks.set(task.id, task)
-      this.#logger.debug(`Stored task: ${task.id} -> ${task.name}`)
     }
 
     if (isTestFile(task)) {
@@ -147,7 +139,6 @@ export default class BuddyVitestReporter implements Reporter {
   async onTaskUpdate(packs: RunnerTaskResultPack[]) {
     try {
       if (this.tasks.size === 0) {
-        this.#logger.debug('Attempting to load tasks from context in onTaskUpdate')
         this.loadTasksFromContext()
       }
 
@@ -168,21 +159,23 @@ export default class BuddyVitestReporter implements Reporter {
     const task = this.getTaskById(taskId)
 
     if (task && task.type === 'suite') {
-      this.#logger.debug(`Skipping suite-level task: ${taskId} (${task.name})`)
       return
     }
 
-    this.#logger.debug(`Processing TaskId: ${taskId}`)
-    this.logTaskDetails(task, taskResult)
     const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task)
-    this.#logger.debug(`Mapped test result:`, testResult)
+    const summary = {
+      name: testResult.name,
+      classname: testResult.classname,
+      status: testResult.status,
+      time: testResult.time,
+      data: '[XML]',
+    }
+    this.#logger.debug('Mapped test result:', summary)
 
     try {
       await sessionManager.submitTestCase(testResult)
-      this.#logger.debug(`Successfully submitted: ${testResult.name}`)
       this.processedTests.add(taskId)
     } catch {
-      this.#logger.debug(`Failed to submit (expected if no config): ${testResult.name}`)
       // Don't re-throw to avoid breaking the test runner
     }
   }
@@ -205,29 +198,16 @@ export default class BuddyVitestReporter implements Reporter {
 
     if (!task && this.context?.state.idMap.has(taskId)) {
       task = this.context.state.idMap.get(taskId)
-      this.#logger.debug(`Found task ${taskId} in context.state.idMap`)
     }
 
     return task
   }
 
-  logTaskDetails(task: RunnerTask | undefined, taskResult: RunnerTaskResult) {
-    if (task) {
-      this.#logger.debug(`Task object found:`, task)
-    } else {
-      this.#logger.debug(`Task object: NOT FOUND`)
-    }
-
-    this.#logger.debug(`TaskResult:`, taskResult)
-  }
-
   async onFinished() {
-    this.#logger.debug('Test run completed, processing any remaining skipped tests')
+    this.#logger.debug('Vitest test run completed')
 
     for (const [taskId, task] of this.tasks) {
       if (task.mode === 'skip' && task.type === 'test' && !this.processedTests.has(taskId)) {
-        this.#logger.debug(`Processing skipped test: ${taskId} (${task.name})`)
-
         const taskResult: RunnerTaskResult = {
           state: 'skip',
           duration: 0,
@@ -240,7 +220,6 @@ export default class BuddyVitestReporter implements Reporter {
 
     this.tasks.clear()
     this.processedTests.clear()
-    this.#logger.debug('Test run finished, cleaned up memory')
 
     try {
       if (sessionManager.initialized) {
@@ -254,20 +233,21 @@ export default class BuddyVitestReporter implements Reporter {
   }
 
   async processSkippedTest(taskId: RunnerTask['id'], taskResult: RunnerTaskResult, task?: RunnerTask) {
-    this.#logger.debug(`Processing skipped TaskId: ${taskId}`)
-
-    this.logTaskDetails(task, taskResult)
-
     const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task)
-
-    this.#logger.debug(`Mapped test result:`, testResult)
+    const summary = {
+      name: testResult.name,
+      classname: testResult.classname,
+      status: testResult.status,
+      time: testResult.time,
+      data: '[XML]',
+    }
+    this.#logger.debug('Mapped test result:', summary)
 
     try {
       await sessionManager.submitTestCase(testResult)
-      this.#logger.debug(`Successfully submitted skipped test: ${testResult.name}`)
       this.processedTests.add(taskId)
     } catch {
-      this.#logger.debug(`Failed to submit skipped test (expected if no config): ${testResult.name}`)
+      // Don't re-throw to avoid breaking the test runner
     }
   }
 }
