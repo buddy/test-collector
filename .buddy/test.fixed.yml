@@ -8,6 +8,7 @@
     - key: BUDDY_API_URL
       type: VAR
     - key: BUDDY_LOGGER_DEBUG
+      value: 1
       type: VAR
     - key: BUDDY_RUN_BRANCH
       type: VAR
@@ -26,14 +27,16 @@
     - key: BUDDY_SESSION_ID
       type: VAR
   actions:
-    - action: ./prepare-package-for-tests.sh
+    - action: Prepare environment for tests
       type: BUILD
       docker_image_name: buddy/localshell
       docker_image_tag: ubuntu_24.04
       execute_commands:
+        - ls -la
         - ./prepare-package-for-tests.sh
+        - ls -la
       shell: BASH
-    - action: echo "$BUDDY_RUN_URL"
+    - action: Preview environment variables
       type: BUILD
       docker_image_name: buddy/localshell
       docker_image_tag: ubuntu_24.04
@@ -49,16 +52,12 @@
         - echo "$BUDDY_RUN_PRE_COMMIT"
         - echo "$BUDDY_RUN_BRANCH"
         - echo "$BUDDY_RUN_URL"
-        - ''
-        - ''
       shell: BASH
-    - action: npm test:collect
+    - action: Collect Jest tests
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: 22
       execute_commands:
-        - ls -la
-        - cat dist/reporters/jest/reporter.js
         - cd examples/jest
         - rm -rf node_modules package-lock.json
         - npm install
