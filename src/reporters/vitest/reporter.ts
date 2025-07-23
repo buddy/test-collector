@@ -28,42 +28,65 @@ export default class BuddyVitestReporter implements Reporter {
   setupProcessExitHandlers() {
     process.on('beforeExit', () => {
       this.#logger.debug('Process about to exit, closing session')
-      try {
-        void (async () => {
-          await sessionManager.closeSession()
-        })()
-        this.#logger.debug('Session closed successfully')
-      } catch (error) {
-        this.#logger.error('Error closing session on beforeExit', error)
-        sessionManager.markFrameworkError()
-      }
+
+      void (async () => {
+        try {
+          if (sessionManager.initialized) {
+            await sessionManager.closeSession()
+            this.#logger.debug('Session closed successfully')
+          } else {
+            this.#logger.debug('Session manager not initialized, skipping close')
+          }
+        } catch (error) {
+          this.#logger.error('Error closing session on beforeExit', error)
+          if (sessionManager.initialized) {
+            sessionManager.markFrameworkError()
+          }
+        }
+      })()
     })
 
     process.on('SIGINT', () => {
       this.#logger.debug('Received SIGINT, closing session')
-      try {
-        void (async () => {
-          await sessionManager.closeSession()
-        })()
-        this.#logger.debug('Session closed successfully on SIGINT')
-      } catch (error) {
-        this.#logger.error('Error closing session on SIGINT', error)
-        sessionManager.markFrameworkError()
-      }
+
+      void (async () => {
+        try {
+          if (sessionManager.initialized) {
+            await sessionManager.closeSession()
+            this.#logger.debug('Session closed successfully on SIGINT')
+          } else {
+            this.#logger.debug('Session manager not initialized, skipping close on SIGINT')
+          }
+        } catch (error) {
+          this.#logger.error('Error closing session on SIGINT', error)
+          if (sessionManager.initialized) {
+            sessionManager.markFrameworkError()
+          }
+        }
+      })()
+
       process.exit(0)
     })
 
     process.on('SIGTERM', () => {
       this.#logger.debug('Received SIGTERM, closing session')
-      try {
-        void (async () => {
-          await sessionManager.closeSession()
-        })()
-        this.#logger.debug('Session closed successfully on SIGTERM')
-      } catch (error) {
-        this.#logger.error('Error closing session on SIGTERM', error)
-        sessionManager.markFrameworkError()
-      }
+
+      void (async () => {
+        try {
+          if (sessionManager.initialized) {
+            await sessionManager.closeSession()
+            this.#logger.debug('Session closed successfully on SIGTERM')
+          } else {
+            this.#logger.debug('Session manager not initialized, skipping close on SIGTERM')
+          }
+        } catch (error) {
+          this.#logger.error('Error closing session on SIGTERM', error)
+          if (sessionManager.initialized) {
+            sessionManager.markFrameworkError()
+          }
+        }
+      })()
+
       process.exit(0)
     })
   }
@@ -78,6 +101,16 @@ export default class BuddyVitestReporter implements Reporter {
     this.loadTasksFromContext()
 
     this.#logger.debug(`Total tasks stored: ${String(this.tasks.size)}`)
+
+    void (async () => {
+      try {
+        await sessionManager.getOrCreateSession('vitest')
+        this.#logger.debug('Session created at Vitest reporter initialization')
+      } catch (error) {
+        this.#logger.error('Error creating session at Vitest reporter initialization', error)
+        sessionManager.markFrameworkError()
+      }
+    })()
   }
 
   loadTasksFromContext() {
@@ -208,6 +241,16 @@ export default class BuddyVitestReporter implements Reporter {
     this.tasks.clear()
     this.processedTests.clear()
     this.#logger.debug('Test run finished, cleaned up memory')
+
+    try {
+      if (sessionManager.initialized) {
+        await sessionManager.closeSession()
+        this.#logger.debug('Session closed after Vitest test completion')
+      }
+    } catch (error) {
+      this.#logger.error('Error closing session after Vitest test completion', error)
+      sessionManager.markFrameworkError()
+    }
   }
 
   async processSkippedTest(taskId: RunnerTask['id'], taskResult: RunnerTaskResult, task?: RunnerTask) {

@@ -21,15 +21,15 @@ export default class BuddyPlaywrightReporter implements Reporter {
   }
 
   onTestEnd(test: TestCase, result: TestResult) {
-    try {
-      const mappedResult = TestResultMapper.mapPlaywrightResult(test, result)
-      void (async () => {
+    void (async () => {
+      try {
+        const mappedResult = TestResultMapper.mapPlaywrightResult(test, result)
         await sessionManager.submitTestCase(mappedResult)
-      })()
-    } catch (error) {
-      this.#logger.error('Error processing Playwright test result', error)
-      sessionManager.markFrameworkError()
-    }
+      } catch (error) {
+        this.#logger.error('Error processing Playwright test result', error)
+        sessionManager.markFrameworkError()
+      }
+    })()
   }
 
   async onEnd() {
