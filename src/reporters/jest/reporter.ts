@@ -25,8 +25,7 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
     this.#logger.debug('Jest test run started')
 
     try {
-      if (!sessionManager.createSession) throw new Error('Session manager not initialized before Jest run start')
-      await sessionManager.createSession
+      await sessionManager.getOrCreateSession()
       this.#logger.debug('Session created at Jest test run start')
     } catch (error) {
       this.#logger.error('Error creating session at Jest test run start', error)
