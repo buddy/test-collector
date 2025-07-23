@@ -28,7 +28,7 @@ export default class TestResultMapper {
     return (
       statusMap[testResult] ??
       (() => {
-        TestResultMapper.#logger.warn(
+        TestResultMapper.#logger.debug(
           `Unknown test result status: ${String(testResult)}. Defaulting to ${BUDDY_UNIT_TEST_STATUS.ERROR}.`,
         )
         return BUDDY_UNIT_TEST_STATUS.ERROR
