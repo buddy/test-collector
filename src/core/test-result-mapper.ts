@@ -193,7 +193,7 @@ export default class TestResultMapper {
         (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.message).join('\n') : '',
       errorStackTrace:
         (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
-      messages: taskId || '',
+      messages: task?.suite?.name || '',
     }
 
     let testName = 'Unknown Test'
