@@ -36,16 +36,16 @@
       docker_image_name: buddy/localshell
       docker_image_tag: ubuntu_24.04
       execute_commands:
-        - ls -la
         - ./prepare-package-for-tests.sh
-        - ls -la
+        - ./prepare-version.sh devDependencies jest $JEST_VERSION ./examples/jest
+      setup_commands:
+        - apt-get update && apt-get -y install jq=1.6-2.1ubuntu3
       shell: BASH
     - action: Collect Jest tests
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
       execute_commands:
-        - ./prepare-version.sh devDependencies jest $JEST_VERSION ./examples/jest
         - cd examples/jest
         - rm -rf node_modules package-lock.json
         - npm install
