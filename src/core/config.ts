@@ -83,8 +83,8 @@ export default class BuddyUnitTestCollectorConfig {
 
   get headers(): IncomingHttpHeaders {
     return {
-      'content-type': 'application/json',
-      authorization: `Bearer ${this.utToken}`,
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.utToken}`,
     }
   }
 
