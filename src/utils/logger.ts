@@ -1,10 +1,11 @@
+import BuddyUnitTestCollectorConfig from '@/core/config'
 import env from '@/utils/environment'
 
 export class Logger {
   #prefix: string
   #debugEnabled: boolean
 
-  constructor(prefix = 'JS-Test-Collector') {
+  constructor(prefix = BuddyUnitTestCollectorConfig.libraryName) {
     this.#prefix = prefix
     this.#debugEnabled = env.BUDDY_LOGGER_DEBUG
   }

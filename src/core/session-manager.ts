@@ -12,6 +12,8 @@ class BuddyUnitTestSessionManager {
 
   #logger: Logger
 
+  #context = 'generic'
+
   sessionId: string | undefined
   createSession: Promise<string> | undefined
   initialized: boolean
@@ -112,14 +114,14 @@ class BuddyUnitTestSessionManager {
     }
   }
 
-  initialize(context = 'generic') {
+  #initialize() {
     if (this.initialized) return
 
     try {
-      this.#config = new BuddyUnitTestCollectorConfig(context)
+      this.#config = new BuddyUnitTestCollectorConfig(this.#context)
       this.#apiClient = new BuddyUnitTestApiClient(this.#config)
       this.initialized = true
-      const loggerNameWithContext = `${BuddyUnitTestSessionManager.displayName}_${context}`
+      const loggerNameWithContext = `${BuddyUnitTestSessionManager.displayName}/${this.#context}`
       this.#logger = new Logger(loggerNameWithContext)
       this.#logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
     } catch (error) {
@@ -128,8 +130,12 @@ class BuddyUnitTestSessionManager {
     }
   }
 
-  async getOrCreateSession() {
-    if (!this.initialized) this.initialize()
+  async getOrCreateSession(context?: string) {
+    if (!this.initialized) {
+      if (context) this.#context = context
+      this.#initialize()
+    }
+
     if (this.sessionId) return this.sessionId
 
     if (this.createSession) {
@@ -147,7 +153,7 @@ class BuddyUnitTestSessionManager {
   }
 
   async submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
-    if (!this.initialized) this.initialize()
+    if (!this.initialized) throw new Error(`${BuddyUnitTestSessionManager.displayName} not initialized`)
 
     try {
       const sessionId = await this.getOrCreateSession()
@@ -172,7 +178,7 @@ class BuddyUnitTestSessionManager {
   }
 
   async closeSession() {
-    if (!this.initialized) this.initialize()
+    if (!this.initialized) throw new Error(`${BuddyUnitTestSessionManager.displayName} not initialized`)
 
     if (!this.sessionId && env.BUDDY_SESSION_ID) {
       this.sessionId = env.BUDDY_SESSION_ID

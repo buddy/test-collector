@@ -1,5 +1,5 @@
 {
-  "name": "test-collector",
+  "name": "@buddy-works/test-collector",
   "version": "0.9.0",
   "description": "Universal test results collector for Jest, Jasmine, Mocha, Cypress, Playwright, and Vitest that sends results to Buddy Works API in real-time",
   "files": [

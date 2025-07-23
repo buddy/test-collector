@@ -25,7 +25,7 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
     this.#logger.debug('Jest test run started')
 
     try {
-      await sessionManager.getOrCreateSession()
+      await sessionManager.getOrCreateSession('jest')
       this.#logger.debug('Session created at Jest test run start')
     } catch (error) {
       this.#logger.error('Error creating session at Jest test run start', error)
