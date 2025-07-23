@@ -11,6 +11,7 @@ This directory contains Vitest test examples that demonstrate all possible test 
    ```
 
 2. **Run tests:**
+
    ```bash
    npm test
    ```
