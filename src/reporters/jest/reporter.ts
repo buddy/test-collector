@@ -34,12 +34,26 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
   }
 
   async onTestResult(_test: Test, testResult: TestResult) {
-    this.#logger.debug('Jest onTestResult called:', testResult)
+    const summary = {
+      testFilePath: testResult.testFilePath,
+      numPassingTests: testResult.numPassingTests,
+      numFailingTests: testResult.numFailingTests,
+      numPendingTests: testResult.numPendingTests,
+      runtime: testResult.perfStats.runtime,
+    }
+    this.#logger.debug('Jest onTestResult called:', summary)
 
     try {
       for (const assertionResult of testResult.testResults) {
         const mappedResult = TestResultMapper.mapJestResult(assertionResult, testResult)
-        this.#logger.debug('Mapped test result:', mappedResult)
+        const summary = {
+          name: mappedResult.name,
+          classname: mappedResult.classname,
+          status: mappedResult.status,
+          time: mappedResult.time,
+          data: '[XML]',
+        }
+        this.#logger.debug('Mapped test result:', summary)
         await sessionManager.submitTestCase(mappedResult)
       }
     } catch (error) {
