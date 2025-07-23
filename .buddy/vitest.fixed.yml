@@ -39,7 +39,7 @@
         - ./prepare-package-for-tests.sh
         - ./prepare-version.sh devDependencies vitest $VITEST_VERSION ./examples/vitest
       setup_commands:
-        - apt-get update && apt-get -y install jq=1.6-2.1ubuntu3
+        - apt-get update && apt-get -y install jq
       shell: BASH
     - action: Collect Vitest tests
       type: BUILD
