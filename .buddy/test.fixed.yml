@@ -5,8 +5,6 @@
     - type: PUSH
   fail_on_prepare_env_warning: true
   variables:
-    - key: BUDDY_API_URL
-      type: VAR
     - key: BUDDY_LOGGER_DEBUG
       value: 1
       type: VAR
