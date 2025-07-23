@@ -115,7 +115,6 @@ export default class BuddyVitestReporter implements Reporter {
       for (const file of files) {
         this.traverseTasks(file)
       }
-      this.#logger.debug(`Loaded ${String(this.tasks.size)} tasks from context`)
     } catch (error) {
       this.#logger.error('Error loading tasks from context', error)
     }
@@ -209,7 +208,6 @@ export default class BuddyVitestReporter implements Reporter {
 
     for (const [taskId, task] of this.tasks) {
       if (task.mode === 'skip' && task.type === 'test' && !this.processedTests.has(taskId)) {
-        this.#logger.debug(`Processing skipped test: ${taskId} (${task.name})`)
         const taskResult: RunnerTaskResult = {
           state: 'skip',
           duration: 0,
