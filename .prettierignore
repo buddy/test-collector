@@ -4,6 +4,7 @@
 !*.md
 !*.yml
 !src/**/*
+!examples/**/*
 !**/.buddy
 !**/.github
 
