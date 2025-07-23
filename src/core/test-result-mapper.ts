@@ -63,7 +63,7 @@ export default class TestResultMapper {
     return {
       name: assertionResult.title,
       classname: fileNameWithoutExtension,
-      suiteName: fileNameWithoutExtension,
+      suite_name: fileNameWithoutExtension,
       status,
       time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
       data: this.#toXml(dataObject),
@@ -88,7 +88,7 @@ export default class TestResultMapper {
     return {
       name: result.description,
       classname: suiteName,
-      suiteName,
+      suite_name: suiteName,
       status: status,
       time: (result.duration ?? 0) / 1000 || 0,
       data: this.#toXml(dataObject),
@@ -113,7 +113,7 @@ export default class TestResultMapper {
     return {
       name: test.title,
       classname: suiteName,
-      suiteName,
+      suite_name: suiteName,
       status: status,
       time: test.duration ? test.duration / 1000 : 0,
       data: this.#toXml(dataObject),
@@ -170,7 +170,7 @@ export default class TestResultMapper {
     return {
       name: test.title,
       classname: suiteName,
-      suiteName,
+      suite_name: suiteName,
       status: status,
       time: result.duration ? result.duration / 1000 : 0,
       data: this.#toXml(dataObject),
@@ -235,7 +235,7 @@ export default class TestResultMapper {
     return {
       name: testName,
       classname: suiteName,
-      suiteName,
+      suite_name: suiteName,
       status,
       time: taskResult.duration ? taskResult.duration / 1000 : 0,
       data: this.#toXml(dataObject),
