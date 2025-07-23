@@ -38,4 +38,14 @@ export default tseslint.config([
       },
     },
   },
+  {
+    rules: {
+      '@typescript-eslint/prefer-nullish-coalescing': [
+        'error',
+        {
+          ignorePrimitives: { string: true },
+        },
+      ],
+    },
+  },
 ])
