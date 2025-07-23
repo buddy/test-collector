@@ -20,6 +20,7 @@
         - ls -la
         - cat dist/reporters/jest/reporter.js
         - cd examples/jest
+        - rm -rf node_modules package-lock.json
         - npm install
         - npm run test:collect
       shell: BASH
