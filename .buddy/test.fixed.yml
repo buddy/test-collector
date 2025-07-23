@@ -4,6 +4,27 @@
   events:
     - type: PUSH
   fail_on_prepare_env_warning: true
+  variables:
+    - key: BUDDY_API_URL
+      type: VAR
+    - key: BUDDY_LOGGER_DEBUG
+      type: VAR
+    - key: BUDDY_RUN_BRANCH
+      type: VAR
+    - key: BUDDY_RUN_COMMIT
+      type: VAR
+    - key: BUDDY_RUN_HASH
+      type: VAR
+    - key: BUDDY_RUN_PRE_COMMIT
+      type: VAR
+    - key: BUDDY_RUN_REF_NAME
+      type: VAR
+    - key: BUDDY_RUN_REF_TYPE
+      type: VAR
+    - key: BUDDY_RUN_URL
+      type: VAR
+    - key: BUDDY_SESSION_ID
+      type: VAR
   actions:
     - action: ./prepare-package-for-tests.sh
       type: BUILD
@@ -11,6 +32,25 @@
       docker_image_tag: ubuntu_24.04
       execute_commands:
         - ./prepare-package-for-tests.sh
+      shell: BASH
+    - action: echo "$BUDDY_RUN_URL"
+      type: BUILD
+      docker_image_name: buddy/localshell
+      docker_image_tag: ubuntu_24.04
+      execute_commands:
+        - echo "$BUDDY_UT_TOKEN"
+        - echo "$BUDDY_LOGGER_DEBUG"
+        - echo "$BUDDY_API_URL"
+        - echo "$BUDDY_SESSION_ID"
+        - echo "$BUDDY_RUN_HASH"
+        - echo "$BUDDY_RUN_REF_NAME"
+        - echo "$BUDDY_RUN_REF_TYPE"
+        - echo "$BUDDY_RUN_COMMIT"
+        - echo "$BUDDY_RUN_PRE_COMMIT"
+        - echo "$BUDDY_RUN_BRANCH"
+        - echo "$BUDDY_RUN_URL"
+        - ''
+        - ''
       shell: BASH
     - action: npm test:collect
       type: BUILD
