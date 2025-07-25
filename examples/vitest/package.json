@@ -6,7 +6,7 @@
   },
   "devDependencies": {
     "dotenv": "17.2.1",
-    "vitest": "3.2.4"
+    "vitest": "latest"
   },
   "dependencies": {
     "@buddy-works/test-collector": "file:../../test-collector.tgz"
