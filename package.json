@@ -46,7 +46,7 @@
     "test:framework": "./prepare-version.sh devDependencies $FRAMEWORK_NAME $FRAMEWORK_VERSION $FRAMEWORK_DIR && cd $FRAMEWORK_DIR && rimraf node_modules package-lock.json && npm install && npm run test && rimraf node_modules package-lock.json",
     "test:jest": "source .env && FRAMEWORK_NAME=jest FRAMEWORK_VERSION=$JEST_VERSION FRAMEWORK_DIR=examples/jest npm run test:framework",
     "test:vitest": "source .env && FRAMEWORK_NAME=vitest FRAMEWORK_VERSION=$VITEST_VERSION FRAMEWORK_DIR=examples/vitest npm run test:framework",
-    "test": "npm run prepare:tests && npm run test:jest && npm run test:vitest"
+    "test": "npm run prepare:tests && sh -c 'npm run test:jest & npm run test:vitest & wait'"
   },
   "dependencies": {
     "axios": "1.10.0"
