@@ -13,7 +13,7 @@ To run the example tests for development and testing purposes:
 2. **Prepare the package for testing:**
 
    ```bash
-   ./prepare-package-for-tests.sh
+   npm run prepare:tests
    ```
 
 3. **Follow individual test instructions:**

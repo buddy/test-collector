@@ -11,6 +11,7 @@ This example demonstrates how to use `@buddy-works/test-collector` with Playwrig
    ```
 
 2. Run tests:
+
    ```bash
    npm test
    ```

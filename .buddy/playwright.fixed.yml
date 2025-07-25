@@ -41,8 +41,8 @@
       shell: BASH
     - action: Collect Playwright tests
       type: BUILD
-      docker_image_name: mcr.microsoft.com/playwright
-      docker_image_tag: v$PLAYWRIGHT_VERSION-jammy
+      docker_image_name: library/node
+      docker_image_tag: $NODE_VERSION
       setup_commands:
         - apt-get update && apt-get -y install jq
       execute_commands:
