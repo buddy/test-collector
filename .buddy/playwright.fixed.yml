@@ -42,7 +42,8 @@
         - npm run build
         - npm run cleanup:tests
         - npm run prepare:tests
-        - npm run test:playwright
         - cd examples/playwright
-        - rm -rf node_modules package-lock.json
+        - npm install
+        - npx playwright install --with-deps chromium
+        - npm run test
       shell: BASH
