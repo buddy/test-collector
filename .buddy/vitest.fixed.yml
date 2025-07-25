@@ -36,19 +36,18 @@
       docker_image_name: buddy/localshell
       docker_image_tag: ubuntu_24.04
       execute_commands:
-        - ./prepare-package-for-tests.sh
-        - ./prepare-version.sh devDependencies vitest $VITEST_VERSION ./examples/vitest
-      setup_commands:
-        - apt-get update && apt-get -y install jq
+        - npm ci
+        - npm run prepare:tests
       shell: BASH
     - action: Collect Vitest tests
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
+      setup_commands:
+        - apt-get update && apt-get -y install jq
       execute_commands:
+        - npm run test:vitest
         - cd examples/vitest
         - rm -rf node_modules package-lock.json
-        - npm install
-        - npm test
       shell: BASH
       run_next: IN_SOFT_PARALLEL

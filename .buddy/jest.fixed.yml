@@ -38,13 +38,13 @@
       execute_commands:
         - npm ci
         - npm run prepare:tests
-      setup_commands:
-        - apt-get update && apt-get -y install jq
       shell: BASH
     - action: Collect Jest tests
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
+      setup_commands:
+        - apt-get update && apt-get -y install jq
       execute_commands:
         - npm run test:jest
         - cd examples/jest
