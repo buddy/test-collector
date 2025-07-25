@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test')
-const { prefixedDescribe } = require('../prefix')
+const { prefixedDescribe, prefixedDescribeSkip } = require('../prefix')
 
 prefixedDescribe('Focused Tests', () => {
   test('focused test example', async ({ page }) => {
@@ -11,7 +11,7 @@ prefixedDescribe('Focused Tests', () => {
   })
 })
 
-test.describe.skip('[playwright 1.54.1] Skipped describe block', () => {
+prefixedDescribeSkip('Skipped describe block', () => {
   test('this test is in a skipped describe block', async ({ page }) => {
     expect(true).toBe(false)
   })

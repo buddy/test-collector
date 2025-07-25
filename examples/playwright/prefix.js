@@ -6,4 +6,7 @@ module.exports = {
   prefixedDescribe: (name, fn) => {
     return test.describe(`${prefix} ${name}`, fn)
   },
+  prefixedDescribeSkip: (name, fn) => {
+    return test.describe.skip(`${prefix} ${name}`, fn)
+  },
 }
