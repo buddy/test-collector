@@ -6,7 +6,7 @@
   fail_on_prepare_env_warning: true
   variables:
     - key: BUDDY_LOGGER_DEBUG
-      value: 1
+      value: 0
       type: VAR
     - key: BUDDY_RUN_BRANCH
       type: VAR
@@ -25,7 +25,7 @@
     - key: BUDDY_SESSION_ID
       type: VAR
     - key: JEST_VERSION
-      value: 29
+      value: latest
       type: VAR
     - key: NODE_VERSION
       value: 22

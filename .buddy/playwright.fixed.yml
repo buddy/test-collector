@@ -6,7 +6,7 @@
   fail_on_prepare_env_warning: true
   variables:
     - key: BUDDY_LOGGER_DEBUG
-      value: 1
+      value: 0
       type: VAR
     - key: BUDDY_RUN_BRANCH
       type: VAR
@@ -28,7 +28,7 @@
       value: 22
       type: VAR
     - key: PLAYWRIGHT_VERSION
-      value: 1.54.1
+      value: latest
       type: VAR
   actions:
     - action: Prepare environment for tests
