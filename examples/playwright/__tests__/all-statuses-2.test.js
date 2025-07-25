@@ -1,9 +1,7 @@
-const { expect } = require('@playwright/test')
-const { prefixedTest } = require('../prefix')
+const { test, expect } = require('@playwright/test')
+const { prefixedDescribe } = require('../prefix')
 
-const test = prefixedTest
-
-test.describe('Status Tests - Part 2', () => {
+prefixedDescribe('Status Tests - Part 2', () => {
   test('another passing test', async ({ page }) => {
     expect(true).toBeTruthy()
   })
