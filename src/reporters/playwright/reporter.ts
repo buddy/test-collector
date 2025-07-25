@@ -18,6 +18,16 @@ export default class BuddyPlaywrightReporter implements Reporter {
 
   onBegin() {
     this.#logger.debug('Playwright test run started')
+
+    void (async () => {
+      try {
+        await sessionManager.getOrCreateSession('playwright')
+        this.#logger.debug('Session created at Playwright test run start')
+      } catch (error) {
+        this.#logger.error('Error creating session at Playwright test run start', error)
+        sessionManager.markFrameworkError()
+      }
+    })()
   }
 
   onTestEnd(test: TestCase, result: TestResult) {
