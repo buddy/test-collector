@@ -29,6 +29,9 @@ export default class BuddyUnitTestApiClient {
         this.#logger.debug(
           `API REQUEST: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${AxiosRequest.url || 'unknown'}`,
         )
+        if (AxiosRequest.data) {
+          this.#logger.debug('Request payload:', AxiosRequest.data)
+        }
         return AxiosRequest
       },
       (AxiosRequestError) => {

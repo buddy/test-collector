@@ -5,52 +5,64 @@ import { Logger } from '@/utils/logger'
 /**
  * @see {@link https://jasmine.github.io/tutorials/custom_reporter}
  */
-export default class BuddyJasmineReporter implements jasmine.CustomReporter {
-  static displayName = 'BuddyJasmineReporter'
-  #logger: Logger
-  constructor() {
-    this.#logger = new Logger(BuddyJasmineReporter.displayName)
-  }
+function createBuddyJasmineReporter(): jasmine.CustomReporter {
+  const logger = new Logger('BuddyJasmineReporter')
 
-  async jasmineStarted(suiteInfo: jasmine.JasmineStartedInfo) {
-    this.#logger.debug('Jasmine test run started', suiteInfo)
+  return {
+    async jasmineStarted() {
+      logger.debug('Jasmine test run started')
 
-    try {
-      await sessionManager.getOrCreateSession('jasmine')
-      this.#logger.debug('Session created at Jasmine test run start')
-    } catch (error) {
-      this.#logger.error('Error creating session at Jasmine test run start', error)
-      sessionManager.markFrameworkError()
-    }
-  }
+      try {
+        await sessionManager.getOrCreateSession('jasmine')
+        logger.debug('Session created at Jasmine test run start')
+      } catch (error) {
+        logger.error('Error creating session at Jasmine test run start', error)
+        sessionManager.markFrameworkError()
+      }
+    },
 
-  suiteStarted(result: jasmine.SuiteResult) {
-    this.#logger.debug(`Suite started: ${result.description}`)
-  }
+    suiteStarted(result: jasmine.SuiteResult) {
+      logger.debug(`Suite started: ${result.description}`)
+    },
 
-  async specDone(result: jasmine.SpecResult) {
-    try {
-      const mappedResult = TestResultMapper.mapJasmineResult(result)
-      await sessionManager.submitTestCase(mappedResult)
-    } catch (error) {
-      this.#logger.error('Error processing Jasmine spec result', error)
-      sessionManager.markFrameworkError()
-    }
-  }
+    async specDone(result: jasmine.SpecResult) {
+      try {
+        const mappedResult = TestResultMapper.mapJasmineResult(result)
+        const summary = {
+          name: mappedResult.name,
+          classname: mappedResult.classname,
+          status: mappedResult.status,
+          time: mappedResult.time,
+          data: '[XML]',
+        }
+        logger.debug('Mapped test result:', summary)
 
-  suiteDone(result: jasmine.SuiteResult) {
-    this.#logger.debug(`Suite done: ${result.description}`)
-  }
+        await sessionManager.submitTestCase(mappedResult)
+      } catch (error) {
+        logger.error('Error processing Jasmine spec result', error)
+        sessionManager.markFrameworkError()
+      }
+    },
 
-  async jasmineDone(suiteInfo: jasmine.JasmineDoneInfo) {
-    this.#logger.debug('Jasmine test run completed', suiteInfo)
+    suiteDone(result: jasmine.SuiteResult) {
+      logger.debug(`Suite done: ${result.description}`)
+    },
 
-    try {
-      await sessionManager.closeSession()
-      this.#logger.debug('Session closed after Jasmine test completion')
-    } catch (error) {
-      this.#logger.error('Error closing session after Jasmine test completion', error)
-      sessionManager.markFrameworkError()
-    }
+    async jasmineDone() {
+      logger.debug('Jasmine test run completed')
+
+      try {
+        await sessionManager.closeSession()
+        logger.debug('Session closed after Jasmine test completion')
+      } catch (error) {
+        logger.error('Error closing session after Jasmine test completion', error)
+        sessionManager.markFrameworkError()
+      }
+    },
   }
 }
+
+export default createBuddyJasmineReporter
+
+// eslint-disable-next-line unicorn/prefer-module
+module.exports = createBuddyJasmineReporter

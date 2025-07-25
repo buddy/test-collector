@@ -87,7 +87,14 @@ export default class TestResultMapper {
       messages: result.fullName || '',
     }
 
-    const suiteName = result.fullName.split(' ')[0]
+    // Extract suite name from fullName by removing the test description at the end
+    // fullName format: "[jasmine 5.9.0] Status Tests - Part 1 should pass"
+    // We want: "[jasmine 5.9.0] Status Tests - Part 1"
+    let suiteName = result.fullName
+    if (result.description && suiteName.endsWith(result.description)) {
+      // Remove the test description from the end, including the space before it
+      suiteName = suiteName.slice(0, -result.description.length).trim()
+    }
 
     return {
       name: result.description,

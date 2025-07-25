@@ -1,15 +1,10 @@
 {
   "spec_dir": "__tests__",
   "spec_files": ["**/*.test.js"],
-  "helpers": ["helpers/dotenv.js"],
+  "helpers": ["helpers/dotenv.js", "helpers/setup-reporter.js"],
   "env": {
     "stopSpecOnExpectationFailure": false,
     "random": false,
     "forbidFocused": false
-  },
-  "reporters": [
-    {
-      "name": "@buddy-works/test-collector/jasmine"
-    }
-  ]
+  }
 }
