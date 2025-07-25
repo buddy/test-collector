@@ -4,11 +4,11 @@ const { prefixedTest } = require('../prefix')
 const test = prefixedTest
 
 test.describe('Focused Tests', () => {
-  test.only('focused test with test.only', async ({ page }) => {
+  test('focused test example', async ({ page }) => {
     expect(1 + 1).toBe(2)
   })
 
-  test('this test will not run when test.only is present', async ({ page }) => {
+  test('another test in the same describe block', async ({ page }) => {
     expect(2 + 2).toBe(4)
   })
 })
