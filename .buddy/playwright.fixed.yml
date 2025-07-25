@@ -6,7 +6,7 @@
   fail_on_prepare_env_warning: true
   variables:
     - key: BUDDY_LOGGER_DEBUG
-      value: 0
+      value: 1
       type: VAR
     - key: BUDDY_RUN_BRANCH
       type: VAR
