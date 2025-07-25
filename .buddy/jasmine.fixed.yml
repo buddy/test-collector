@@ -1,0 +1,53 @@
+- pipeline: jasmine
+  refs:
+    - refs/heads/master
+  events:
+    - type: PUSH
+  fail_on_prepare_env_warning: true
+  variables:
+    - key: BUDDY_LOGGER_DEBUG
+      value: 0
+      type: VAR
+    - key: BUDDY_RUN_BRANCH
+      type: VAR
+    - key: BUDDY_RUN_COMMIT
+      type: VAR
+    - key: BUDDY_RUN_HASH
+      type: VAR
+    - key: BUDDY_RUN_PRE_COMMIT
+      type: VAR
+    - key: BUDDY_RUN_REF_NAME
+      type: VAR
+    - key: BUDDY_RUN_REF_TYPE
+      type: VAR
+    - key: BUDDY_RUN_URL
+      type: VAR
+    - key: BUDDY_SESSION_ID
+      type: VAR
+    - key: NODE_VERSION
+      value: 22
+      type: VAR
+    - key: JASMINE_VERSION
+      value: latest
+      type: VAR
+  actions:
+    - action: Prepare environment for tests
+      type: BUILD
+      docker_image_name: buddy/localshell
+      docker_image_tag: ubuntu_24.04
+      execute_commands:
+        - npm ci
+        - npm run prepare:tests
+      shell: BASH
+    - action: Collect Jasmine tests
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: $NODE_VERSION
+      setup_commands:
+        - apt-get update && apt-get -y install jq
+      execute_commands:
+        - npm run test:jasmine
+        - cd examples/jasmine
+        - rm -rf node_modules package-lock.json
+      shell: BASH
+      run_next: IN_SOFT_PARALLEL

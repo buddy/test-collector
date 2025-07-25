@@ -12,8 +12,16 @@ export default class BuddyJasmineReporter implements jasmine.CustomReporter {
     this.#logger = new Logger(BuddyJasmineReporter.displayName)
   }
 
-  jasmineStarted(suiteInfo: jasmine.JasmineStartedInfo) {
+  async jasmineStarted(suiteInfo: jasmine.JasmineStartedInfo) {
     this.#logger.debug('Jasmine test run started', suiteInfo)
+
+    try {
+      await sessionManager.getOrCreateSession('jasmine')
+      this.#logger.debug('Session created at Jasmine test run start')
+    } catch (error) {
+      this.#logger.error('Error creating session at Jasmine test run start', error)
+      sessionManager.markFrameworkError()
+    }
   }
 
   suiteStarted(result: jasmine.SuiteResult) {

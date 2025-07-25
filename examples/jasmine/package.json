@@ -1,0 +1,13 @@
+{
+  "name": "jasmine-tests",
+  "scripts": {
+    "test": "jasmine --config=jasmine.json"
+  },
+  "devDependencies": {
+    "dotenv": "17.2.1",
+    "jasmine": "5.9.0"
+  },
+  "dependencies": {
+    "@buddy-works/test-collector": "file:../../test-collector.tgz"
+  }
+}
