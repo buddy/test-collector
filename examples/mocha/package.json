@@ -1,0 +1,13 @@
+{
+  "name": "mocha-tests",
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "dotenv": "17.2.1",
+    "mocha": "11.7.1"
+  },
+  "dependencies": {
+    "@buddy-works/test-collector": "file:../../test-collector.tgz"
+  }
+}

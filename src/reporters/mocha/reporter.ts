@@ -4,7 +4,7 @@ import TestResultMapper from '@/core/test-result-mapper'
 import { IBuddyUnitTestApiTestCase } from '@/core/types'
 import { Logger } from '@/utils/logger'
 
-const { EVENT_RUN_BEGIN, EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_PENDING } = Mocha.Runner.constants
+const { EVENT_RUN_BEGIN, EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_PENDING } = Runner.constants
 
 /**
  * @see {@link https://mochajs.org/api/tutorial-custom-reporter}
@@ -25,16 +25,28 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     this.logger = new Logger(BuddyMochaReporter.displayName)
     this.pendingSubmissions = new Set()
 
-    this.runner.on(EVENT_RUN_BEGIN, () => this.onStart.bind(this))
-    this.runner.on(EVENT_RUN_END, () => this.onEnd.bind(this))
+    this.runner.on(EVENT_RUN_BEGIN, () => {
+      void this.onStart()
+    })
+    this.runner.on(EVENT_RUN_END, () => {
+      void this.onEnd()
+    })
 
-    this.runner.on(EVENT_TEST_PENDING, () => this.onTestPending.bind(this))
-    this.runner.on(EVENT_TEST_PASS, () => this.onTestPass.bind(this))
-    this.runner.on(EVENT_TEST_FAIL, () => this.onTestFail.bind(this))
+    this.runner.on(EVENT_TEST_PENDING, this.onTestPending.bind(this))
+    this.runner.on(EVENT_TEST_PASS, this.onTestPass.bind(this))
+    this.runner.on(EVENT_TEST_FAIL, this.onTestFail.bind(this))
   }
 
-  onStart() {
+  async onStart() {
     this.logger.debug('Mocha test run started')
+
+    try {
+      await sessionManager.getOrCreateSession('mocha')
+      this.logger.debug('Session created at Mocha test run start')
+    } catch (error) {
+      this.logger.error('Error creating session at Mocha test run start', error)
+      sessionManager.markFrameworkError()
+    }
   }
 
   onTestPass(test: Test) {
