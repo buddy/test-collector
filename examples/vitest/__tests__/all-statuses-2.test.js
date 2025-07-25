@@ -1,7 +1,7 @@
-const { expect, test } = require('vitest')
-const { describe } = require('../prefix')
+import { expect, test } from 'vitest'
+import { prefixedDescribe } from '../prefix.js'
 
-describe('Status Tests - Part 2', () => {
+prefixedDescribe('Status Tests - Part 2', () => {
   test('should pass', () => {
     expect('hello').toBe('hello')
   })
@@ -15,7 +15,7 @@ describe('Status Tests - Part 2', () => {
   })
 })
 
-describe.skip('Disabled Test Suite', () => {
+prefixedDescribe.skip('Disabled Test Suite', () => {
   test('should be disabled', () => {
     expect(true).toBe(true)
   })

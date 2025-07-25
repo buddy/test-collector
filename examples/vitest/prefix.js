@@ -1,9 +1,6 @@
-const { describe } = require('vitest')
+import { describe } from 'vitest'
+import packageJson from './package.json' with { type: 'json' }
 
-const prefix = `[vitest ${require('./package.json').devDependencies.vitest}]`
+const prefix = `[vitest ${packageJson.devDependencies.vitest}]`
 
-module.exports = {
-  describe: (name, fn) => {
-    return describe(`${prefix} ${name}`, fn)
-  },
-}
+export const prefixedDescribe = (name, fn) => describe(`${prefix} ${name}`, fn)

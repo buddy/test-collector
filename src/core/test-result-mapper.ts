@@ -60,10 +60,14 @@ export default class TestResultMapper {
       throw new Error('File name without extension could not be determined from test file path')
     }
 
+    // Use the outermost describe block name or fallback to filename
+    const suiteName =
+      assertionResult.ancestorTitles.length > 0 ? assertionResult.ancestorTitles[0] : fileNameWithoutExtension
+
     return {
       name: assertionResult.title,
-      classname: fileNameWithoutExtension,
-      suite_name: fileNameWithoutExtension,
+      classname: suiteName,
+      suite_name: suiteName,
       status,
       time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
       data: this.#toXml(dataObject),

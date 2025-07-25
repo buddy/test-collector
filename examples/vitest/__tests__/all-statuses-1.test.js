@@ -1,7 +1,7 @@
-const { expect, test } = require('vitest')
-const { describe } = require('../prefix')
+import { expect, test } from 'vitest'
+import { prefixedDescribe } from '../prefix.js'
 
-describe('Status Tests - Part 1', () => {
+prefixedDescribe('Status Tests - Part 1', () => {
   test('should pass', () => {
     expect(2 + 2).toBe(4)
   })

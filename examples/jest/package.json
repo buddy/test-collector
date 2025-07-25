@@ -4,6 +4,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "dotenv": "17.2.1",
     "jest": "30"
   },
   "dependencies": {

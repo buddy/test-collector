@@ -1,10 +1,10 @@
 const { it, expect } = require('@jest/globals')
-const { describe } = require('../prefix')
+const { prefixedDescribe } = require('../prefix')
 
 // When Jest encounters .only tests, it runs ONLY those tests
 // All other tests become skipped automatically
 
-describe('Focused Test Example', () => {
+prefixedDescribe('Focused Test Example', () => {
   it.only('should be focused with it.only', () => {
     expect(1 + 1).toBe(2)
   })

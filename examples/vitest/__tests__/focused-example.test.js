@@ -1,10 +1,10 @@
-const { expect, test } = require('vitest')
-const { describe } = require('../prefix')
+import { expect, test } from 'vitest'
+import { prefixedDescribe } from '../prefix.js'
 
 // When Vitest encounters .only tests, it runs ONLY those tests
 // All other tests become skipped automatically
 
-describe('Focused Test Example', () => {
+prefixedDescribe('Focused Test Example', () => {
   test.only('should be focused with test.only', () => {
     expect(1 + 1).toBe(2)
   })

@@ -1,9 +1,11 @@
 {
   "name": "vitest-tests",
+  "type": "module",
   "scripts": {
     "test": "vitest run"
   },
   "devDependencies": {
+    "dotenv": "17.2.1",
     "vitest": "3.2.4"
   },
   "dependencies": {

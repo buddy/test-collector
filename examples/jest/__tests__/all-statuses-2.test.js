@@ -1,7 +1,7 @@
 const { it, expect } = require('@jest/globals')
-const { describe } = require('../prefix')
+const { prefixedDescribe, prefixedXDescribe } = require('../prefix')
 
-describe('Status Tests - Part 2', () => {
+prefixedDescribe('Status Tests - Part 2', () => {
   it('should pass', () => {
     expect('hello').toBe('hello')
   })
@@ -15,7 +15,7 @@ describe('Status Tests - Part 2', () => {
   })
 })
 
-xdescribe('[Jest] Disabled Test Suite', () => {
+prefixedXDescribe('Disabled Test Suite', () => {
   it('should be disabled', () => {
     expect(true).toBe(true)
   })

@@ -1,7 +1,7 @@
 const { it, expect } = require('@jest/globals')
-const { describe } = require('../prefix')
+const { prefixedDescribe } = require('../prefix')
 
-describe('Status Tests - Part 1', () => {
+prefixedDescribe('Status Tests - Part 1', () => {
   it('should pass', () => {
     expect(2 + 2).toBe(4)
   })
