@@ -21,6 +21,12 @@ export default class TestResultMapper {
     return xml
   }
 
+  static #stripAnsiCodes(text: string): string {
+    // Remove ANSI escape codes for colors, formatting, etc.
+    // eslint-disable-next-line no-control-regex, unicorn/prefer-string-replace-all
+    return text.replace(/\u001B\[[0-9;]*[mGKHF]/g, '')
+  }
+
   static #getStatusFromTestResult<T extends string>(
     testResult: T | undefined | null,
     statusMap: Partial<Record<NonNullable<T>, BUDDY_UNIT_TEST_STATUS>>,
@@ -171,8 +177,8 @@ export default class TestResultMapper {
     })
 
     const dataObject = {
-      errorMessage: result.error ? result.error.message : '',
-      errorStackTrace: result.error ? result.error.stack : '',
+      errorMessage: result.error ? this.#stripAnsiCodes(result.error.message || '') : '',
+      errorStackTrace: result.error ? this.#stripAnsiCodes(result.error.stack || '') : '',
       messages: test.location.file || '',
     }
 
