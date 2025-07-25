@@ -1,15 +1,10 @@
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig } from '@playwright/test'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
 
 export default defineConfig({
   testDir: './tests',
-  reporter: [['html'], ['@buddy-works/test-collector/playwright']],
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
+  forbidOnly: false,
+  reporter: ['@buddy-works/test-collector/playwright'],
 })
