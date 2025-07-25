@@ -24,11 +24,11 @@
       type: VAR
     - key: BUDDY_SESSION_ID
       type: VAR
-    - key: JEST_VERSION
-      value: latest
-      type: VAR
     - key: NODE_VERSION
       value: 22
+      type: VAR
+    - key: JEST_VERSION
+      value: latest
       type: VAR
   actions:
     - action: Prepare environment for tests
