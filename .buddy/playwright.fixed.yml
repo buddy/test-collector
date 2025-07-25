@@ -31,14 +31,6 @@
       value: latest
       type: VAR
   actions:
-    - action: Prepare environment for tests
-      type: BUILD
-      docker_image_name: buddy/localshell
-      docker_image_tag: ubuntu_24.04
-      execute_commands:
-        - npm ci
-        - npm run prepare:tests
-      shell: BASH
     - action: Collect Playwright tests
       type: BUILD
       docker_image_name: library/node
@@ -46,8 +38,10 @@
       setup_commands:
         - apt-get update && apt-get -y install jq
       execute_commands:
+        - npm ci
+        - npm run build
+        - npm run prepare:tests
         - npm run test:playwright
         - cd examples/playwright
         - rm -rf node_modules package-lock.json
       shell: BASH
-      run_next: IN_SOFT_PARALLEL
