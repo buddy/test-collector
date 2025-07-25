@@ -62,7 +62,14 @@ function createBuddyJasmineReporter(): jasmine.CustomReporter {
   }
 }
 
+// Support both function call and constructor patterns for CI compatibility
+function BuddyJasmineReporter() {
+  return createBuddyJasmineReporter()
+}
+
 export default createBuddyJasmineReporter
 
 // eslint-disable-next-line unicorn/prefer-module
 module.exports = createBuddyJasmineReporter
+// eslint-disable-next-line unicorn/prefer-module, @typescript-eslint/no-unsafe-member-access
+module.exports.BuddyJasmineReporter = BuddyJasmineReporter
