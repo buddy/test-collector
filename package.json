@@ -44,9 +44,9 @@
     "prepare": "husky && npm run build",
     "prepare:tests": "mkdir package && npm pack --pack-destination package && mv package/*.tgz test-collector.tgz && rimraf package",
     "test:framework": "./prepare-version.sh devDependencies $FRAMEWORK_NAME $FRAMEWORK_VERSION $FRAMEWORK_DIR && cd $FRAMEWORK_DIR && rimraf node_modules package-lock.json && npm install && npm run test && rimraf node_modules package-lock.json",
-    "test:jest": "source .env && FRAMEWORK_NAME=jest FRAMEWORK_VERSION=$JEST_VERSION FRAMEWORK_DIR=examples/jest npm run test:framework",
-    "test:vitest": "source .env && FRAMEWORK_NAME=vitest FRAMEWORK_VERSION=$VITEST_VERSION FRAMEWORK_DIR=examples/vitest npm run test:framework",
-    "test:playwright": "source .env && FRAMEWORK_NAME=@playwright/test FRAMEWORK_VERSION=$PLAYWRIGHT_VERSION FRAMEWORK_DIR=examples/playwright npm run test:framework",
+    "test:jest": "./load-env.sh sh -c 'FRAMEWORK_NAME=jest FRAMEWORK_VERSION=$JEST_VERSION FRAMEWORK_DIR=examples/jest npm run test:framework'",
+    "test:vitest": "./load-env.sh sh -c 'FRAMEWORK_NAME=vitest FRAMEWORK_VERSION=$VITEST_VERSION FRAMEWORK_DIR=examples/vitest npm run test:framework'",
+    "test:playwright": "./load-env.sh sh -c 'FRAMEWORK_NAME=@playwright/test FRAMEWORK_VERSION=$PLAYWRIGHT_VERSION FRAMEWORK_DIR=examples/playwright npm run test:framework'",
     "test": "npm run prepare:tests && sh -c 'npm run test:jest & npm run test:vitest & npm run test:playwright & wait'"
   },
   "dependencies": {
