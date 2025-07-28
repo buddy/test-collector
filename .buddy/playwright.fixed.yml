@@ -45,5 +45,7 @@
         - cd examples/playwright
         - npm install
         - npx playwright install --with-deps chromium
-        - npm run test
+        - cd ../..
+        - npm run test:playwright
+        - npm run cleanup:tests
       shell: BASH

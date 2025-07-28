@@ -50,7 +50,8 @@
     "test:playwright": "./load-env.sh sh -c 'FRAMEWORK_NAME=@playwright/test FRAMEWORK_VERSION=$PLAYWRIGHT_VERSION FRAMEWORK_DIR=examples/playwright npm run test:framework'",
     "test:jasmine": "./load-env.sh sh -c 'FRAMEWORK_NAME=jasmine FRAMEWORK_VERSION=$JASMINE_VERSION FRAMEWORK_DIR=examples/jasmine npm run test:framework'",
     "test:mocha": "./load-env.sh sh -c 'FRAMEWORK_NAME=mocha FRAMEWORK_VERSION=$MOCHA_VERSION FRAMEWORK_DIR=examples/mocha npm run test:framework'",
-    "test": "npm run prepare:tests && sh -c 'npm run test:jest & npm run test:vitest & npm run test:playwright & npm run test:jasmine & npm run test:mocha & wait' && npm run cleanup:tests"
+    "test:cypress": "./load-env.sh sh -c 'FRAMEWORK_NAME=cypress FRAMEWORK_VERSION=$CYPRESS_VERSION FRAMEWORK_DIR=examples/cypress npm run test:framework'",
+    "test": "npm run prepare:tests && sh -c 'npm run test:jest & npm run test:vitest & npm run test:playwright & npm run test:jasmine & npm run test:mocha & npm run test:cypress & wait' && npm run cleanup:tests"
   },
   "dependencies": {
     "axios": "1.10.0"

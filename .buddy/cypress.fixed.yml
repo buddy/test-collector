@@ -1,4 +1,4 @@
-- pipeline: mocha
+- pipeline: cypress
   refs:
     - refs/heads/master
   events:
@@ -27,11 +27,11 @@
     - key: NODE_VERSION
       value: 22
       type: VAR
-    - key: MOCHA_VERSION
+    - key: CYPRESS_VERSION
       value: latest
       type: VAR
   actions:
-    - action: Collect Mocha tests
+    - action: Collect Cypress tests
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
@@ -42,6 +42,10 @@
         - npm run build
         - npm run cleanup:tests
         - npm run prepare:tests
-        - npm run test:mocha
+        - cd examples/cypress
+        - npm install
+        - npx cypress install
+        - cd ../..
+        - npm run test:cypress
         - npm run cleanup:tests
       shell: BASH
