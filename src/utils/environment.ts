@@ -20,6 +20,7 @@ const environmentConfig = {
   BUDDY_RUN_PRE_COMMIT: { type: 'string' },
   BUDDY_RUN_BRANCH: { type: 'string' },
   BUDDY_RUN_URL: { type: 'string' },
+  BUDDY_TRIGGERING_ACTOR_ID: { type: 'string' },
 } as const satisfies EnvironmentConfigSchema
 
 type EnvironmentConfig = {

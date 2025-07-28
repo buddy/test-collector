@@ -15,6 +15,7 @@ export default class BuddyUnitTestCollectorConfig {
   apiBaseUrl: string
 
   sessionId?: string
+  triggeringActorId?: string
   runHash?: string
   runRefName?: string
   runRefType: string
@@ -33,6 +34,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.debugEnabled = env.BUDDY_LOGGER_DEBUG
     this.apiBaseUrl = env.BUDDY_API_URL || this.#fallback.apiBaseUrl
     this.sessionId = env.BUDDY_SESSION_ID
+    this.triggeringActorId = env.BUDDY_TRIGGERING_ACTOR_ID
     this.runHash = env.BUDDY_RUN_HASH
     this.runRefName = env.BUDDY_RUN_REF_NAME
     this.runRefType = env.BUDDY_RUN_REF_TYPE || this.#fallback.runRefType
@@ -94,6 +96,7 @@ export default class BuddyUnitTestCollectorConfig {
       ref_name: this.runRefName ?? this.runBranch,
       from_revision: this.runPreCommit,
       to_revision: this.runCommit,
+      ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
       ...(this.runHash && { build_id: this.runHash }),
       ...(this.buildUrl && { build_url: this.buildUrl }),
     }
