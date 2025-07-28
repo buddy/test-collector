@@ -6,25 +6,25 @@
   fail_on_prepare_env_warning: true
   variables:
     - key: CYPRESS_VERSION
-      value: 14.5.3
+      value: latest
       type: VAR
     - key: JASMINE_VERSION
-      value: 5.9.0
+      value: latest
       type: VAR
     - key: JEST_VERSION
-      value: 30.0.5
+      value: latest
       type: VAR
     - key: MOCHA_VERSION
-      value: 11.7.1
+      value: latest
       type: VAR
     - key: NODE_VERSION
       value: 22
       type: VAR
     - key: PLAYWRIGHT_VERSION
-      value: 1.54.1
+      value: latest
       type: VAR
     - key: VITEST_VERSION
-      value: 3.2.4
+      value: latest
       type: VAR
   actions:
     - action: Run test-collector-2/build
