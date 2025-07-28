@@ -9,4 +9,5 @@ if [ -d "$REBASE_PATH" ] || [ -f "$MERGE_PATH" ]; then
 else
     echo "Running Husky pre-commit hook: Formatting affected files"
     npx lint-staged
+    npm run cleanup:tests
 fi

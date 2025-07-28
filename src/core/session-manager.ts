@@ -245,6 +245,25 @@ class BuddyUnitTestSessionManager {
 
   #exitHandlersRegistered = false
 
+  async #handleExit(signal: string, shouldExit = false) {
+    this.#logger.debug(`Received ${signal}, closing session`)
+
+    let exitCode = 0
+    try {
+      await this.closeSession()
+      this.#logger.debug(`Session closed successfully on ${signal}`)
+    } catch (error) {
+      this.#logger.error(`Error closing session on ${signal}`, error)
+      exitCode = 1 // Exit with error code if session close failed
+    }
+
+    if (shouldExit) {
+      // ESLint allows process.exit() in process event handlers
+      // eslint-disable-next-line unicorn/no-process-exit
+      process.exit(exitCode)
+    }
+  }
+
   setupProcessExitHandlers() {
     if (this.#exitHandlersRegistered) {
       return // Already registered
@@ -253,68 +272,41 @@ class BuddyUnitTestSessionManager {
     this.#exitHandlersRegistered = true
     this.#logger.debug('Setting up process exit handlers for session cleanup')
 
+    // beforeExit is emitted when Node.js empties its event loop and has no additional work to schedule
     process.on('beforeExit', () => {
-      this.#logger.debug('Process about to exit, closing session')
-
-      void (async () => {
-        try {
-          if (this.initialized) {
-            await this.closeSession()
-            this.#logger.debug('Session closed successfully on beforeExit')
-          } else {
-            this.#logger.debug('Session manager not initialized, skipping close on beforeExit')
-          }
-        } catch (error) {
-          this.#logger.error('Error closing session on beforeExit', error)
-          if (this.initialized) {
-            this.markFrameworkError()
-          }
-        }
-      })()
+      void this.#handleExit('beforeExit')
     })
 
+    // SIGINT (Ctrl+C) - User initiated interrupt
     process.on('SIGINT', () => {
-      this.#logger.debug('Received SIGINT, closing session')
-
-      void (async () => {
-        try {
-          if (this.initialized) {
-            await this.closeSession()
-            this.#logger.debug('Session closed successfully on SIGINT')
-          } else {
-            this.#logger.debug('Session manager not initialized, skipping close on SIGINT')
-          }
-        } catch (error) {
-          this.#logger.error('Error closing session on SIGINT', error)
-          if (this.initialized) {
-            this.markFrameworkError()
-          }
-        }
-      })()
-
-      process.exit(0)
+      void this.#handleExit('SIGINT', true)
     })
 
+    // SIGTERM - Termination request (e.g., from process manager)
     process.on('SIGTERM', () => {
-      this.#logger.debug('Received SIGTERM, closing session')
+      void this.#handleExit('SIGTERM', true)
+    })
 
-      void (async () => {
-        try {
-          if (this.initialized) {
-            await this.closeSession()
-            this.#logger.debug('Session closed successfully on SIGTERM')
-          } else {
-            this.#logger.debug('Session manager not initialized, skipping close on SIGTERM')
-          }
-        } catch (error) {
-          this.#logger.error('Error closing session on SIGTERM', error)
-          if (this.initialized) {
-            this.markFrameworkError()
-          }
-        }
-      })()
+    // SIGHUP - Hang up detected on controlling terminal
+    process.on('SIGHUP', () => {
+      void this.#handleExit('SIGHUP', true)
+    })
 
-      process.exit(0)
+    // SIGQUIT - Quit from keyboard
+    process.on('SIGQUIT', () => {
+      void this.#handleExit('SIGQUIT', true)
+    })
+
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+      this.#logger.error('Uncaught exception, closing session before exit', error)
+      void this.#handleExit('uncaughtException', true)
+    })
+
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (reason) => {
+      this.#logger.error('Unhandled promise rejection, closing session before exit', reason)
+      void this.#handleExit('unhandledRejection', true)
     })
   }
 }
