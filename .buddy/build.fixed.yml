@@ -1,0 +1,15 @@
+- pipeline: build
+  refs:
+    - refs/heads/master
+  fail_on_prepare_env_warning: true
+  actions:
+    - action: npm run prepare:tests
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - npm ci
+        - npm run build
+        - npm run cleanup:tests
+        - npm run prepare:tests
+      shell: BASH

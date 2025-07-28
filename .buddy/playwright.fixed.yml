@@ -1,8 +1,6 @@
 - pipeline: playwright
   refs:
     - refs/heads/master
-  events:
-    - type: PUSH
   fail_on_prepare_env_warning: true
   variables:
     - key: BUDDY_LOGGER_DEBUG
@@ -38,17 +36,10 @@
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
-      setup_commands:
-        - apt-get update && apt-get -y install jq
       execute_commands:
-        - npm ci
-        - npm run build
-        - npm run cleanup:tests
-        - npm run prepare:tests
         - cd examples/playwright
         - npm install
         - npx playwright install --with-deps chromium
         - cd ../..
         - npm run test:playwright
-        - npm run cleanup:tests
       shell: BASH
