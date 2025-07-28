@@ -11,19 +11,50 @@ import { Logger } from '@/utils/logger'
 export default class BuddyCypressReporter extends BuddyMochaReporter {
   static displayName = 'BuddyCypressReporter'
 
+  static async closeSession() {
+    await sessionManager.closeSession()
+  }
+
   constructor(runner: Runner, options: MochaOptions) {
     super(runner, options)
     this.logger = new Logger(BuddyCypressReporter.displayName)
   }
 
+  async onStart() {
+    this.logger.debug('Cypress spec file started')
+
+    try {
+      // Check if session already exists (from previous spec files or environment)
+      const existingSessionId = sessionManager.sessionId || process.env.BUDDY_SESSION_ID
+
+      if (existingSessionId) {
+        this.logger.debug(`Reusing existing session: ${existingSessionId}`)
+        // Set the session ID if not already set in session manager
+        if (!sessionManager.sessionId) {
+          sessionManager.sessionId = existingSessionId
+        }
+      } else {
+        // Only create new session if none exists
+        this.logger.debug('Creating new session for Cypress')
+        await sessionManager.getOrCreateSession('cypress')
+      }
+
+      this.logger.debug('Session ready for Cypress spec file')
+    } catch (error) {
+      this.logger.error('Error preparing session for Cypress spec file', error)
+      sessionManager.markFrameworkError()
+    }
+  }
+
   async onEnd() {
     this.logger.debug('Cypress spec file completed')
 
-    // Wait for pending submissions to complete
     if (this.pendingSubmissions.size > 0) {
       this.logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
       const maxWaitTime = 10_000
       const startTime = Date.now()
+
+      this.logger.debug('Session', this)
 
       while (this.pendingSubmissions.size > 0 && Date.now() - startTime < maxWaitTime) {
         await new Promise((resolve) => setTimeout(resolve, 100))
@@ -37,8 +68,8 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       }
     }
 
-    // DO NOT close the session here for Cypress - let it stay open for subsequent spec files
-    // The session will be closed by Cypress when the entire test run is finished
+    // Keep session open - it will be closed by the after:run hook in setupNodeEvents
+    // or by the process exit handlers as fallback
     this.logger.debug('Cypress spec file completed, keeping session open for other spec files')
   }
 }

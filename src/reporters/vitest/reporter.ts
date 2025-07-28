@@ -19,76 +19,9 @@ export default class BuddyVitestReporter implements Reporter {
 
   constructor() {
     this.#logger = new Logger(BuddyVitestReporter.displayName)
-    this.setupProcessExitHandlers()
     this.tasks = new Map()
     this.context = undefined
     this.processedTests = new Set()
-  }
-
-  setupProcessExitHandlers() {
-    process.on('beforeExit', () => {
-      this.#logger.debug('Process about to exit, closing session')
-
-      void (async () => {
-        try {
-          if (sessionManager.initialized) {
-            await sessionManager.closeSession()
-            this.#logger.debug('Session closed successfully')
-          } else {
-            this.#logger.debug('Session manager not initialized, skipping close')
-          }
-        } catch (error) {
-          this.#logger.error('Error closing session on beforeExit', error)
-          if (sessionManager.initialized) {
-            sessionManager.markFrameworkError()
-          }
-        }
-      })()
-    })
-
-    process.on('SIGINT', () => {
-      this.#logger.debug('Received SIGINT, closing session')
-
-      void (async () => {
-        try {
-          if (sessionManager.initialized) {
-            await sessionManager.closeSession()
-            this.#logger.debug('Session closed successfully on SIGINT')
-          } else {
-            this.#logger.debug('Session manager not initialized, skipping close on SIGINT')
-          }
-        } catch (error) {
-          this.#logger.error('Error closing session on SIGINT', error)
-          if (sessionManager.initialized) {
-            sessionManager.markFrameworkError()
-          }
-        }
-      })()
-
-      process.exit(0)
-    })
-
-    process.on('SIGTERM', () => {
-      this.#logger.debug('Received SIGTERM, closing session')
-
-      void (async () => {
-        try {
-          if (sessionManager.initialized) {
-            await sessionManager.closeSession()
-            this.#logger.debug('Session closed successfully on SIGTERM')
-          } else {
-            this.#logger.debug('Session manager not initialized, skipping close on SIGTERM')
-          }
-        } catch (error) {
-          this.#logger.error('Error closing session on SIGTERM', error)
-          if (sessionManager.initialized) {
-            sessionManager.markFrameworkError()
-          }
-        }
-      })()
-
-      process.exit(0)
-    })
   }
 
   onInit(context: Vitest) {

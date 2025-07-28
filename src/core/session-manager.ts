@@ -124,6 +124,9 @@ class BuddyUnitTestSessionManager {
       const loggerNameWithContext = `${BuddyUnitTestSessionManager.displayName}/${this.#context}`
       this.#logger = new Logger(loggerNameWithContext)
       this.#logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
+
+      // Automatically set up exit handlers when session manager is initialized
+      this.setupProcessExitHandlers()
     } catch (error) {
       this.#logger.error(`Failed to initialize ${BuddyUnitTestSessionManager.displayName}`, error)
       throw error
@@ -178,7 +181,9 @@ class BuddyUnitTestSessionManager {
   }
 
   async closeSession() {
-    if (!this.initialized) throw new Error(`${BuddyUnitTestSessionManager.displayName} not initialized`)
+    if (!this.initialized) {
+      this.#initialize()
+    }
 
     if (!this.sessionId && env.BUDDY_SESSION_ID) {
       this.sessionId = env.BUDDY_SESSION_ID
@@ -229,6 +234,81 @@ class BuddyUnitTestSessionManager {
 
   markFrameworkError() {
     this.hasFrameworkErrors = true
+  }
+
+  #exitHandlersRegistered = false
+
+  setupProcessExitHandlers() {
+    if (this.#exitHandlersRegistered) {
+      return // Already registered
+    }
+
+    this.#exitHandlersRegistered = true
+    this.#logger.debug('Setting up process exit handlers for session cleanup')
+
+    process.on('beforeExit', () => {
+      this.#logger.debug('Process about to exit, closing session')
+
+      void (async () => {
+        try {
+          if (this.initialized) {
+            await this.closeSession()
+            this.#logger.debug('Session closed successfully on beforeExit')
+          } else {
+            this.#logger.debug('Session manager not initialized, skipping close on beforeExit')
+          }
+        } catch (error) {
+          this.#logger.error('Error closing session on beforeExit', error)
+          if (this.initialized) {
+            this.markFrameworkError()
+          }
+        }
+      })()
+    })
+
+    process.on('SIGINT', () => {
+      this.#logger.debug('Received SIGINT, closing session')
+
+      void (async () => {
+        try {
+          if (this.initialized) {
+            await this.closeSession()
+            this.#logger.debug('Session closed successfully on SIGINT')
+          } else {
+            this.#logger.debug('Session manager not initialized, skipping close on SIGINT')
+          }
+        } catch (error) {
+          this.#logger.error('Error closing session on SIGINT', error)
+          if (this.initialized) {
+            this.markFrameworkError()
+          }
+        }
+      })()
+
+      process.exit(0)
+    })
+
+    process.on('SIGTERM', () => {
+      this.#logger.debug('Received SIGTERM, closing session')
+
+      void (async () => {
+        try {
+          if (this.initialized) {
+            await this.closeSession()
+            this.#logger.debug('Session closed successfully on SIGTERM')
+          } else {
+            this.#logger.debug('Session manager not initialized, skipping close on SIGTERM')
+          }
+        } catch (error) {
+          this.#logger.error('Error closing session on SIGTERM', error)
+          if (this.initialized) {
+            this.markFrameworkError()
+          }
+        }
+      })()
+
+      process.exit(0)
+    })
   }
 }
 

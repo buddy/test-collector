@@ -65,6 +65,7 @@
     "@types/jasmine": "5.1.8",
     "@types/mocha": "10.0.10",
     "@types/node": "22",
+    "cypress": "14.5.3",
     "eslint": "9.31.0",
     "eslint-plugin-unicorn": "60.0.0",
     "globals": "16.3.0",
