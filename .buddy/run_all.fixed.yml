@@ -1,4 +1,8 @@
 - pipeline: run_all
+  refs:
+    - :default
+  events:
+    - type: PUSH
   fail_on_prepare_env_warning: true
   variables:
     - key: CYPRESS_VERSION
@@ -23,6 +27,13 @@
       value: 3.2.4
       type: VAR
   actions:
+    - action: Run test-collector-2/build
+      type: RUN_NEXT_PIPELINE
+      wait: true
+      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
+      priority: NORMAL
+      project: test-collector-2
+      pipeline: build
     - action: Run test-collector-2/cypress
       type: RUN_NEXT_PIPELINE
       wait: true
@@ -90,11 +101,11 @@
       priority: NORMAL
       run_next: IN_SOFT_PARALLEL
       variables:
-        - key: PLAYWRIGHT_VERSION
-          value: $PLAYWRIGHT_VERSION
-          type: VAR
         - key: NODE_VERSION
           value: $NODE_VERSION
+          type: VAR
+        - key: PLAYWRIGHT_VERSION
+          value: $PLAYWRIGHT_VERSION
           type: VAR
       project: test-collector-2
       pipeline: playwright
@@ -104,11 +115,11 @@
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
       priority: NORMAL
       variables:
-        - key: VITEST_VERSION
-          value: $VITEST_VERSION
-          type: VAR
         - key: NODE_VERSION
           value: $NODE_VERSION
+          type: VAR
+        - key: VITEST_VERSION
+          value: $VITEST_VERSION
           type: VAR
       project: test-collector-2
       pipeline: vitest
