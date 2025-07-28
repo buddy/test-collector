@@ -34,7 +34,7 @@
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
       setup_commands:
-        - apt-get update && apt-get -y install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+        - apt-get update && apt-get -y install jq libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       execute_commands:
         - cd examples/cypress
         - npm install
