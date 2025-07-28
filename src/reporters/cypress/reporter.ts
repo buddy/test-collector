@@ -16,22 +16,29 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
     this.logger = new Logger(BuddyCypressReporter.displayName)
   }
 
-  async onStart() {
-    this.logger.debug('Cypress test run started')
+  async onEnd() {
+    this.logger.debug('Cypress spec file completed')
 
-    try {
-      // For Cypress, we want to reuse existing sessions across spec files
-      // Check if session already exists before creating a new one
-      if (sessionManager.sessionId) {
-        this.logger.debug('Reusing existing session for Cypress spec file')
-        return
+    // Wait for pending submissions to complete
+    if (this.pendingSubmissions.size > 0) {
+      this.logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
+      const maxWaitTime = 10_000
+      const startTime = Date.now()
+
+      while (this.pendingSubmissions.size > 0 && Date.now() - startTime < maxWaitTime) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
       }
 
-      await sessionManager.getOrCreateSession('cypress')
-      this.logger.debug('Session created/retrieved for Cypress test run')
-    } catch (error) {
-      this.logger.error('Error creating session at Cypress test run start', error)
-      sessionManager.markFrameworkError()
+      if (this.pendingSubmissions.size > 0) {
+        this.logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
+        sessionManager.markFrameworkError()
+      } else {
+        this.logger.debug('All test submissions completed')
+      }
     }
+
+    // DO NOT close the session here for Cypress - let it stay open for subsequent spec files
+    // The session will be closed by Cypress when the entire test run is finished
+    this.logger.debug('Cypress spec file completed, keeping session open for other spec files')
   }
 }
