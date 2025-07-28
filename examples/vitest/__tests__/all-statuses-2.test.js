@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { prefixedDescribe } from '../prefix.js'
+import { prefixedDescribe, prefixedDescribeSkip } from '../prefix.js'
 
 prefixedDescribe('Status Tests - Part 2', () => {
   test('should pass', () => {
@@ -15,7 +15,7 @@ prefixedDescribe('Status Tests - Part 2', () => {
   })
 })
 
-prefixedDescribe.skip('Disabled Test Suite', () => {
+prefixedDescribeSkip('Disabled Test Suite', () => {
   test('should be disabled', () => {
     expect(true).toBe(true)
   })

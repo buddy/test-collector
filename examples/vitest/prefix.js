@@ -23,3 +23,4 @@ try {
 const prefix = `[vitest ${version}]`
 
 export const prefixedDescribe = (name, fn) => describe(`${prefix} ${name}`, fn)
+export const prefixedDescribeSkip = (name, fn) => describe.skip(`${prefix} ${name}`, fn)
