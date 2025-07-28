@@ -42,14 +42,21 @@ export default class BuddyPlaywrightReporter implements Reporter {
     })()
   }
 
-  async onEnd() {
+  async onEnd(): Promise<void> {
     this.#logger.debug('Playwright test run completed')
+
+    // Add small delay to ensure all pending operations complete
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
     try {
+      this.#logger.debug('Attempting to close session after Playwright test completion')
       await sessionManager.closeSession()
-      this.#logger.debug('Session closed after Playwright test completion')
+      this.#logger.debug('Session closed successfully after Playwright test completion')
     } catch (error) {
       this.#logger.error('Error closing session after Playwright test completion', error)
       sessionManager.markFrameworkError()
+      // Re-throw to ensure Playwright knows about the failure
+      throw error
     }
   }
 

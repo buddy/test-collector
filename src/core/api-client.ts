@@ -126,11 +126,13 @@ export default class BuddyUnitTestApiClient {
       this.#logger.debug(`Closing test session: ${sessionId} with status: ${status}`)
 
       const url = `/unit-tests/sessions/${sessionId}/close`
-      await this.#axiosInstance.post(url, { status })
+      const response = await this.#axiosInstance.post(url, { status })
 
       this.#logger.info(`Successfully closed session: ${sessionId} with status: ${status}`)
+      this.#logger.debug(`Close session response:`, response.statusText)
     } catch (error) {
       this.#logger.error(`Failed to close session: ${sessionId}`, error)
+      throw error // Re-throw to ensure session manager knows about the failure
     }
   }
 }

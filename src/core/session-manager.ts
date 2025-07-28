@@ -198,6 +198,9 @@ class BuddyUnitTestSessionManager {
     }
 
     if (this.sessionId) {
+      const startTime = Date.now()
+      const sessionId = this.sessionId
+
       try {
         let sessionStatus = BUDDY_UNIT_TEST_STATUS.PASSED
 
@@ -207,16 +210,20 @@ class BuddyUnitTestSessionManager {
           sessionStatus = BUDDY_UNIT_TEST_STATUS.FAILED
         }
 
-        this.#logger.debug(`Closing session with status: ${sessionStatus}`, {
-          frameworkErrors: this.hasFrameworkErrors,
-          errorTests: this.hasErrorTests,
-          failedTests: this.hasFailedTests,
-        })
+        this.#logger.debug(`Closing session ${sessionId}`)
 
-        await this.apiClient.closeSession(this.sessionId, sessionStatus)
-        this.#logger.info(`Session ${this.sessionId} closed successfully with status: ${sessionStatus}`)
+        await this.apiClient.closeSession(sessionId, sessionStatus)
+
+        const duration = Date.now() - startTime
+        this.#logger.info(
+          `Session ${sessionId} closed successfully with status: ${sessionStatus} (took ${String(duration)}ms)`,
+        )
       } catch (error) {
-        this.#logger.error('Failed to close session', error)
+        const duration = Date.now() - startTime
+        this.#logger.error(`Failed to close session ${sessionId} after ${String(duration)}ms`, error)
+
+        // Still cleanup even if close failed - prevents zombie sessions
+        this.#logger.warn(`Cleaning up session ${sessionId} state despite close failure`)
       } finally {
         this.sessionId = undefined
         this.createSession = undefined
