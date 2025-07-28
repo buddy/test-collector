@@ -4,7 +4,6 @@
   events:
     - type: PUSH
   fail_on_prepare_env_warning: true
-  concurrent_pipeline_runs: true
   variables:
     - key: BUDDY_LOGGER_DEBUG
       value: 1
