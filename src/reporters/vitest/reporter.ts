@@ -139,17 +139,11 @@ export default class BuddyVitestReporter implements Reporter {
   async onFinished() {
     this.#logger.debug('Vitest test run completed')
 
-    for (const [taskId, task] of this.tasks) {
-      if (task.mode === 'skip' && task.type === 'test' && !this.processedTests.has(taskId)) {
-        const taskResult: RunnerTaskResult = {
-          state: 'skip',
-          duration: 0,
-          errors: [],
-        }
+    // Get final state from context for more reliable task collection
+    await this.processMissingTests()
 
-        await this.processSkippedTest(taskId, taskResult, task)
-      }
-    }
+    const processedCount = this.processedTests.size
+    this.#logger.debug(`Processed ${String(processedCount)} tests total`)
 
     this.tasks.clear()
     this.processedTests.clear()
@@ -162,6 +156,60 @@ export default class BuddyVitestReporter implements Reporter {
     } catch (error) {
       this.#logger.error('Error closing session after Vitest test completion', error)
       sessionManager.markFrameworkError()
+    }
+  }
+
+  async processMissingTests() {
+    // First, process from existing tasks map
+    for (const [taskId, task] of this.tasks) {
+      if (this.shouldProcessMissedTest(task, taskId)) {
+        await this.processSkippedTest(taskId, this.createSkippedResult(), task)
+      }
+    }
+
+    // Then, get complete state from Vitest context for any we might have missed
+    if (this.context?.state) {
+      const allFiles = this.context.state.getFiles()
+      for (const file of allFiles) {
+        await this.processFileForMissedTests(file)
+      }
+    }
+  }
+
+  shouldProcessMissedTest(task: RunnerTask, taskId: string): boolean {
+    return task.type === 'test' && !this.processedTests.has(taskId) && (task.mode === 'skip' || task.mode === 'todo')
+  }
+
+  createSkippedResult(): RunnerTaskResult {
+    return {
+      state: 'skip',
+      duration: 0,
+      errors: [],
+    }
+  }
+
+  async processFileForMissedTests(file: RunnerTestFile) {
+    for (const task of file.tasks) {
+      await this.processTaskForMissedTests(task)
+    }
+  }
+
+  async processTaskForMissedTests(task: RunnerTask) {
+    if (task.type === 'test' && !this.processedTests.has(task.id)) {
+      // Check if this test should have been processed but wasn't
+      const shouldProcess = task.mode === 'skip' || task.mode === 'todo' || task.result?.state === 'skip'
+      if (shouldProcess) {
+        const resultState = task.result?.state ?? 'unknown'
+        this.#logger.debug(`Found missed test: ${task.name} (mode: ${task.mode}, result state: ${String(resultState)})`)
+        await this.processSkippedTest(task.id, this.createSkippedResult(), task)
+      }
+    }
+
+    // Recursively process nested tasks (suites)
+    if ('tasks' in task && Array.isArray(task.tasks)) {
+      for (const subTask of task.tasks) {
+        await this.processTaskForMissedTests(subTask)
+      }
     }
   }
 
