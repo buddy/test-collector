@@ -21,11 +21,11 @@
     "ci",
     "ci-cd"
   ],
-  "homepage": "https://github.com/buddy-works/test-collector#readme",
-  "bugs": "https://github.com/buddy-works/test-collector/issues",
+  "homepage": "https://github.com/buddy/test-collector#readme",
+  "bugs": "https://github.com/buddy/test-collector/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/buddy-works/test-collector.git"
+    "url": "git+https://github.com/buddy/test-collector.git"
   },
   "license": "MIT",
   "exports": {
