@@ -72,7 +72,6 @@ export default class BuddyUnitTestCollectorConfig {
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG || false
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
-    this.triggeringActorId = environment.GITHUB_ACTOR_ID
     this.runHash = environment.GITHUB_RUN_ID
     this.runRefName = environment.GITHUB_REF_NAME
     this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase() || this.#fallback.runRefType
