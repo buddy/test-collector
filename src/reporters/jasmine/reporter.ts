@@ -27,14 +27,6 @@ const BuddyJasmineReporter: jasmine.CustomReporter = {
   async specDone(result: jasmine.SpecResult) {
     try {
       const mappedResult = TestResultMapper.mapJasmineResult(result)
-      const summary = {
-        name: mappedResult.name,
-        classname: mappedResult.classname,
-        status: mappedResult.status,
-        time: mappedResult.time,
-        data: '[XML]',
-      }
-      logger.debug('Mapped test result:', summary)
 
       await sessionManager.submitTestCase(mappedResult)
     } catch (error) {

@@ -46,14 +46,6 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
     try {
       for (const assertionResult of testResult.testResults) {
         const mappedResult = TestResultMapper.mapJestResult(assertionResult, testResult)
-        const summary = {
-          name: mappedResult.name,
-          classname: mappedResult.classname,
-          status: mappedResult.status,
-          time: mappedResult.time,
-          data: '[XML]',
-        }
-        this.#logger.debug('Mapped test result:', summary)
         await sessionManager.submitTestCase(mappedResult)
       }
     } catch (error) {

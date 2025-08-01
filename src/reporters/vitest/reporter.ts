@@ -96,14 +96,6 @@ export default class BuddyVitestReporter implements Reporter {
     }
 
     const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task)
-    const summary = {
-      name: testResult.name,
-      classname: testResult.classname,
-      status: testResult.status,
-      time: testResult.time,
-      data: '[XML]',
-    }
-    this.#logger.debug('Mapped test result:', summary)
 
     try {
       await sessionManager.submitTestCase(testResult)
@@ -215,14 +207,6 @@ export default class BuddyVitestReporter implements Reporter {
 
   async processSkippedTest(taskId: RunnerTask['id'], taskResult: RunnerTaskResult, task?: RunnerTask) {
     const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task)
-    const summary = {
-      name: testResult.name,
-      classname: testResult.classname,
-      status: testResult.status,
-      time: testResult.time,
-      data: '[XML]',
-    }
-    this.#logger.debug('Mapped test result:', summary)
 
     try {
       await sessionManager.submitTestCase(testResult)
