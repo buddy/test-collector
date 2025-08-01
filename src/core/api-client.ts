@@ -26,9 +26,8 @@ export default class BuddyUnitTestApiClient {
 
     this.#axiosInstance.interceptors.request.use(
       (AxiosRequest) => {
-        this.#logger.debug(
-          `API REQUEST: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${AxiosRequest.url || 'unknown'}`,
-        )
+        const resolvedUrl = this.#axiosInstance.getUri(AxiosRequest)
+        this.#logger.debug(`API REQUEST: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`)
         if (AxiosRequest.data) {
           this.#logger.debug('Request payload:', AxiosRequest.data)
         }
@@ -42,16 +41,19 @@ export default class BuddyUnitTestApiClient {
 
     this.#axiosInstance.interceptors.response.use(
       (AxiosResponse) => {
+        const resolvedUrl = this.#axiosInstance.getUri(AxiosResponse.config)
         this.#logger.debug(
-          `API RESPONSE: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${AxiosResponse.config.url || 'unknown'}`,
+          `API RESPONSE: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`,
         )
         return AxiosResponse
       },
       (AxiosResponseError: AxiosError) => {
         const status = String(AxiosResponseError.response?.status ?? 'unknown')
         const method = String(AxiosResponseError.config?.method?.toUpperCase() || 'unknown')
-        const url = String(AxiosResponseError.config?.url || 'unknown')
-        this.#logger.error(`API ERROR: ${status} ${method} ${url}`, AxiosResponseError)
+        const resolvedUrl = AxiosResponseError.config
+          ? this.#axiosInstance.getUri(AxiosResponseError.config)
+          : 'unknown'
+        this.#logger.error(`API ERROR: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
 
         // Only log payloads for client/server errors (4xx/5xx)
         const statusCode = AxiosResponseError.response?.status
