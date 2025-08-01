@@ -1,0 +1,175 @@
+name: Build and Test All Frameworks
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Type check
+        run: npm run lint:types
+
+      - name: Build package
+        run: npm run build
+
+      - name: Prepare test package
+        run: |
+          npm run cleanup:tests
+          npm run prepare:tests
+
+      - name: Upload test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-package
+          path: test-collector.tgz
+          retention-days: 1
+
+  test-jest:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download test package
+        uses: actions/download-artifact@v4
+        with:
+          name: test-package
+
+      - name: Setup and run Jest tests
+        run: |
+          sudo apt-get update && sudo apt-get -y install jq
+          export JEST_VERSION=latest
+          npm run test:jest
+
+  test-vitest:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download test package
+        uses: actions/download-artifact@v4
+        with:
+          name: test-package
+
+      - name: Setup and run Vitest tests
+        run: |
+          sudo apt-get update && sudo apt-get -y install jq
+          export VITEST_VERSION=latest
+          npm run test:vitest
+
+  test-playwright:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download test package
+        uses: actions/download-artifact@v4
+        with:
+          name: test-package
+
+      - name: Setup and run Playwright tests
+        run: |
+          sudo apt-get update && sudo apt-get -y install jq
+          export PLAYWRIGHT_VERSION=latest
+          npm run test:playwright
+
+  test-jasmine:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download test package
+        uses: actions/download-artifact@v4
+        with:
+          name: test-package
+
+      - name: Setup and run Jasmine tests
+        run: |
+          sudo apt-get update && sudo apt-get -y install jq
+          export JASMINE_VERSION=latest
+          npm run test:jasmine
+
+  test-mocha:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download test package
+        uses: actions/download-artifact@v4
+        with:
+          name: test-package
+
+      - name: Setup and run Mocha tests
+        run: |
+          sudo apt-get update && sudo apt-get -y install jq
+          export MOCHA_VERSION=latest
+          npm run test:mocha
+
+  test-cypress:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download test package
+        uses: actions/download-artifact@v4
+        with:
+          name: test-package
+
+      - name: Setup and run Cypress tests
+        run: |
+          sudo apt-get update && sudo apt-get -y install jq
+          export CYPRESS_VERSION=latest
+          npm run test:cypress
