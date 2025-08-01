@@ -1,6 +1,8 @@
 - pipeline: run_all
   refs:
     - :default
+  events:
+    - type: PUSH
   fail_on_prepare_env_warning: true
   variables:
     - key: CYPRESS_VERSION
