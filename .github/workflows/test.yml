@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: ['master']
 
+env:
+  BUDDY_UT_TOKEN: ${{ secrets.BUDDY_UT_TOKEN || 'test_token' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest

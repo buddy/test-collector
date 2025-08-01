@@ -21,6 +21,21 @@ const environmentConfig = {
   BUDDY_RUN_BRANCH: { type: 'string' },
   BUDDY_RUN_URL: { type: 'string' },
   BUDDY_TRIGGERING_ACTOR_ID: { type: 'string' },
+  // GitHub Actions environment variables
+  GITHUB_REPOSITORY: { type: 'string' },
+  GITHUB_SHA: { type: 'string' },
+  GITHUB_REF: { type: 'string' },
+  GITHUB_REF_NAME: { type: 'string' },
+  GITHUB_REF_TYPE: { type: 'string' },
+  GITHUB_WORKFLOW: { type: 'string' },
+  GITHUB_RUN_ID: { type: 'string' },
+  GITHUB_RUN_NUMBER: { type: 'string' },
+  GITHUB_ACTOR: { type: 'string' },
+  GITHUB_ACTOR_ID: { type: 'string' },
+  GITHUB_SERVER_URL: { type: 'string' },
+  GITHUB_API_URL: { type: 'string' },
+  GITHUB_ACTIONS: { type: 'boolean' },
+  CI: { type: 'boolean' },
 } as const satisfies EnvironmentConfigSchema
 
 type EnvironmentConfig = {
@@ -53,7 +68,7 @@ function loadEnvironment(): EnvironmentConfig {
   return Object.fromEntries(entries) as EnvironmentConfig
 }
 
-function setEnvironment<K extends keyof typeof environmentConfig>(key: K, value: EnvironmentConfig[K]): void {
+function setEnvironmentVariable<K extends keyof typeof environmentConfig>(key: K, value: EnvironmentConfig[K]): void {
   const config = environmentConfig[key]
 
   if (config.type === 'boolean') {
@@ -90,5 +105,24 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
   return !falseValues.includes(value.toLowerCase().trim())
 }
 
+type CIEnvironment = 'buddy' | 'github_actions' | 'unknown'
+
+function detectCIEnvironment(): CIEnvironment {
+  const environment = loadEnvironment()
+
+  // Check for GitHub Actions
+  if (environment.GITHUB_ACTIONS) {
+    return 'github_actions'
+  }
+
+  // Check for Buddy CI (it sets BUDDY_SESSION_ID and other BUDDY_* vars)
+  if (environment.BUDDY_SESSION_ID || environment.BUDDY_RUN_HASH) {
+    return 'buddy'
+  }
+
+  return 'unknown'
+}
+
 export default loadEnvironment()
-export { setEnvironment as setEnv }
+export { setEnvironmentVariable, detectCIEnvironment }
+export type { CIEnvironment }

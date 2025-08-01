@@ -4,7 +4,7 @@ import path from 'node:path'
 import BuddyUnitTestApiClient from '@/core/api-client'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
-import env, { setEnv } from '@/utils/environment'
+import environment, { setEnvironmentVariable } from '@/utils/environment'
 import { Logger } from '@/utils/logger'
 
 class BuddyUnitTestSessionManager {
@@ -59,9 +59,11 @@ class BuddyUnitTestSessionManager {
         ? this.apiClient.reopenSession(this.config.sessionId)
         : this.apiClient.createSession())
 
-      setEnv('BUDDY_SESSION_ID', this.sessionId)
-      if (env.BUDDY_SESSION_ID === this.sessionId) {
-        this.#logger.debug(`Session ID stored in environment variable BUDDY_SESSION_ID: ${env.BUDDY_SESSION_ID}`)
+      setEnvironmentVariable('BUDDY_SESSION_ID', this.sessionId)
+      if (environment.BUDDY_SESSION_ID === this.sessionId) {
+        this.#logger.debug(
+          `Session ID stored in environment variable BUDDY_SESSION_ID: ${environment.BUDDY_SESSION_ID}`,
+        )
       } else {
         this.#logger.debug('BUDDY_SESSION_ID environment variable could not be updated to match current session ID')
       }
@@ -185,8 +187,8 @@ class BuddyUnitTestSessionManager {
       this.#initialize()
     }
 
-    if (!this.sessionId && env.BUDDY_SESSION_ID) {
-      this.sessionId = env.BUDDY_SESSION_ID
+    if (!this.sessionId && environment.BUDDY_SESSION_ID) {
+      this.sessionId = environment.BUDDY_SESSION_ID
       this.#logger.debug(`Retrieved session ID from BUDDY_SESSION_ID environment variable: ${this.sessionId}`)
     }
 

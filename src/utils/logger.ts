@@ -1,5 +1,5 @@
 import BuddyUnitTestCollectorConfig from '@/core/config'
-import env from '@/utils/environment'
+import environment from '@/utils/environment'
 
 export class Logger {
   #prefix: string
@@ -7,7 +7,7 @@ export class Logger {
 
   constructor(prefix = BuddyUnitTestCollectorConfig.libraryName) {
     this.#prefix = prefix
-    this.#debugEnabled = env.BUDDY_LOGGER_DEBUG
+    this.#debugEnabled = environment.BUDDY_LOGGER_DEBUG
   }
 
   #safeStringify(object: unknown): string {
