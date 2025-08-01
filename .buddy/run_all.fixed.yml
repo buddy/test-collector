@@ -25,7 +25,7 @@
       value: latest
       type: VAR
   actions:
-    - action: Run test-collector-2/cypress
+    - action: Run test-collector/cypress
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -38,9 +38,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector-2
+      project: test-collector
       pipeline: cypress
-    - action: Run test-collector-2/jasmine
+    - action: Run test-collector/jasmine
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -53,9 +53,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector-2
+      project: test-collector
       pipeline: jasmine
-    - action: Run test-collector-2/jest
+    - action: Run test-collector/jest
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -68,9 +68,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector-2
+      project: test-collector
       pipeline: jest
-    - action: Run test-collector-2/mocha
+    - action: Run test-collector/mocha
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -83,9 +83,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector-2
+      project: test-collector
       pipeline: mocha
-    - action: Run test-collector-2/playwright
+    - action: Run test-collector/playwright
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -98,9 +98,9 @@
         - key: PLAYWRIGHT_VERSION
           value: $PLAYWRIGHT_VERSION
           type: VAR
-      project: test-collector-2
+      project: test-collector
       pipeline: playwright
-    - action: Run test-collector-2/vitest
+    - action: Run test-collector/vitest
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -112,5 +112,5 @@
         - key: VITEST_VERSION
           value: $VITEST_VERSION
           type: VAR
-      project: test-collector-2
+      project: test-collector
       pipeline: vitest
