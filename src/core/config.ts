@@ -76,7 +76,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.runRefName = environment.GITHUB_REF_NAME
     this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase() || this.#fallback.runRefType
     this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
-    this.runPreCommit = this.#fallback.runPreCommit // GitHub Actions doesn't have a pre-commit SHA
+    this.runPreCommit = this.#fallback.runPreCommit
     this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
     const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
     const repository = environment.GITHUB_REPOSITORY || ''
