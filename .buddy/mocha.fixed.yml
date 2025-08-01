@@ -22,19 +22,27 @@
       type: VAR
     - key: BUDDY_SESSION_ID
       type: VAR
-    - key: NODE_VERSION
-      value: 22
-      type: VAR
     - key: MOCHA_VERSION
       value: latest
       type: VAR
+    - key: NODE_VERSION
+      value: 22
+      type: VAR
   actions:
+    - action: Copy files
+      type: COPY_FILES
+      source_project: test-collector
+      source_pipeline: build
+      source_path: /test-collector.tgz
+      target_project: test-collector
+      target_pipeline: mocha
+      target_path: /
     - action: Collect Mocha tests
       type: BUILD
       docker_image_name: library/node
       docker_image_tag: $NODE_VERSION
-      setup_commands:
-        - apt-get update && apt-get -y install jq
       execute_commands:
         - npm run test:mocha
+      setup_commands:
+        - apt-get update && apt-get -y install jq
       shell: BASH

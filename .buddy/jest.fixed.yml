@@ -29,6 +29,14 @@
       value: latest
       type: VAR
   actions:
+    - action: Copy files
+      type: COPY_FILES
+      source_project: test-collector
+      source_pipeline: build
+      source_path: /test-collector.tgz
+      target_project: test-collector
+      target_pipeline: jest
+      target_path: /
     - action: Collect Jest tests
       type: BUILD
       docker_image_name: library/node
