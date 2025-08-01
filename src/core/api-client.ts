@@ -30,7 +30,7 @@ export default class BuddyUnitTestApiClient {
         const resolvedUrl = this.#axiosInstance.getUri(AxiosRequest)
         this.#logger.debug(`API request: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`)
         if (AxiosRequest.data) {
-          this.#logger.debug('Request payload:', this.#prettifyPayload(AxiosRequest.data))
+          this.#logger.debug('Request payload:', AxiosRequest.data)
         }
         return AxiosRequest
       },
@@ -65,35 +65,6 @@ export default class BuddyUnitTestApiClient {
         return Promise.reject(AxiosResponseError as Error)
       },
     )
-  }
-
-  #prettifyPayload(payload: unknown): unknown {
-    // Check if payload is an object with a 'data' property that contains XML
-    if (
-      payload &&
-      typeof payload === 'object' &&
-      'data' in payload &&
-      typeof payload.data === 'string' &&
-      this.#isXmlString(payload.data)
-    ) {
-      const prettifiedData = this.#prettifyXml(payload.data)
-      return {
-        ...payload,
-        data: prettifiedData,
-      }
-    }
-
-    return payload
-  }
-
-  #isXmlString(xmlString: string): boolean {
-    return xmlString.trim().startsWith('<') && xmlString.trim().endsWith('>')
-  }
-
-  #prettifyXml(xmlString: string): string {
-    // Simple XML prettifier - just add line breaks between tags
-    const result: string = xmlString.replaceAll('><', '>\n<')
-    return result
   }
 
   async createSession() {
