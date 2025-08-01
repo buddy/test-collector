@@ -52,7 +52,7 @@ export default class BuddyUnitTestCollectorConfig {
 
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG
-    this.apiBaseUrl = environment.BUDDY_API_URL || this.#fallback.apiBaseUrl
+    this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
     this.sessionId = environment.BUDDY_SESSION_ID
     this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
     this.runHash = environment.BUDDY_RUN_HASH
@@ -71,7 +71,7 @@ export default class BuddyUnitTestCollectorConfig {
 
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG || false
-    this.apiBaseUrl = environment.BUDDY_API_URL || this.#fallback.apiBaseUrl
+    this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
     this.sessionId = environment.GITHUB_RUN_ID
     this.triggeringActorId = environment.GITHUB_ACTOR_ID
     this.runHash = environment.GITHUB_RUN_ID
@@ -109,13 +109,17 @@ export default class BuddyUnitTestCollectorConfig {
     }
   }
 
+  #normalizeApiUrl(url: string): string {
+    return url.endsWith('/') ? url : `${url}/`
+  }
+
   readonly #fallback = {
     runRefType: 'BRANCH',
 
     get apiBaseUrl() {
       return environment.BUDDY_UT_TOKEN.startsWith('bud_ut_eu')
-        ? 'https://api.eu.buddy.works'
-        : 'https://api.buddy.works'
+        ? 'https://api.eu.buddy.works/'
+        : 'https://api.buddy.works/'
     },
 
     get runBranch() {
