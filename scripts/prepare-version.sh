@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Script to update package versions in package.json
-# Usage: ./prepare-version.sh <dependency-type> <package-name> <version> [directory]
-# Example: ./prepare-version.sh devDependencies jest 29.7.0
-# Example: ./prepare-version.sh dependencies axios 1.7.0 /path/to/project
-# Example: ./prepare-version.sh peerDependencies react 18.0.0 ../other-project
-
 set -e
 
 if [ $# -lt 3 ] || [ $# -gt 4 ]; then
@@ -29,13 +23,12 @@ VERSION="$3"
 
 # Validate dependency type
 case "$DEPENDENCY_TYPE" in
-    devDependencies|dependencies|peerDependencies)
-        ;;
-    *)
-        echo "Error: Invalid dependency type '$DEPENDENCY_TYPE'"
-        echo "Must be one of: devDependencies, dependencies, peerDependencies"
-        exit 1
-        ;;
+devDependencies | dependencies | peerDependencies) ;;
+*)
+    echo "Error: Invalid dependency type '$DEPENDENCY_TYPE'"
+    echo "Must be one of: devDependencies, dependencies, peerDependencies"
+    exit 1
+    ;;
 esac
 
 # Set target directory - use 4th argument if provided, otherwise use script directory
@@ -62,7 +55,7 @@ echo "Updating $PACKAGE_NAME to version $VERSION in $DEPENDENCY_TYPE..."
 
 # Update the package version using jq
 jq --arg depType "$DEPENDENCY_TYPE" --arg pkg "$PACKAGE_NAME" --arg version "$VERSION" \
-   '.[$depType][$pkg] = $version' "$PACKAGE_JSON" > "$PACKAGE_JSON.tmp" && mv "$PACKAGE_JSON.tmp" "$PACKAGE_JSON"
+    '.[$depType][$pkg] = $version' "$PACKAGE_JSON" >"$PACKAGE_JSON.tmp" && mv "$PACKAGE_JSON.tmp" "$PACKAGE_JSON"
 
 echo "✅ Successfully updated $PACKAGE_NAME to version $VERSION"
 echo "📦 Current $DEPENDENCY_TYPE:"

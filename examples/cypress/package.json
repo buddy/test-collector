@@ -6,7 +6,8 @@
   },
   "devDependencies": {
     "cypress": "14.5.3",
-    "dotenv": "17.2.1"
+    "dotenv": "17.2.1",
+    "mocha": "11.7.1"
   },
   "dependencies": {
     "@buddy-works/test-collector": "file:../../test-collector.tgz"

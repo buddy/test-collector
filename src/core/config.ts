@@ -102,7 +102,8 @@ export default class BuddyUnitTestCollectorConfig {
     })
 
     if (foundVariables.length > 0) {
-      this.#logger.debug(`Detected environment variables: ${foundVariables.join(', ')}`)
+      const variablesList = foundVariables.map((variable) => `  ${variable}`).join('\n')
+      this.#logger.debug(`Detected environment variables:\n${variablesList}`)
     } else {
       this.#logger.debug('No environment variables detected from configuration schema')
     }
