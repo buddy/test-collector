@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
-import environment, { type CIEnvironment, detectCIEnvironment } from '@/utils/environment'
+import environment, { type CIEnvironment, detectCIEnvironment, environmentConfig } from '@/utils/environment'
 import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestCollectorConfig {
@@ -32,6 +32,9 @@ export default class BuddyUnitTestCollectorConfig {
     const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
     this.#logger = new Logger(loggerNameWithContext)
 
+    // Log all detected environment variables
+    this.#logEnvironmentVariables()
+
     // Load configuration based on CI environment
     if (this.environment === 'github_actions') {
       this.#loadGitHubActionsConfig()
@@ -46,30 +49,6 @@ export default class BuddyUnitTestCollectorConfig {
 
   #loadBuddyConfig(): void {
     this.#logger.debug('Loading Buddy CI configuration')
-
-    // Log detected environment variables
-    const detectedVariables: Record<string, string | boolean | undefined> = {
-      BUDDY_UT_TOKEN: environment.BUDDY_UT_TOKEN ? '***' : undefined,
-      BUDDY_LOGGER_DEBUG: environment.BUDDY_LOGGER_DEBUG,
-      BUDDY_API_URL: environment.BUDDY_API_URL,
-      BUDDY_SESSION_ID: environment.BUDDY_SESSION_ID,
-      BUDDY_TRIGGERING_ACTOR_ID: environment.BUDDY_TRIGGERING_ACTOR_ID,
-      BUDDY_RUN_HASH: environment.BUDDY_RUN_HASH,
-      BUDDY_RUN_REF_NAME: environment.BUDDY_RUN_REF_NAME,
-      BUDDY_RUN_REF_TYPE: environment.BUDDY_RUN_REF_TYPE,
-      BUDDY_RUN_COMMIT: environment.BUDDY_RUN_COMMIT,
-      BUDDY_RUN_PRE_COMMIT: environment.BUDDY_RUN_PRE_COMMIT,
-      BUDDY_RUN_BRANCH: environment.BUDDY_RUN_BRANCH,
-      BUDDY_RUN_URL: environment.BUDDY_RUN_URL,
-    }
-
-    const foundVariables = Object.entries(detectedVariables)
-      .filter(([, value]) => value !== undefined)
-      .map(([key, value]) => `${key}=${String(value)}`)
-
-    if (foundVariables.length > 0) {
-      this.#logger.debug(`Detected Buddy environment variables: ${foundVariables.join(', ')}`)
-    }
 
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG
@@ -90,34 +69,6 @@ export default class BuddyUnitTestCollectorConfig {
   #loadGitHubActionsConfig(): void {
     this.#logger.debug('Loading GitHub Actions configuration')
 
-    // Log detected environment variables
-    const detectedVariables: Record<string, string | boolean | undefined> = {
-      BUDDY_UT_TOKEN: environment.BUDDY_UT_TOKEN ? '***' : undefined,
-      BUDDY_LOGGER_DEBUG: environment.BUDDY_LOGGER_DEBUG,
-      BUDDY_API_URL: environment.BUDDY_API_URL,
-      GITHUB_API_URL: environment.GITHUB_API_URL,
-      GITHUB_REPOSITORY: environment.GITHUB_REPOSITORY,
-      GITHUB_SHA: environment.GITHUB_SHA,
-      GITHUB_REF: environment.GITHUB_REF,
-      GITHUB_REF_NAME: environment.GITHUB_REF_NAME,
-      GITHUB_REF_TYPE: environment.GITHUB_REF_TYPE,
-      GITHUB_WORKFLOW: environment.GITHUB_WORKFLOW,
-      GITHUB_RUN_ID: environment.GITHUB_RUN_ID,
-      GITHUB_RUN_NUMBER: environment.GITHUB_RUN_NUMBER,
-      GITHUB_ACTOR: environment.GITHUB_ACTOR,
-      GITHUB_ACTOR_ID: environment.GITHUB_ACTOR_ID,
-      GITHUB_SERVER_URL: environment.GITHUB_SERVER_URL,
-      GITHUB_ACTIONS: environment.GITHUB_ACTIONS,
-    }
-
-    const foundVariables = Object.entries(detectedVariables)
-      .filter(([, value]) => value !== undefined)
-      .map(([key, value]) => `${key}=${String(value)}`)
-
-    if (foundVariables.length > 0) {
-      this.#logger.debug(`Detected GitHub Actions environment variables: ${foundVariables.join(', ')}`)
-    }
-
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG || false
     this.apiBaseUrl = environment.BUDDY_API_URL || environment.GITHUB_API_URL || this.#fallback.apiBaseUrl
@@ -135,6 +86,26 @@ export default class BuddyUnitTestCollectorConfig {
     this.buildUrl = repository && runId ? `${serverUrl}/${repository}/actions/runs/${runId}` : undefined
 
     this.#logLoadedConfig()
+  }
+
+  #logEnvironmentVariables(): void {
+    const foundVariables = Object.entries(environmentConfig).flatMap(([key, config]) => {
+      const value = environment[key as keyof typeof environment]
+      if (value === undefined) {
+        return []
+      }
+
+      // Mask secret values
+      const isSecret = 'secret' in config ? config.secret : false
+      const displayValue = isSecret ? '***' : String(value)
+      return [`${key}=${displayValue}`]
+    })
+
+    if (foundVariables.length > 0) {
+      this.#logger.debug(`Detected environment variables: ${foundVariables.join(', ')}`)
+    } else {
+      this.#logger.debug('No environment variables detected from configuration schema')
+    }
   }
 
   readonly #fallback = {
@@ -160,7 +131,9 @@ export default class BuddyUnitTestCollectorConfig {
     get runCommit() {
       // TODO: check if we're in git repo and git installed
       try {
-        return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
+        return execSync('git rev-parse HEAD', {
+          encoding: 'utf8',
+        }).trim()
       } catch {
         return
       }
@@ -169,7 +142,9 @@ export default class BuddyUnitTestCollectorConfig {
     get runPreCommit() {
       // TODO: check if we're in git repo and git installed
       try {
-        return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
+        return execSync('git rev-parse HEAD', {
+          encoding: 'utf8',
+        }).trim()
       } catch {
         return
       }

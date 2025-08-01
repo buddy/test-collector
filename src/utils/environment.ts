@@ -1,15 +1,17 @@
 interface StringConfig {
   type: 'string'
   required?: boolean
+  secret?: boolean
 }
 interface BooleanConfig {
   type: 'boolean'
   defaultValue?: boolean
+  secret?: boolean
 }
 type EnvironmentConfigSchema = Readonly<Record<string, StringConfig | BooleanConfig>>
 
 const environmentConfig = {
-  BUDDY_UT_TOKEN: { type: 'string', required: true },
+  BUDDY_UT_TOKEN: { type: 'string', required: true, secret: true },
   BUDDY_LOGGER_DEBUG: { type: 'boolean' },
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
@@ -124,5 +126,5 @@ function detectCIEnvironment(): CIEnvironment {
 }
 
 export default loadEnvironment()
-export { setEnvironmentVariable, detectCIEnvironment }
+export { setEnvironmentVariable, detectCIEnvironment, environmentConfig }
 export type { CIEnvironment }
