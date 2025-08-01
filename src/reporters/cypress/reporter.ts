@@ -54,8 +54,6 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       const maxWaitTime = 10_000
       const startTime = Date.now()
 
-      this.logger.debug('Session', this)
-
       while (this.pendingSubmissions.size > 0 && Date.now() - startTime < maxWaitTime) {
         await new Promise((resolve) => setTimeout(resolve, 100))
       }
