@@ -137,37 +137,6 @@ export default class TestResultMapper {
     }
   }
 
-  //   static mapCypressResult(test) {
-  //     const status =
-  //       test.state === 'passed'
-  //         ? 'PASSED'
-  //         : test.state === 'failed'
-  //           ? 'FAILED'
-  //           : test.state === 'skipped'
-  //             ? 'SKIPPED'
-  //             : test.pending
-  //               ? 'SKIPPED'
-  //               : 'ERROR'
-
-  //     // Create data object similar to BuddyWorks.Nunit.TestLogger
-  //     const dataObj = {
-  //       errorMessage: test.err ? test.err.message : '',
-  //       errorStackTrace: test.err ? test.err.stack : '',
-  //       messages: test.body || '',
-  //     }
-
-  //     const suiteName = test.parent?.title || 'Cypress Suite'
-
-  //     return {
-  //       name: test.title,
-  //       classname: suiteName,
-  //       suite_name: suiteName, // Fixed: Only send suite name
-  //       status: status,
-  //       time: test.duration ? test.duration / 1000 : 0,
-  //       data: this.toXml(dataObj),
-  //     }
-  //   }
-
   static mapPlaywrightResult(test: PlaywrightTestCase, result: PlaywrightTestResult): IBuddyUnitTestApiTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
       passed: BUDDY_UNIT_TEST_STATUS.PASSED,
