@@ -25,6 +25,13 @@
       value: latest
       type: VAR
   actions:
+    - action: Run test-collector/build
+      type: RUN_NEXT_PIPELINE
+      wait: true
+      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
+      priority: NORMAL
+      project: test-collector
+      pipeline: build
     - action: Run test-collector/cypress
       type: RUN_NEXT_PIPELINE
       wait: true
