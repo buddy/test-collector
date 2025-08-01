@@ -90,15 +90,27 @@ module.exports = defineConfig({
 })
 ```
 
+> **Note for Cypress:** You must also install `mocha` as a dev dependency since the Cypress reporter requires it:
+>
+> ```bash
+> npm install --save-dev mocha
+> ```
+
 That's it! Your tests will now automatically send results to Buddy Works.
 
 > **Note:** These examples show configuration file setups. Some frameworks may support alternative configuration methods (command line options, package.json, etc.). Refer to your testing framework's official documentation for all available configuration options.
 
 ## How It Works
 
-The collector automatically detects your CI/CD environment and gathers all necessary metadata from your Buddy Works pipeline. It creates test sessions, tracks individual test results in real-time, and handles session cleanup automatically.
+The collector automatically detects your CI/CD environment and gathers all necessary metadata from your pipeline. It creates test sessions, tracks individual test results in real-time, and handles session cleanup automatically.
 
-**Designed for CI/CD:** While it can run locally, it's optimized for Buddy Works pipelines where environment variables are automatically available.
+**Supported CI/CD platforms:**
+
+- **Buddy Works** - Full native support with automatic environment detection
+- **GitHub Actions** - Complete support with workflow integration
+- **Other platforms** - Can be configured manually with environment variables
+
+**Designed for CI/CD:** While it can run locally, it's optimized for CI/CD pipelines where environment variables are automatically available.
 
 ## Key Features
 
@@ -106,7 +118,8 @@ The collector automatically detects your CI/CD environment and gathers all neces
 - **Real-time reporting** - Test results sent as they complete
 - **Automatic session management** - Handles test session lifecycle
 - **Universal support** - Works with all major JavaScript testing frameworks
-- **CI/CD optimized** - Automatically detects Buddy Works environment variables
+- **Multi-platform CI/CD support** - Native support for Buddy Works and GitHub Actions
+- **Smart environment detection** - Automatically detects CI environment and configures accordingly
 
 ## Development Testing
 
