@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, CreateAxiosDefaults } from 'axios'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
+import { setEnvironmentVariable } from '@/utils/environment'
 import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestApiClient {
@@ -79,6 +80,7 @@ export default class BuddyUnitTestApiClient {
       return sessionId
     } catch (error) {
       this.#logger.error('Failed to create session', error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
       throw error
     }
   }
@@ -96,6 +98,7 @@ export default class BuddyUnitTestApiClient {
       return newSessionId
     } catch (error) {
       this.#logger.error(`Failed to reopen session: ${sessionId}`, error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
       throw error
     }
   }
@@ -110,6 +113,7 @@ export default class BuddyUnitTestApiClient {
       this.#logger.debug(`Successfully submitted test case: ${testCase.name}`)
     } catch (error) {
       this.#logger.error(`Failed to submit test case: ${testCase.name}`, error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
     }
   }
 
@@ -129,6 +133,7 @@ export default class BuddyUnitTestApiClient {
       this.#logger.debug(`Close session response:`, response.statusText)
     } catch (error) {
       this.#logger.error(`Failed to close session: ${sessionId}`, error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
       throw error // Re-throw to ensure session manager knows about the failure
     }
   }

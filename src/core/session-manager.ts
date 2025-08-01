@@ -15,7 +15,7 @@ class BuddyUnitTestSessionManager {
   #context = 'generic'
 
   sessionId: string | undefined
-  createSession: Promise<string> | undefined
+  createSession: Promise<string | undefined> | undefined
   initialized: boolean
   hasFrameworkErrors: boolean
   hasErrorTests: boolean
@@ -71,7 +71,8 @@ class BuddyUnitTestSessionManager {
       this.#writeSessionToFile(this.sessionId)
     } catch (error) {
       this.#logger.error('Failed to create/reopen session', error)
-      throw error
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
+      // Don't throw - let the error be handled by the caller
     }
 
     return this.sessionId
@@ -152,6 +153,10 @@ class BuddyUnitTestSessionManager {
     try {
       await this.createSession
       return this.sessionId
+    } catch (error) {
+      this.#logger.error('Session creation failed, continuing without session', error)
+      // Don't re-throw - let tests continue without session
+      return
     } finally {
       this.createSession = undefined
     }
@@ -178,6 +183,7 @@ class BuddyUnitTestSessionManager {
       await this.apiClient.submitTestCase(sessionId, testCase)
     } catch (error) {
       this.#logger.error('Failed to submit test case', error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
       this.hasFrameworkErrors = true
     }
   }
@@ -223,6 +229,7 @@ class BuddyUnitTestSessionManager {
       } catch (error) {
         const duration = Date.now() - startTime
         this.#logger.error(`Failed to close session ${sessionId} after ${String(duration)}ms`, error)
+        setEnvironmentVariable('BUDDY_API_FAILURE', true)
 
         // Still cleanup even if close failed - prevents zombie sessions
         this.#logger.warn(`Cleaning up session ${sessionId} state despite close failure`)
@@ -256,6 +263,7 @@ class BuddyUnitTestSessionManager {
       this.#logger.debug(`Session closed successfully on ${signal}`)
     } catch (error) {
       this.#logger.error(`Error closing session on ${signal}`, error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
       exitCode = 1 // Exit with error code if session close failed
     }
 

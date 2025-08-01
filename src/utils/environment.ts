@@ -15,6 +15,7 @@ const environmentConfig = {
   BUDDY_LOGGER_DEBUG: { type: 'boolean' },
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
+  BUDDY_API_FAILURE: { type: 'boolean' },
   BUDDY_RUN_HASH: { type: 'string' },
   BUDDY_RUN_REF_NAME: { type: 'string' },
   BUDDY_RUN_REF_TYPE: { type: 'string' },
