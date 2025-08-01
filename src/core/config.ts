@@ -17,7 +17,7 @@ export default class BuddyUnitTestCollectorConfig {
 
   sessionId?: string
   triggeringActorId?: string
-  runHash?: string
+  buildId?: string
   runRefName?: string
   runRefType!: string
   runCommit?: string
@@ -32,10 +32,8 @@ export default class BuddyUnitTestCollectorConfig {
     const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
     this.#logger = new Logger(loggerNameWithContext)
 
-    // Log all detected environment variables
     this.#logEnvironmentVariables()
 
-    // Load configuration based on CI environment
     if (this.environment === 'github_actions') {
       this.#loadGitHubActionsConfig()
     } else {
@@ -55,12 +53,12 @@ export default class BuddyUnitTestCollectorConfig {
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
     this.sessionId = environment.BUDDY_SESSION_ID
     this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
-    this.runHash = environment.BUDDY_RUN_HASH
     this.runRefName = environment.BUDDY_RUN_REF_NAME
     this.runRefType = environment.BUDDY_RUN_REF_TYPE || this.#fallback.runRefType
     this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
     this.runPreCommit = environment.BUDDY_RUN_PRE_COMMIT || this.#fallback.runPreCommit
     this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
+    this.buildId = environment.BUDDY_RUN_HASH
     this.buildUrl = environment.BUDDY_RUN_URL
 
     this.#logLoadedConfig()
@@ -72,7 +70,6 @@ export default class BuddyUnitTestCollectorConfig {
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG || false
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
-    this.runHash = environment.GITHUB_RUN_ID
     this.runRefName = environment.GITHUB_REF_NAME
     this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase() || this.#fallback.runRefType
     this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
@@ -81,6 +78,7 @@ export default class BuddyUnitTestCollectorConfig {
     const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
     const repository = environment.GITHUB_REPOSITORY || ''
     const runId = environment.GITHUB_RUN_ID || ''
+    this.buildId = environment.GITHUB_RUN_ID
     this.buildUrl = repository && runId ? `${serverUrl}/${repository}/actions/runs/${runId}` : undefined
 
     this.#logLoadedConfig()
@@ -93,7 +91,6 @@ export default class BuddyUnitTestCollectorConfig {
         return []
       }
 
-      // Mask secret values
       const isSecret = 'secret' in config ? config.secret : false
       const displayValue = isSecret ? '***' : String(value)
       return [`${key}=${displayValue}`]
@@ -121,7 +118,6 @@ export default class BuddyUnitTestCollectorConfig {
     },
 
     get runBranch() {
-      // TODO: check if we're in git repo and git installed
       try {
         return execSync('git rev-parse --abbrev-ref HEAD', {
           encoding: 'utf8',
@@ -132,7 +128,6 @@ export default class BuddyUnitTestCollectorConfig {
     },
 
     get runCommit() {
-      // TODO: check if we're in git repo and git installed
       try {
         return execSync('git rev-parse HEAD', {
           encoding: 'utf8',
@@ -143,7 +138,6 @@ export default class BuddyUnitTestCollectorConfig {
     },
 
     get runPreCommit() {
-      // TODO: check if we're in git repo and git installed
       try {
         return execSync('git rev-parse HEAD', {
           encoding: 'utf8',
@@ -168,7 +162,7 @@ export default class BuddyUnitTestCollectorConfig {
       from_revision: this.runPreCommit,
       to_revision: this.runCommit,
       ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
-      ...(this.runHash && { build_id: this.runHash }),
+      ...(this.buildId && { build_id: this.buildId }),
       ...(this.buildUrl && { build_url: this.buildUrl }),
     }
 
@@ -184,12 +178,12 @@ export default class BuddyUnitTestCollectorConfig {
       apiBaseUrl: this.apiBaseUrl,
       sessionId: this.sessionId,
       triggeringActorId: this.triggeringActorId,
-      runHash: this.runHash,
       runRefName: this.runRefName,
       runRefType: this.runRefType,
       runCommit: this.runCommit,
       runPreCommit: this.runPreCommit,
       runBranch: this.runBranch,
+      buildId: this.buildId,
       buildUrl: this.buildUrl,
     }
 
