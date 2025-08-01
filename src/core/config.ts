@@ -75,7 +75,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.triggeringActorId = environment.GITHUB_ACTOR_ID
     this.runHash = environment.GITHUB_RUN_ID
     this.runRefName = environment.GITHUB_REF_NAME
-    this.runRefType = environment.GITHUB_REF_TYPE || this.#fallback.runRefType
+    this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase() || this.#fallback.runRefType
     this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
     this.runPreCommit = this.#fallback.runPreCommit // GitHub Actions doesn't have a pre-commit SHA
     this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch

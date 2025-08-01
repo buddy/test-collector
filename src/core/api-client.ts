@@ -27,17 +27,14 @@ export default class BuddyUnitTestApiClient {
     this.#axiosInstance.interceptors.request.use(
       (AxiosRequest) => {
         const resolvedUrl = this.#axiosInstance.getUri(AxiosRequest)
-        this.#logger.debug(`API REQUEST: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`)
-        this.#logger.debug(
-          `REQUEST DETAILS - baseURL: ${String(AxiosRequest.baseURL)}, url: ${String(AxiosRequest.url)}`,
-        )
+        this.#logger.debug(`API request: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`)
         if (AxiosRequest.data) {
-          this.#logger.debug('REQUEST PAYLOAD:', AxiosRequest.data)
+          this.#logger.debug('Request payload:', AxiosRequest.data)
         }
         return AxiosRequest
       },
       (AxiosRequestError) => {
-        this.#logger.error('API REQUEST FAILED', AxiosRequestError)
+        this.#logger.error('API request failed:', AxiosRequestError)
         return Promise.reject(AxiosRequestError as Error)
       },
     )
@@ -46,7 +43,7 @@ export default class BuddyUnitTestApiClient {
       (AxiosResponse) => {
         const resolvedUrl = this.#axiosInstance.getUri(AxiosResponse.config)
         this.#logger.debug(
-          `API RESPONSE: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`,
+          `API response: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`,
         )
         return AxiosResponse
       },
@@ -56,17 +53,12 @@ export default class BuddyUnitTestApiClient {
         const resolvedUrl = AxiosResponseError.config
           ? this.#axiosInstance.getUri(AxiosResponseError.config)
           : 'unknown'
-        this.#logger.error(`ERROR: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
+        this.#logger.error(`API error: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
 
-        // Only log payloads for client/server errors (4xx/5xx)
+        // Only log response payload for client/server errors (4xx/5xx)
         const statusCode = AxiosResponseError.response?.status
-        if (statusCode && statusCode >= 400) {
-          if (AxiosResponseError.config?.data) {
-            this.#logger.error(`CONFIG PAYLOAD:`, AxiosResponseError.config.data)
-          }
-          if (AxiosResponseError.response?.data) {
-            this.#logger.error(`RESPONSE PAYLOAD:`, AxiosResponseError.response.data)
-          }
+        if (statusCode && statusCode >= 400 && AxiosResponseError.response?.data) {
+          this.#logger.error('Response payload:', AxiosResponseError.response.data)
         }
 
         return Promise.reject(AxiosResponseError as Error)
