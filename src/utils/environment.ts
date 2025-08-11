@@ -12,6 +12,10 @@ type EnvironmentConfigSchema = Readonly<Record<string, StringConfig | BooleanCon
 
 const environmentConfig = {
   BUDDY_UT_TOKEN: { type: 'string', required: true, secret: true },
+  CI: { type: 'boolean' },
+
+  // Buddy environment variables
+  BUDDY: { type: 'boolean' },
   BUDDY_LOGGER_DEBUG: { type: 'boolean' },
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
@@ -24,6 +28,7 @@ const environmentConfig = {
   BUDDY_RUN_BRANCH: { type: 'string' },
   BUDDY_RUN_URL: { type: 'string' },
   BUDDY_TRIGGERING_ACTOR_ID: { type: 'string' },
+
   // GitHub Actions environment variables
   GITHUB_REPOSITORY: { type: 'string' },
   GITHUB_SHA: { type: 'string' },
@@ -38,7 +43,6 @@ const environmentConfig = {
   GITHUB_SERVER_URL: { type: 'string' },
   GITHUB_API_URL: { type: 'string' },
   GITHUB_ACTIONS: { type: 'boolean' },
-  CI: { type: 'boolean' },
 } as const satisfies EnvironmentConfigSchema
 
 type EnvironmentConfig = {
@@ -108,24 +112,27 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
   return !falseValues.includes(value.toLowerCase().trim())
 }
 
-type CIEnvironment = 'buddy' | 'github_actions' | 'unknown'
+enum CI_ENVIRONMENT {
+  BUDDY = 'BUDDY',
+  GITHUB_ACTION = 'GITHUB_ACTION',
+  NONE = 'NONE',
+}
 
-function detectCIEnvironment(): CIEnvironment {
+function detectCIEnvironment(): CI_ENVIRONMENT {
   const environment = loadEnvironment()
+
+  // Check for Buddy CI
+  if (environment.BUDDY) {
+    return CI_ENVIRONMENT.BUDDY
+  }
 
   // Check for GitHub Actions
   if (environment.GITHUB_ACTIONS) {
-    return 'github_actions'
+    return CI_ENVIRONMENT.GITHUB_ACTION
   }
 
-  // Check for Buddy CI (it sets BUDDY_SESSION_ID and other BUDDY_* vars)
-  if (environment.BUDDY_SESSION_ID || environment.BUDDY_RUN_HASH) {
-    return 'buddy'
-  }
-
-  return 'unknown'
+  return CI_ENVIRONMENT.NONE
 }
 
 export default loadEnvironment()
-export { setEnvironmentVariable, detectCIEnvironment, environmentConfig }
-export type { CIEnvironment }
+export { setEnvironmentVariable, detectCIEnvironment, environmentConfig, CI_ENVIRONMENT }
