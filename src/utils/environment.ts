@@ -114,7 +114,7 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
 
 enum CI_PROVIDER {
   BUDDY = 'BUDDY',
-  GITHUB_ACTIONS = 'GITHUB_ACTIONS',
+  GITHUB_ACTION = 'GITHUB_ACTION',
   NONE = 'NONE',
 }
 
@@ -128,7 +128,7 @@ function detectCIProvider(): CI_PROVIDER {
 
   // Check for GitHub Actions
   if (environment.GITHUB_ACTIONS) {
-    return CI_PROVIDER.GITHUB_ACTIONS
+    return CI_PROVIDER.GITHUB_ACTION
   }
 
   return CI_PROVIDER.NONE

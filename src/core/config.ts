@@ -54,7 +54,7 @@ export default class BuddyUnitTestCollectorConfig {
         this.runUrl = environment.BUDDY_RUN_URL
         break
       }
-      case CI_PROVIDER.GITHUB_ACTIONS: {
+      case CI_PROVIDER.GITHUB_ACTION: {
         this.#logger.debug('Loading GitHub Actions configuration')
 
         const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
