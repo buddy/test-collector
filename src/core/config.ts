@@ -164,7 +164,7 @@ export default class BuddyUnitTestCollectorConfig {
       ref_name: this.runRefName ?? this.runBranch,
       from_revision: this.runPreCommit,
       to_revision: this.runCommit,
-      provider: this.ciProvider,
+      ci_provider: this.ciProvider,
       ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
       ...(this.runId && { run_id: this.runId }),
       ...(this.runUrl && { run_url: this.runUrl }),
