@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
-import environment, { CI_ENVIRONMENT, detectCIEnvironment, environmentConfig } from '@/utils/environment'
+import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
 import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestCollectorConfig {
@@ -9,7 +9,7 @@ export default class BuddyUnitTestCollectorConfig {
 
   #logger: Logger
   context: string
-  ci: CI_ENVIRONMENT
+  ciProvider: CI_PROVIDER
 
   utToken: string
   debugEnabled: boolean
@@ -27,7 +27,7 @@ export default class BuddyUnitTestCollectorConfig {
 
   constructor(context: string) {
     this.context = context
-    this.ci = detectCIEnvironment()
+    this.ciProvider = detectCIProvider()
 
     const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
     this.#logger = new Logger(loggerNameWithContext)
@@ -41,8 +41,8 @@ export default class BuddyUnitTestCollectorConfig {
     this.sessionId = environment.BUDDY_SESSION_ID
     this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
 
-    switch (this.ci) {
-      case CI_ENVIRONMENT.BUDDY: {
+    switch (this.ciProvider) {
+      case CI_PROVIDER.BUDDY: {
         this.#logger.debug('Loading Buddy CI configuration')
 
         this.runRefName = environment.BUDDY_RUN_REF_NAME
@@ -54,7 +54,7 @@ export default class BuddyUnitTestCollectorConfig {
         this.runUrl = environment.BUDDY_RUN_URL
         break
       }
-      case CI_ENVIRONMENT.GITHUB_ACTION: {
+      case CI_PROVIDER.GITHUB_ACTIONS: {
         this.#logger.debug('Loading GitHub Actions configuration')
 
         const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
@@ -71,17 +71,15 @@ export default class BuddyUnitTestCollectorConfig {
         break
       }
       default: {
-        this.#logger.warn(`No supported CI environment detected: ${this.ci}.`)
-        this.ci = CI_ENVIRONMENT.NONE
-        this.#logger.debug(`Environment set to ${this.ci} for compatibility.`)
-
-        return
+        this.#logger.warn(`No supported CI environment detected: ${this.ciProvider}.`)
+        this.ciProvider = CI_PROVIDER.NONE
+        this.#logger.debug(`Environment set to ${this.ciProvider} for compatibility.`)
       }
     }
 
     this.#logLoadedConfig()
 
-    this.#logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName} (environment: ${this.ci})`)
+    this.#logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName} (environment: ${this.ciProvider})`)
   }
 
   #logEnvironmentVariables(): void {
@@ -166,7 +164,7 @@ export default class BuddyUnitTestCollectorConfig {
       ref_name: this.runRefName ?? this.runBranch,
       from_revision: this.runPreCommit,
       to_revision: this.runCommit,
-      external_creator: this.ci,
+      provider: this.ciProvider,
       ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
       ...(this.runId && { run_id: this.runId }),
       ...(this.runUrl && { run_url: this.runUrl }),
@@ -178,7 +176,7 @@ export default class BuddyUnitTestCollectorConfig {
 
   #logLoadedConfig(): void {
     const config = {
-      ci: this.ci,
+      ciProvider: this.ciProvider,
       utToken: this.utToken ? '***' : 'not set',
       debugEnabled: this.debugEnabled,
       apiBaseUrl: this.apiBaseUrl,

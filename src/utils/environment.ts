@@ -112,27 +112,27 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
   return !falseValues.includes(value.toLowerCase().trim())
 }
 
-enum CI_ENVIRONMENT {
+enum CI_PROVIDER {
   BUDDY = 'BUDDY',
-  GITHUB_ACTION = 'GITHUB_ACTION',
+  GITHUB_ACTIONS = 'GITHUB_ACTIONS',
   NONE = 'NONE',
 }
 
-function detectCIEnvironment(): CI_ENVIRONMENT {
+function detectCIProvider(): CI_PROVIDER {
   const environment = loadEnvironment()
 
   // Check for Buddy CI
   if (environment.BUDDY) {
-    return CI_ENVIRONMENT.BUDDY
+    return CI_PROVIDER.BUDDY
   }
 
   // Check for GitHub Actions
   if (environment.GITHUB_ACTIONS) {
-    return CI_ENVIRONMENT.GITHUB_ACTION
+    return CI_PROVIDER.GITHUB_ACTIONS
   }
 
-  return CI_ENVIRONMENT.NONE
+  return CI_PROVIDER.NONE
 }
 
 export default loadEnvironment()
-export { setEnvironmentVariable, detectCIEnvironment, environmentConfig, CI_ENVIRONMENT }
+export { setEnvironmentVariable, detectCIProvider, environmentConfig, CI_PROVIDER }
