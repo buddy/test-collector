@@ -2,6 +2,9 @@
   refs:
     - refs/heads/master
   fail_on_prepare_env_warning: true
+  variables:
+    - key: VERSION_BUMP_TYPE
+      type: VAR
   actions:
     - action: Select version bump
       type: WAIT_FOR_VARIABLES
@@ -46,7 +49,7 @@
       execute_commands:
         - git config user.email "ci@buddy.works"
         - git config user.name "Buddy CI"
-        - npm version $VERSION_BUMP_TYPE -m "chore(release): bump version to %s"
+        - 'npm version $VERSION_BUMP_TYPE -m "chore(release): bump version to %s"'
         - git push origin HEAD:master --follow-tags
       volume_mappings:
         - /:/buddy-works/unit-tests
