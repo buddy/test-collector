@@ -28,6 +28,7 @@
     "url": "git+https://github.com/buddy/test-collector.git"
   },
   "license": "MIT",
+  "author": "Cyprian Zdebski <cyprian.zdebski@buddy.works>",
   "exports": {
     "./jest": "./dist/reporters/jest/index.js",
     "./jasmine": "./dist/reporters/jasmine/index.js",
