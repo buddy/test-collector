@@ -1,6 +1,6 @@
 # Jasmine Test Collector Example
 
-This example demonstrates how to use `@buddy-works/test-collector` with Jasmine.
+This example demonstrates how to use `@buddy-works/unit-tests` with Jasmine.
 
 ## Setup
 
@@ -22,7 +22,7 @@ The test collector reporter is configured in `jasmine.json`:
 ```json
 "reporters": [
   {
-    "name": "@buddy-works/test-collector/jasmine"
+    "name": "@buddy-works/unit-tests/jasmine"
   }
 ]
 ```

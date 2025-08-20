@@ -8,6 +8,6 @@
     "dotenv": "17.2.1"
   },
   "dependencies": {
-    "@buddy-works/test-collector": "file:../../test-collector.tgz"
+    "@buddy-works/unit-tests": "file:../../unit-tests.tgz"
   }
 }

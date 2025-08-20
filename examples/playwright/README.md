@@ -1,6 +1,6 @@
 # Playwright Test Collector Example
 
-This example demonstrates how to use `@buddy-works/test-collector` with Playwright Test.
+This example demonstrates how to use `@buddy-works/unit-tests` with Playwright Test.
 
 ## Setup
 
@@ -21,7 +21,7 @@ This example demonstrates how to use `@buddy-works/test-collector` with Playwrig
 The test collector reporter is configured in `playwright.config.js`:
 
 ```javascript
-reporter: [['html'], ['@buddy-works/test-collector/playwright']]
+reporter: [['html'], ['@buddy-works/unit-tests/playwright']]
 ```
 
 ## Test Examples

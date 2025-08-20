@@ -9,6 +9,6 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@buddy-works/test-collector": "file:../../test-collector.tgz"
+    "@buddy-works/unit-tests": "file:../../unit-tests.tgz"
   }
 }

@@ -5,5 +5,5 @@ dotenv.config({ path: '../../.env' })
 
 export default defineConfig({
   forbidOnly: false,
-  reporter: [['@buddy-works/test-collector/playwright']],
+  reporter: [['@buddy-works/unit-tests/playwright']],
 })

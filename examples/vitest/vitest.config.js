@@ -5,7 +5,7 @@ dotenv.config({ path: '../../.env' })
 
 export default defineConfig({
   test: {
-    reporters: ['default', '@buddy-works/test-collector/vitest'],
+    reporters: ['default', '@buddy-works/unit-tests/vitest'],
     allowOnly: true,
   },
 })

@@ -5,7 +5,7 @@ import { Logger } from '@/utils/logger'
 
 export default class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
-  static libraryName = '@buddy-works/test-collector'
+  static libraryName = '@buddy-works/unit-tests'
 
   #logger: Logger
   context: string

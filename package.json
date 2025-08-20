@@ -1,5 +1,5 @@
 {
-  "name": "@buddy-works/test-collector",
+  "name": "@buddy-works/unit-tests",
   "version": "0.8.0",
   "description": "Universal test results collector for Jest, Jasmine, Mocha, Cypress, Playwright, and Vitest that sends results to Buddy Works API in real-time",
   "files": [
@@ -43,7 +43,7 @@
     "lint": "eslint . --cache --quiet",
     "lint:types": "tsc --skipLibCheck --noEmit",
     "prepare": "husky && npm run build",
-    "prepare:tests": "rimraf package && mkdir package && npm pack --pack-destination package && mv package/*.tgz test-collector.tgz && rimraf package",
+    "prepare:tests": "rimraf package && mkdir package && npm pack --pack-destination package && mv package/*.tgz unit-tests.tgz && rimraf package",
     "cleanup:tests": "rimraf examples/*/package-lock.json examples/*/node_modules",
     "test:jest": "./scripts/test-jest.sh",
     "test:vitest": "./scripts/test-vitest.sh",

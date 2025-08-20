@@ -1,6 +1,6 @@
 # Mocha Test Collector Example
 
-This example demonstrates how to use `@buddy-works/test-collector` with Mocha.
+This example demonstrates how to use `@buddy-works/unit-tests` with Mocha.
 
 ## Setup
 
@@ -21,7 +21,7 @@ The test collector reporter is configured in `.mocharc.js`:
 
 ```javascript
 module.exports = {
-  reporter: '@buddy-works/test-collector/mocha',
+  reporter: '@buddy-works/unit-tests/mocha',
   // other options...
 }
 ```

@@ -27,14 +27,14 @@
       value: latest
       type: VAR
   actions:
-    - action: Run test-collector/build
+    - action: Run unit-tests/build
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
       priority: NORMAL
-      project: test-collector
+      project: unit-tests
       pipeline: build
-    - action: Run test-collector/cypress
+    - action: Run unit-tests/cypress
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -47,9 +47,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector
+      project: unit-tests
       pipeline: cypress
-    - action: Run test-collector/jasmine
+    - action: Run unit-tests/jasmine
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -62,9 +62,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector
+      project: unit-tests
       pipeline: jasmine
-    - action: Run test-collector/jest
+    - action: Run unit-tests/jest
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -77,9 +77,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector
+      project: unit-tests
       pipeline: jest
-    - action: Run test-collector/mocha
+    - action: Run unit-tests/mocha
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -92,9 +92,9 @@
         - key: NODE_VERSION
           value: $NODE_VERSION
           type: VAR
-      project: test-collector
+      project: unit-tests
       pipeline: mocha
-    - action: Run test-collector/playwright
+    - action: Run unit-tests/playwright
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -107,9 +107,9 @@
         - key: PLAYWRIGHT_VERSION
           value: $PLAYWRIGHT_VERSION
           type: VAR
-      project: test-collector
+      project: unit-tests
       pipeline: playwright
-    - action: Run test-collector/vitest
+    - action: Run unit-tests/vitest
       type: RUN_NEXT_PIPELINE
       wait: true
       comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
@@ -121,5 +121,5 @@
         - key: VITEST_VERSION
           value: $VITEST_VERSION
           type: VAR
-      project: test-collector
+      project: unit-tests
       pipeline: vitest

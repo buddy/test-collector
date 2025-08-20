@@ -39,7 +39,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    reporters: ['default', '@buddy-works/test-collector/vitest'],
+    reporters: ['default', '@buddy-works/unit-tests/vitest'],
   },
 })
 ```

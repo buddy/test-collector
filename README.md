@@ -1,4 +1,4 @@
-# @buddy-works/test-collector
+# @buddy-works/unit-tests
 
 Universal test results collector that sends real-time test results from popular JavaScript testing frameworks directly to your Buddy Works unit testing dashboard. Zero configuration required - just install, add to your test config, and go.
 
@@ -7,7 +7,7 @@ Universal test results collector that sends real-time test results from popular 
 ## Installation
 
 ```bash
-npm install --save-dev @buddy-works/test-collector
+npm install --save-dev @buddy-works/unit-tests
 ```
 
 ## Setup
@@ -24,14 +24,14 @@ Choose your testing framework and add the reporter:
 
 ```javascript
 module.exports = {
-  reporters: ['default', '@buddy-works/test-collector/jest'],
+  reporters: ['default', '@buddy-works/unit-tests/jest'],
 }
 ```
 
 **Jasmine** - Add to helpers (`__tests__/helpers/setup-reporter.js`):
 
 ```javascript
-const buddyTestCollector = require('@buddy-works/test-collector/jasmine').default
+const buddyTestCollector = require('@buddy-works/unit-tests/jasmine').default
 
 jasmine.getEnv().addReporter(buddyTestCollector)
 ```
@@ -48,7 +48,7 @@ Then reference it in `jasmine.json`:
 
 ```javascript
 module.exports = {
-  reporter: '@buddy-works/test-collector/mocha',
+  reporter: '@buddy-works/unit-tests/mocha',
 }
 ```
 
@@ -59,7 +59,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    reporters: ['default', '@buddy-works/test-collector/vitest'],
+    reporters: ['default', '@buddy-works/unit-tests/vitest'],
   },
 })
 ```
@@ -70,7 +70,7 @@ export default defineConfig({
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
-  reporter: [['@buddy-works/test-collector/playwright']],
+  reporter: [['@buddy-works/unit-tests/playwright']],
 })
 ```
 
@@ -78,11 +78,11 @@ export default defineConfig({
 
 ```javascript
 const { defineConfig } = require('cypress')
-const BuddyCypressReporter = require('./node_modules/@buddy-works/test-collector/dist/reporters/cypress/index.js')
+const BuddyCypressReporter = require('./node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js')
 
 module.exports = defineConfig({
   e2e: {
-    reporter: './node_modules/@buddy-works/test-collector/dist/reporters/cypress/index.js',
+    reporter: './node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js',
     setupNodeEvents(on) {
       on('after:run', BuddyCypressReporter.closeSession)
     },
