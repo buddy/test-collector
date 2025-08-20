@@ -33,10 +33,10 @@
   actions:
     - action: Copy files
       type: COPY_FILES
-      source_project: unit-tests
+      source_project: test-collector
       source_pipeline: build
       source_path: /unit-tests.tgz
-      target_project: unit-tests
+      target_project: test-collector
       target_pipeline: vitest
       target_path: /
     - action: Collect Vitest tests
