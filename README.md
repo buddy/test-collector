@@ -104,11 +104,11 @@ npx playwright test --reporter=@buddy-works/unit-tests/playwright
 
 ```javascript
 const { defineConfig } = require('cypress')
-const BuddyCypressReporter = require('./node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js')
+const BuddyCypressReporter = require('@buddy-works/unit-tests/cypress')
 
 module.exports = defineConfig({
   e2e: {
-    reporter: './node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js',
+    reporter: '@buddy-works/unit-tests/dist/reporters/cypress/index.js',
     setupNodeEvents(on) {
       on('after:run', BuddyCypressReporter.closeSession)
     },
@@ -119,14 +119,14 @@ module.exports = defineConfig({
 Or run from CLI (still requires the `after:run` hook in config):
 
 ```bash
-cypress run --reporter ./node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js
+cypress run --reporter @buddy-works/unit-tests/dist/reporters/cypress/index.js
 ```
 
 > **Note for Cypress:**
 >
 > - You must install `mocha` as a dev dependency: `npm install --save-dev mocha`
 > - The `after:run` event handler must be configured in the config file even when using CLI
-> - The reporter path must be the full path to the compiled JavaScript file
+> - The reporter path must use the dist path format due to Cypress's module resolution
 
 That's it! Your tests will now automatically send results to Buddy Works.
 

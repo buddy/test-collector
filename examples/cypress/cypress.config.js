@@ -1,14 +1,14 @@
 const { defineConfig } = require('cypress')
-const BuddyCypressReporter = require('./node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js')
+const BuddyCypressReporter = require('@buddy-works/unit-tests/cypress')
 
 module.exports = defineConfig({
   e2e: {
-    supportFile: false,
-    reporter: './node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js',
-    video: false,
-    screenshotOnRunFailure: false,
+    reporter: '@buddy-works/unit-tests/dist/reporters/cypress/index.js',
     setupNodeEvents(on) {
       on('after:run', BuddyCypressReporter.closeSession)
     },
+    video: false,
+    supportFile: false,
+    screenshotOnRunFailure: false,
   },
 })
