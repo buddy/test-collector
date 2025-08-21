@@ -1,10 +1,10 @@
 {
   "name": "jest-tests",
   "scripts": {
-    "test": "jest"
+    "test": "dotenvx run -f ../../.env -- jest"
   },
   "devDependencies": {
-    "dotenv": "17.2.1",
+    "@dotenvx/dotenvx": "1.49.0",
     "jest": "30"
   },
   "dependencies": {

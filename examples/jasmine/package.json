@@ -1,10 +1,10 @@
 {
   "name": "jasmine-tests",
   "scripts": {
-    "test": "jasmine --config=jasmine.json"
+    "test": "dotenvx run -f ../../.env -- jasmine --config=jasmine.json"
   },
   "devDependencies": {
-    "dotenv": "17.2.1",
+    "@dotenvx/dotenvx": "1.49.0",
     "jasmine": "5.9.0"
   },
   "dependencies": {

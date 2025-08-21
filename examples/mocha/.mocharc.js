@@ -1,5 +1,3 @@
-require('dotenv').config({ path: '../../.env' })
-
 module.exports = {
   spec: '__tests__/**/*.test.js',
   reporter: '@buddy-works/unit-tests/mocha',

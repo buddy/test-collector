@@ -1,10 +1,10 @@
 {
   "name": "mocha-tests",
   "scripts": {
-    "test": "mocha"
+    "test": "dotenvx run -f ../../.env -- mocha"
   },
   "devDependencies": {
-    "dotenv": "17.2.1",
+    "@dotenvx/dotenvx": "1.49.0",
     "mocha": "11.7.1"
   },
   "dependencies": {
