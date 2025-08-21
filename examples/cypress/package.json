@@ -1,12 +1,12 @@
 {
   "name": "cypress-tests",
   "scripts": {
-    "test": "cypress run",
-    "test:open": "cypress open"
+    "test": "dotenvx run -f ../../.env -- cypress run",
+    "test:open": "dotenvx run -f ../../.env -- cypress open"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "1.49.0",
     "cypress": "14.5.3",
-    "dotenv": "17.2.1",
     "mocha": "11.7.1"
   },
   "dependencies": {
