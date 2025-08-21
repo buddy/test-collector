@@ -49,6 +49,8 @@
     docker_image_name: library/node
     docker_image_tag: 22
     execute_commands:
+    - git config user.email "ci@buddy.works"
+    - git config user.name "Buddy CI"
     - "npm version $VERSION_BUMP_TYPE -m \"chore(release): bump version to %s\""
     volume_mappings:
     - /:/buddy-works/unit-tests
