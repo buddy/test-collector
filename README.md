@@ -28,6 +28,12 @@ module.exports = {
 }
 ```
 
+Or run from CLI:
+
+```bash
+jest --reporters=default --reporters=@buddy-works/unit-tests/jest
+```
+
 **Jasmine** - Add to helpers (`__tests__/helpers/setup-reporter.js`):
 
 ```javascript
@@ -52,6 +58,12 @@ module.exports = {
 }
 ```
 
+Or run from CLI:
+
+```bash
+mocha --reporter=@buddy-works/unit-tests/mocha
+```
+
 **Vitest** (`vitest.config.js`):
 
 ```javascript
@@ -64,6 +76,12 @@ export default defineConfig({
 })
 ```
 
+Or run from CLI:
+
+```bash
+vitest --reporter=default --reporter=@buddy-works/unit-tests/vitest
+```
+
 **Playwright** (`playwright.config.js`):
 
 ```javascript
@@ -72,6 +90,12 @@ import { defineConfig } from '@playwright/test'
 export default defineConfig({
   reporter: [['@buddy-works/unit-tests/playwright']],
 })
+```
+
+Or run from CLI:
+
+```bash
+npx playwright test --reporter=@buddy-works/unit-tests/playwright
 ```
 
 **Cypress** (`cypress.config.js`):
