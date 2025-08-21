@@ -50,6 +50,8 @@ Then reference it in `jasmine.json`:
 }
 ```
 
+> **Note:** Jasmine doesn't support specifying reporters via CLI. The reporter must be configured through a helper file as shown above.
+
 **Mocha** (`.mocharc.js`):
 
 ```javascript
@@ -114,11 +116,17 @@ module.exports = defineConfig({
 })
 ```
 
-> **Note for Cypress:** You must also install `mocha` as a dev dependency since the Cypress reporter requires it:
+Or run from CLI (still requires the `after:run` hook in config):
+
+```bash
+cypress run --reporter ./node_modules/@buddy-works/unit-tests/dist/reporters/cypress/index.js
+```
+
+> **Note for Cypress:**
 >
-> ```bash
-> npm install --save-dev mocha
-> ```
+> - You must install `mocha` as a dev dependency: `npm install --save-dev mocha`
+> - The `after:run` event handler must be configured in the config file even when using CLI
+> - The reporter path must be the full path to the compiled JavaScript file
 
 That's it! Your tests will now automatically send results to Buddy Works.
 
