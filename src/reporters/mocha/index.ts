@@ -1,10 +1,8 @@
-import { createSafeReporter } from '@/utils/safe-reporter'
 import BuddyMochaReporter from './reporter'
 
-const SafeBuddyMochaReporter = createSafeReporter(BuddyMochaReporter)
-
-export default SafeBuddyMochaReporter
+// eslint-disable-next-line unicorn/prefer-export-from
+export default BuddyMochaReporter
 
 // Ensure CommonJS compatibility for Mocha
 // eslint-disable-next-line unicorn/prefer-module
-module.exports = SafeBuddyMochaReporter
+module.exports = BuddyMochaReporter
