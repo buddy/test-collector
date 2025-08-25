@@ -7,7 +7,7 @@ const logger = new Logger('BuddyJasmineReporter')
 /**
  * @see {@link https://jasmine.github.io/tutorials/custom_reporter}
  */
-const BuddyJasmineReporter: jasmine.CustomReporter = {
+const BuddyJasmineReporter = {
   async jasmineStarted() {
     logger.debug('Jasmine test run started')
 
@@ -50,7 +50,7 @@ const BuddyJasmineReporter: jasmine.CustomReporter = {
       sessionManager.markFrameworkError()
     }
   },
-}
+} satisfies jasmine.CustomReporter
 
 export default BuddyJasmineReporter
 
