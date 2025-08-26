@@ -14,4 +14,6 @@
     - npm run build
     - npm run cleanup:tests
     - npm run prepare:tests
+    mount_filesystem_disable: true
+    volume_mappings: []
     shell: BASH
