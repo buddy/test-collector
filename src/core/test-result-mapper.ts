@@ -4,13 +4,11 @@ import type { TestCase as PlaywrightTestCase, TestResult as PlaywrightTestResult
 import { Test as MochaTest } from 'mocha'
 import { RunnerTask as VitestRunnerTask, RunnerTaskResult as VitestRunnerTaskResult } from 'vitest'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
-import { Logger } from '@/utils/logger'
+import logger from '@/utils/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class TestResultMapper {
   static displayName = 'TestResultMapper'
-
-  static #logger = new Logger()
 
   static #toXml(object: Record<string, string | undefined>): string {
     let xml = '<data>'
@@ -34,7 +32,7 @@ export default class TestResultMapper {
     return (
       statusMap[testResult] ??
       (() => {
-        TestResultMapper.#logger.debug(
+        logger.debug(
           `Unknown test result status: ${String(testResult)}. Defaulting to ${BUDDY_UNIT_TEST_STATUS.ERROR}.`,
         )
         return BUDDY_UNIT_TEST_STATUS.ERROR

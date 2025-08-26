@@ -1,7 +1,7 @@
 import { PACKAGE_NAME } from '@/core/const'
 import environment from '@/utils/environment'
 
-export class Logger {
+class Logger {
   #prefix: string
   #debugEnabled: boolean
 
@@ -49,3 +49,5 @@ export class Logger {
     console.error(`[${this.#prefix}] ERROR: ${message}${errorMessage ? ` - ${errorMessage}` : ''}`)
   }
 }
+
+export default new Logger()

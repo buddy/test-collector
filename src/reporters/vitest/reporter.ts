@@ -3,7 +3,7 @@ import type { Vitest } from 'vitest/node'
 import type { Reporter } from 'vitest/reporters'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
-import { Logger } from '@/utils/logger'
+import logger from '@/utils/logger'
 
 /**
  * @see {@link https://vitest.dev/advanced/reporters}
@@ -11,30 +11,27 @@ import { Logger } from '@/utils/logger'
 export default class BuddyVitestReporter implements Reporter {
   static displayName = 'BuddyVitestReporter'
 
-  #logger: Logger
-
   tasks: Map<string, RunnerTask>
   processedTests: Set<unknown>
   context: Vitest | undefined
 
   constructor() {
-    this.#logger = new Logger()
     this.tasks = new Map()
     this.context = undefined
     this.processedTests = new Set()
   }
 
   onInit(context: Vitest) {
-    this.#logger.debug('Vitest reporter initialized')
+    logger.debug('Vitest reporter initialized')
     this.context = context
     this.loadTasksFromContext()
 
     void (async () => {
       try {
         await sessionManager.getOrCreateSession('vitest')
-        this.#logger.debug('Session created at Vitest reporter initialization')
+        logger.debug('Session created at Vitest reporter initialization')
       } catch (error) {
-        this.#logger.error('Error creating session at Vitest reporter initialization', error)
+        logger.error('Error creating session at Vitest reporter initialization', error)
         sessionManager.markFrameworkError()
       }
     })()
@@ -49,7 +46,7 @@ export default class BuddyVitestReporter implements Reporter {
         this.traverseTasks(file)
       }
     } catch (error) {
-      this.#logger.error('Error loading tasks from context', error)
+      logger.error('Error loading tasks from context', error)
     }
   }
 
@@ -82,7 +79,7 @@ export default class BuddyVitestReporter implements Reporter {
         }
       }
     } catch (error) {
-      this.#logger.error('Error processing task update', error)
+      logger.error('Error processing task update', error)
     }
   }
 
@@ -129,13 +126,13 @@ export default class BuddyVitestReporter implements Reporter {
   }
 
   async onFinished() {
-    this.#logger.debug('Vitest test run completed')
+    logger.debug('Vitest test run completed')
 
     // Get final state from context for more reliable task collection
     await this.processMissingTests()
 
     const processedCount = this.processedTests.size
-    this.#logger.debug(`Processed ${String(processedCount)} tests total`)
+    logger.debug(`Processed ${String(processedCount)} tests total`)
 
     this.tasks.clear()
     this.processedTests.clear()
@@ -143,10 +140,10 @@ export default class BuddyVitestReporter implements Reporter {
     try {
       if (sessionManager.initialized) {
         await sessionManager.closeSession()
-        this.#logger.debug('Session closed after Vitest test completion')
+        logger.debug('Session closed after Vitest test completion')
       }
     } catch (error) {
-      this.#logger.error('Error closing session after Vitest test completion', error)
+      logger.error('Error closing session after Vitest test completion', error)
       sessionManager.markFrameworkError()
     }
   }
@@ -192,7 +189,7 @@ export default class BuddyVitestReporter implements Reporter {
       const shouldProcess = task.mode === 'skip' || task.mode === 'todo' || task.result?.state === 'skip'
       if (shouldProcess) {
         const resultState = task.result?.state ?? 'unknown'
-        this.#logger.debug(`Found missed test: ${task.name} (mode: ${task.mode}, result state: ${String(resultState)})`)
+        logger.debug(`Found missed test: ${task.name} (mode: ${task.mode}, result state: ${String(resultState)})`)
         await this.processSkippedTest(task.id, this.createSkippedResult(), task)
       }
     }

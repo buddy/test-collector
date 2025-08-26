@@ -1,13 +1,12 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
 import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
-import { Logger } from '@/utils/logger'
+import logger from '@/utils/logger'
 
 export default class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
   static libraryName = '@buddy-works/unit-tests'
 
-  #logger: Logger
   context: string
   ciProvider: CI_PROVIDER
 
@@ -29,8 +28,6 @@ export default class BuddyUnitTestCollectorConfig {
     this.context = context
     this.ciProvider = detectCIProvider()
 
-    this.#logger = new Logger()
-
     this.#logEnvironmentVariables()
 
     this.utToken = environment.BUDDY_UT_TOKEN
@@ -42,7 +39,7 @@ export default class BuddyUnitTestCollectorConfig {
 
     switch (this.ciProvider) {
       case CI_PROVIDER.BUDDY: {
-        this.#logger.debug('Loading Buddy CI configuration')
+        logger.debug('Loading Buddy CI configuration')
 
         this.runRefName = environment.BUDDY_RUN_REF_NAME
         this.runRefType = environment.BUDDY_RUN_REF_TYPE || this.#fallback.runRefType
@@ -54,7 +51,7 @@ export default class BuddyUnitTestCollectorConfig {
         break
       }
       case CI_PROVIDER.GITHUB_ACTION: {
-        this.#logger.debug('Loading GitHub Actions configuration')
+        logger.debug('Loading GitHub Actions configuration')
 
         const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
         const repository = environment.GITHUB_REPOSITORY
@@ -70,15 +67,15 @@ export default class BuddyUnitTestCollectorConfig {
         break
       }
       default: {
-        this.#logger.warn(`No supported CI environment detected: ${this.ciProvider}.`)
+        logger.warn(`No supported CI environment detected: ${this.ciProvider}.`)
         this.ciProvider = CI_PROVIDER.NONE
-        this.#logger.debug(`Environment set to ${this.ciProvider} for compatibility.`)
+        logger.debug(`Environment set to ${this.ciProvider} for compatibility.`)
       }
     }
 
     this.#logLoadedConfig()
 
-    this.#logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName} (environment: ${this.ciProvider})`)
+    logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName} (environment: ${this.ciProvider})`)
   }
 
   #logEnvironmentVariables(): void {
@@ -95,9 +92,9 @@ export default class BuddyUnitTestCollectorConfig {
 
     if (foundVariables.length > 0) {
       const variablesList = foundVariables.map((variable) => `  ${variable}`).join('\n')
-      this.#logger.debug(`Detected environment variables:\n${variablesList}`)
+      logger.debug(`Detected environment variables:\n${variablesList}`)
     } else {
-      this.#logger.debug('No environment variables detected from configuration schema')
+      logger.debug('No environment variables detected from configuration schema')
     }
   }
 
@@ -169,7 +166,7 @@ export default class BuddyUnitTestCollectorConfig {
       ...(this.runUrl && { run_url: this.runUrl }),
     }
 
-    this.#logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type})`)
+    logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type})`)
     return payload
   }
 
@@ -190,6 +187,6 @@ export default class BuddyUnitTestCollectorConfig {
       runUrl: this.runUrl,
     }
 
-    this.#logger.debug('Loaded configuration:', config)
+    logger.debug('Loaded configuration:', config)
   }
 }
