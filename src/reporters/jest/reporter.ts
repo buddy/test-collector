@@ -1,7 +1,6 @@
 import type { Config, Reporter, Test, TestResult } from '@jest/reporters'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
-import { IBuddyUnitTestCollectorConfig } from '@/core/types'
 import { Logger } from '@/utils/logger'
 
 /**
@@ -13,12 +12,10 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
   #logger: Logger
 
   globalConfig: Config.GlobalConfig
-  options: IBuddyUnitTestCollectorConfig
 
-  constructor(globalConfig: Config.GlobalConfig, options: IBuddyUnitTestCollectorConfig) {
+  constructor(globalConfig: Config.GlobalConfig) {
     this.globalConfig = globalConfig
-    this.options = options
-    this.#logger = new Logger(BuddyJestReporter.displayName)
+    this.#logger = new Logger()
   }
 
   async onRunStart() {

@@ -67,12 +67,29 @@ function processConfigEntry<K extends keyof typeof environmentConfig>(
   }
 }
 
-function loadEnvironment(): EnvironmentConfig {
-  const entries = (Object.keys(environmentConfig) as (keyof typeof environmentConfig)[]).map(
-    (key) => [key, processConfigEntry(key, environmentConfig[key])] as const,
-  )
+interface EnvironmentResult {
+  error?: unknown
+  variables: EnvironmentConfig
+}
 
-  return Object.fromEntries(entries) as EnvironmentConfig
+function loadEnvironment(): EnvironmentResult {
+  const entries = []
+
+  for (const key of Object.keys(environmentConfig) as (keyof typeof environmentConfig)[]) {
+    try {
+      const value = processConfigEntry(key, environmentConfig[key])
+      entries.push([key, value])
+    } catch (error: unknown) {
+      return {
+        error,
+        variables: {} as EnvironmentConfig,
+      }
+    }
+  }
+
+  return {
+    variables: Object.fromEntries(entries) as EnvironmentConfig,
+  }
 }
 
 function setEnvironmentVariable<K extends keyof typeof environmentConfig>(key: K, value: EnvironmentConfig[K]): void {
@@ -119,20 +136,21 @@ enum CI_PROVIDER {
 }
 
 function detectCIProvider(): CI_PROVIDER {
-  const environment = loadEnvironment()
+  const result = loadEnvironment()
 
-  // Check for Buddy CI
-  if (environment.BUDDY) {
+  if (result.variables.BUDDY) {
     return CI_PROVIDER.BUDDY
   }
 
-  // Check for GitHub Actions
-  if (environment.GITHUB_ACTIONS) {
+  if (result.variables.GITHUB_ACTIONS) {
     return CI_PROVIDER.GITHUB_ACTION
   }
 
   return CI_PROVIDER.NONE
 }
 
-export default loadEnvironment()
-export { setEnvironmentVariable, detectCIProvider, environmentConfig, CI_PROVIDER }
+const environmentResult = loadEnvironment()
+export default environmentResult.variables
+export const environmentError = environmentResult.error
+
+export { setEnvironmentVariable, detectCIProvider, environmentConfig, CI_PROVIDER, type EnvironmentResult }

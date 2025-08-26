@@ -22,7 +22,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     this.runner = runner
     this.options = options
 
-    this.logger = new Logger(BuddyMochaReporter.displayName)
+    this.logger = new Logger()
     this.pendingSubmissions = new Set()
 
     this.runner.on(EVENT_RUN_BEGIN, () => {

@@ -18,7 +18,7 @@ export default class BuddyVitestReporter implements Reporter {
   context: Vitest | undefined
 
   constructor() {
-    this.#logger = new Logger(BuddyVitestReporter.displayName)
+    this.#logger = new Logger()
     this.tasks = new Map()
     this.context = undefined
     this.processedTests = new Set()

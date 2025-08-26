@@ -13,7 +13,7 @@ export default class BuddyPlaywrightReporter implements Reporter {
 
   constructor(options = {}) {
     this.options = options
-    this.#logger = new Logger(BuddyPlaywrightReporter.displayName)
+    this.#logger = new Logger()
   }
 
   onBegin() {

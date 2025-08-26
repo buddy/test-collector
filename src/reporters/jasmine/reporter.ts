@@ -2,7 +2,7 @@ import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import { Logger } from '@/utils/logger'
 
-const logger = new Logger('BuddyJasmineReporter')
+const logger = new Logger()
 
 /**
  * @see {@link https://jasmine.github.io/tutorials/custom_reporter}

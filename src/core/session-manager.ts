@@ -38,8 +38,7 @@ class BuddyUnitTestSessionManager {
   }
 
   constructor() {
-    const loggerName = BuddyUnitTestSessionManager.displayName
-    this.#logger = new Logger(loggerName)
+    this.#logger = new Logger()
 
     this.sessionId = undefined
     this.#config = undefined
@@ -124,8 +123,7 @@ class BuddyUnitTestSessionManager {
       this.#config = new BuddyUnitTestCollectorConfig(this.#context)
       this.#apiClient = new BuddyUnitTestApiClient(this.#config)
       this.initialized = true
-      const loggerNameWithContext = `${BuddyUnitTestSessionManager.displayName}/${this.#context}`
-      this.#logger = new Logger(loggerNameWithContext)
+      this.#logger = new Logger()
       this.#logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
 
       // Automatically set up exit handlers when session manager is initialized
@@ -191,6 +189,11 @@ class BuddyUnitTestSessionManager {
   async closeSession() {
     if (!this.initialized) {
       this.#initialize()
+    }
+
+    // Return early if config is not available (environment error case)
+    if (!this.#config) {
+      return
     }
 
     if (!this.sessionId && environment.BUDDY_SESSION_ID) {

@@ -29,8 +29,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.context = context
     this.ciProvider = detectCIProvider()
 
-    const loggerNameWithContext = `${BuddyUnitTestCollectorConfig.displayName}_${context}`
-    this.#logger = new Logger(loggerNameWithContext)
+    this.#logger = new Logger()
 
     this.#logEnvironmentVariables()
 

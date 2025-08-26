@@ -17,5 +17,3 @@ export interface IBuddyUnitTestApiTestCase {
   time: number
   data?: string
 }
-
-export type IBuddyUnitTestCollectorConfig = never

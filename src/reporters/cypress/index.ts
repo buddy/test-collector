@@ -1,8 +1,10 @@
-import BuddyCypressReporter from './reporter'
+import BuddyCypressReporter from '@/reporters/cypress/reporter'
+import { getSafeReporter } from '@/utils/safe-reporter'
 
-// eslint-disable-next-line unicorn/prefer-export-from
-export default BuddyCypressReporter
+const Reporter = getSafeReporter(BuddyCypressReporter)
+
+export default Reporter
 
 // Ensure CommonJS compatibility for Cypress
 // eslint-disable-next-line unicorn/prefer-module
-module.exports = BuddyCypressReporter
+module.exports = Reporter

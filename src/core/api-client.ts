@@ -13,8 +13,7 @@ export default class BuddyUnitTestApiClient {
 
   constructor(config: BuddyUnitTestCollectorConfig) {
     this.#config = config
-    const loggerNameWithContext = `${BuddyUnitTestApiClient.displayName}_${this.#config.context}`
-    this.#logger = new Logger(loggerNameWithContext)
+    this.#logger = new Logger()
 
     const axiosOptions: CreateAxiosDefaults = {
       baseURL: config.apiBaseUrl,
@@ -134,7 +133,7 @@ export default class BuddyUnitTestApiClient {
     } catch (error) {
       this.#logger.error(`Failed to close session: ${sessionId}`, error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      throw error // Re-throw to ensure session manager knows about the failure
+      throw error
     }
   }
 }

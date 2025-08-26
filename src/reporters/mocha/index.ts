@@ -1,8 +1,10 @@
-import BuddyMochaReporter from './reporter'
+import BuddyMochaReporter from '@/reporters/mocha/reporter'
+import { getSafeReporter } from '@/utils/safe-reporter'
 
-// eslint-disable-next-line unicorn/prefer-export-from
-export default BuddyMochaReporter
+const Reporter = getSafeReporter(BuddyMochaReporter)
+
+export default Reporter
 
 // Ensure CommonJS compatibility for Mocha
 // eslint-disable-next-line unicorn/prefer-module
-module.exports = BuddyMochaReporter
+module.exports = Reporter

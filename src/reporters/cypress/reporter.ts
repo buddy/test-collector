@@ -17,7 +17,7 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
 
   constructor(runner: Runner, options: MochaOptions) {
     super(runner, options)
-    this.logger = new Logger(BuddyCypressReporter.displayName)
+    this.logger = new Logger()
   }
 
   async onStart() {

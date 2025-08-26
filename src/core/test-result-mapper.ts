@@ -10,7 +10,7 @@ import { Logger } from '@/utils/logger'
 export default class TestResultMapper {
   static displayName = 'TestResultMapper'
 
-  static #logger = new Logger(TestResultMapper.displayName)
+  static #logger = new Logger()
 
   static #toXml(object: Record<string, string | undefined>): string {
     let xml = '<data>'
