@@ -1,19 +1,17 @@
 - pipeline: build
   refs:
-  - refs/heads/master
+    - refs/heads/master
   always_from_scratch: true
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
   actions:
-  - action: npm run prepare:tests
-    type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: 22
-    execute_commands:
-    - npm ci
-    - npm run build
-    - npm run cleanup:tests
-    - npm run prepare:tests
-    mount_filesystem_disable: true
-    volume_mappings: []
-    shell: BASH
+    - action: npm run prepare:tests
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - npm ci
+        - npm run build
+        - npm run cleanup:tests
+        - npm run prepare:tests
+      shell: BASH

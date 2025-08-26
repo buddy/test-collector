@@ -1,59 +1,41 @@
 - pipeline: cypress
   refs:
-  - refs/heads/master
+    - refs/heads/master
   always_from_scratch: true
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
   variables:
-  - key: BUDDY_LOGGER_DEBUG
-    value: 1
-    type: VAR
-  - key: BUDDY_RUN_BRANCH
-    type: VAR
-  - key: BUDDY_RUN_COMMIT
-    type: VAR
-  - key: BUDDY_RUN_HASH
-    type: VAR
-  - key: BUDDY_RUN_PRE_COMMIT
-    type: VAR
-  - key: BUDDY_RUN_REF_NAME
-    type: VAR
-  - key: BUDDY_RUN_REF_TYPE
-    type: VAR
-  - key: BUDDY_RUN_URL
-    type: VAR
-  - key: BUDDY_SESSION_ID
-    type: VAR
-  - key: CYPRESS_VERSION
-    value: latest
-    type: VAR
-  - key: MOCHA_VERSION
-    value: latest
-    type: VAR
-  - key: NODE_VERSION
-    value: 22
-    type: VAR
+    - key: BUDDY_LOGGER_DEBUG
+      value: 1
+      type: VAR
+    - key: CYPRESS_VERSION
+      value: latest
+      type: VAR
+    - key: MOCHA_VERSION
+      value: latest
+      type: VAR
+    - key: NODE_VERSION
+      value: 22
+      type: VAR
   actions:
-  - action: Copy files
-    type: COPY_FILES
-    source_project: test-collector
-    source_pipeline: build
-    source_path: /unit-tests.tgz
-    target_project: test-collector
-    target_pipeline: cypress
-    target_path: /
-  - action: Collect Cypress tests
-    type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: $NODE_VERSION
-    execute_commands:
-    - cd examples/cypress
-    - npm install
-    - npx cypress install
-    - cd ../..
-    - npm run test:cypress
-    setup_commands:
-    - apt-get update && apt-get -y install jq libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-    mount_filesystem_disable: true
-    volume_mappings: []
-    shell: BASH
+    - action: Copy files
+      type: COPY_FILES
+      source_project: test-collector
+      source_pipeline: build
+      source_path: /unit-tests.tgz
+      target_project: test-collector
+      target_pipeline: cypress
+      target_path: /
+    - action: Collect Cypress tests
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: $NODE_VERSION
+      execute_commands:
+        - cd examples/cypress
+        - npm install
+        - npx cypress install
+        - cd ../..
+        - npm run test:cypress
+      setup_commands:
+        - apt-get update && apt-get -y install jq libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      shell: BASH
