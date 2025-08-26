@@ -107,10 +107,18 @@ jobs:
         with:
           name: test-package
 
-      - name: Setup and run Playwright tests
+      - name: Setup Playwright environment
         run: |
           sudo apt-get update && sudo apt-get -y install jq
+
+      - name: Prepare and run Playwright tests
+        run: |
           export PLAYWRIGHT_VERSION=latest
+          ./scripts/prepare-version.sh devDependencies "@playwright/test" "${PLAYWRIGHT_VERSION:-latest}" "$PWD/examples/playwright"
+          cd examples/playwright
+          npm install
+          npx playwright install --with-deps
+          cd ../..
           npm run test:playwright
 
   test-jasmine:
