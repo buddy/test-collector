@@ -1,7 +1,7 @@
 {
   "name": "jasmine-tests",
   "scripts": {
-    "test": "dotenvx run -f ../../.env -- jasmine --config=jasmine.json"
+    "test": "dotenvx run -f ../../.env -- jasmine"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.49.0",
