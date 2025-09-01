@@ -72,7 +72,7 @@ export default class BuddyUnitTestApiClient {
       const response = await this.#axiosInstance.post<{ id: string }>(url, this.#config.sessionPayload)
 
       const sessionId = response.data.id
-      logger.info(`Created Buddy visual tests session with ID: ${sessionId}`)
+      logger.info(`Created Buddy unit tests session with ID: ${sessionId}`)
 
       return sessionId
     } catch (error) {
