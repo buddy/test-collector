@@ -65,13 +65,13 @@ export default class TestResultMapper {
     }
 
     // Use the outermost describe block name or fallback to filename
-    const suiteName =
+    const testGroupName =
       assertionResult.ancestorTitles.length > 0 ? assertionResult.ancestorTitles[0] : fileNameWithoutExtension
 
     return {
       name: assertionResult.title,
-      classname: suiteName,
-      suite_name: suiteName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
       status,
       time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
       data: this.#toXml(dataObject),
@@ -94,16 +94,16 @@ export default class TestResultMapper {
     // Extract suite name from fullName by removing the test description at the end
     // fullName format: "[jasmine 5.9.0] Status Tests - Part 1 should pass"
     // We want: "[jasmine 5.9.0] Status Tests - Part 1"
-    let suiteName = result.fullName
-    if (result.description && suiteName.endsWith(result.description)) {
+    let testGroupName = result.fullName
+    if (result.description && testGroupName.endsWith(result.description)) {
       // Remove the test description from the end, including the space before it
-      suiteName = suiteName.slice(0, -result.description.length).trim()
+      testGroupName = testGroupName.slice(0, -result.description.length).trim()
     }
 
     return {
       name: result.description,
-      classname: suiteName,
-      suite_name: suiteName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
       status: status,
       time: (result.duration ?? 0) / 1000 || 0,
       data: this.#toXml(dataObject),
@@ -123,12 +123,12 @@ export default class TestResultMapper {
       messages: test.fullTitle() || '',
     }
 
-    const suiteName = test.parent?.title ?? test.file ?? 'Unknown Suite'
+    const testGroupName = test.parent?.title ?? test.file ?? 'Unknown Test Group'
 
     return {
       name: test.title,
-      classname: suiteName,
-      suite_name: suiteName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
       status: status,
       time: test.duration ? test.duration / 1000 : 0,
       data: this.#toXml(dataObject),
@@ -149,12 +149,12 @@ export default class TestResultMapper {
       messages: test.location.file || '',
     }
 
-    const suiteName = (test.parent.title || test.location.file.split('/').pop()) ?? 'Playwright Suite'
+    const testGroupName = (test.parent.title || test.location.file.split('/').pop()) ?? 'Playwright Test Group'
 
     return {
       name: test.title,
-      classname: suiteName,
-      suite_name: suiteName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
       status: status,
       time: result.duration ? result.duration / 1000 : 0,
       data: this.#toXml(dataObject),
@@ -181,13 +181,13 @@ export default class TestResultMapper {
     }
 
     let testName = 'Unknown Test'
-    let suiteName = 'Unknown Suite'
+    let testGroupName = 'Unknown Test Group'
 
     if (task) {
       testName = task.name || taskId || 'Unknown Test'
 
       if (task.suite?.name) {
-        suiteName = task.suite.name
+        testGroupName = task.suite.name
       } else {
         let filePath = ''
         if (typeof task.file === 'string') {
@@ -203,9 +203,9 @@ export default class TestResultMapper {
           if (!fileName) {
             throw new Error('File name could not be determined from task file path')
           }
-          suiteName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
+          testGroupName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
         } else {
-          suiteName = 'Vitest Suite'
+          testGroupName = 'Vitest Test Group'
         }
       }
     } else {
@@ -213,13 +213,13 @@ export default class TestResultMapper {
         testName = taskId
       }
 
-      suiteName = 'Vitest Suite'
+      testGroupName = 'Vitest Test Group'
     }
 
     return {
       name: testName,
-      classname: suiteName,
-      suite_name: suiteName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
       status,
       time: taskResult.duration ? taskResult.duration / 1000 : 0,
       data: this.#toXml(dataObject),

@@ -14,7 +14,7 @@ npm install --save-dev @buddy-works/unit-tests
 
 ### 1. Get your token
 
-In your Buddy Works workspace, go to the **Unit Tests** section and create a new folder. You'll receive a `BUDDY_UT_TOKEN` - set this as an environment variable in your CI/CD pipeline.
+In your Buddy Works workspace, go to the **Unit Tests** section and create a new suite. You'll receive a `BUDDY_UT_TOKEN` - set this as an environment variable in your CI/CD pipeline.
 
 ### 2. Add to your test configuration
 
