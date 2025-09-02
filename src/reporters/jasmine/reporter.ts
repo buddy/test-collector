@@ -5,7 +5,7 @@ import logger from '@/utils/logger'
 /**
  * @see {@link https://jasmine.github.io/tutorials/custom_reporter}
  */
-const BuddyJasmineReporter: jasmine.CustomReporter = {
+class BuddyJasmineReporter implements jasmine.CustomReporter {
   async jasmineStarted() {
     logger.debug('Jasmine test run started')
 
@@ -16,11 +16,11 @@ const BuddyJasmineReporter: jasmine.CustomReporter = {
       logger.error('Error creating session at Jasmine test run start', error)
       sessionManager.markFrameworkError()
     }
-  },
+  }
 
   suiteStarted(result: jasmine.SuiteResult) {
     logger.debug(`Suite started: ${result.description}`)
-  },
+  }
 
   async specDone(result: jasmine.SpecResult) {
     try {
@@ -31,11 +31,11 @@ const BuddyJasmineReporter: jasmine.CustomReporter = {
       logger.error('Error processing Jasmine spec result', error)
       sessionManager.markFrameworkError()
     }
-  },
+  }
 
   suiteDone(result: jasmine.SuiteResult) {
     logger.debug(`Suite done: ${result.description}`)
-  },
+  }
 
   async jasmineDone() {
     logger.debug('Jasmine test run completed')
@@ -47,7 +47,7 @@ const BuddyJasmineReporter: jasmine.CustomReporter = {
       logger.error('Error closing session after Jasmine test completion', error)
       sessionManager.markFrameworkError()
     }
-  },
+  }
 }
 
 export default BuddyJasmineReporter

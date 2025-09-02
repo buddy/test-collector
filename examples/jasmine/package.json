@@ -1,7 +1,7 @@
 {
   "name": "jasmine-tests",
   "scripts": {
-    "test": "dotenvx run -f ../../.env -- jasmine"
+    "test": "dotenvx run -f ../../.env -- jasmine --reporter=@buddy-works/unit-tests/jasmine"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.49.0",
