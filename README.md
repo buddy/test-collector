@@ -34,23 +34,13 @@ Or run from CLI:
 jest --reporters=default --reporters=@buddy-works/unit-tests/jest
 ```
 
-**Jasmine** - Add to helpers (`__tests__/helpers/setup-reporter.js`):
+**Jasmine**:
 
-```javascript
-const buddyTestCollector = require('@buddy-works/unit-tests/jasmine').default
+Run from CLI:
 
-jasmine.getEnv().addReporter(buddyTestCollector)
+```bash
+jasmine --reporter=@buddy-works/unit-tests/jasmine
 ```
-
-Then reference it in `jasmine.json`:
-
-```json
-{
-  "helpers": ["helpers/setup-reporter.js"]
-}
-```
-
-> **Note:** Jasmine doesn't support specifying reporters via CLI. The reporter must be configured through a helper file as shown above.
 
 **Mocha** (`.mocharc.js`):
 

@@ -15,18 +15,6 @@ This example demonstrates how to use `@buddy-works/unit-tests` with Jasmine.
    npm test
    ```
 
-## Configuration
-
-The test collector reporter is configured in `jasmine.json`:
-
-```json
-"reporters": [
-  {
-    "name": "@buddy-works/unit-tests/jasmine"
-  }
-]
-```
-
 ## Test Examples
 
 This example includes:
