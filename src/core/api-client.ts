@@ -17,7 +17,12 @@ export default class BuddyUnitTestApiClient {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
       timeout: 10_000,
+      transitional: {
+        clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
+      },
     }
+
+    logger.debug(`API Client configured with timeout: 10000ms`)
 
     this.#axiosInstance = axios.create(axiosOptions)
     logger.debug(`Axios instance created for ${config.apiBaseUrl}`)
@@ -51,7 +56,25 @@ export default class BuddyUnitTestApiClient {
         const resolvedUrl = AxiosResponseError.config
           ? this.#axiosInstance.getUri(AxiosResponseError.config)
           : 'unknown'
-        logger.error(`API error: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
+
+        // Check if it's a timeout error (ETIMEDOUT with clarifyTimeoutError enabled)
+        if (AxiosResponseError.code === 'ETIMEDOUT') {
+          logger.error(`API TIMEOUT: ${method} ${resolvedUrl} - ${AxiosResponseError.message}`, AxiosResponseError)
+          logger.debug('Timeout details:', {
+            code: AxiosResponseError.code,
+            timeout: AxiosResponseError.config?.timeout,
+            data: AxiosResponseError.config?.data as unknown,
+            timestamp: new Date().toISOString(),
+          })
+        } else if (AxiosResponseError.code === 'ECONNABORTED') {
+          // Connection aborted but NOT a timeout (other reasons like network issues, user cancellation)
+          logger.error(
+            `API CONNECTION ABORTED: ${method} ${resolvedUrl} - ${AxiosResponseError.message}`,
+            AxiosResponseError,
+          )
+        } else {
+          logger.error(`API error: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
+        }
 
         // Only log response payload for client/server errors (4xx/5xx)
         const statusCode = AxiosResponseError.response?.status
@@ -100,23 +123,108 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async submitTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase) {
+  async submitTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase, retryCount = 0): Promise<boolean> {
+    const MAX_RETRIES = 2
+    const RETRY_DELAY_MS = 1000 // 1 second delay before retry
+    const startTime = Date.now()
+
     try {
-      logger.debug(`Submitting test case: ${testCase.name}`)
+      logger.debug(`Submitting test case: ${testCase.name}${retryCount > 0 ? ` (retry ${String(retryCount)})` : ''}`)
 
       const url = `/unit-tests/sessions/${sessionId}/cases`
       await this.#axiosInstance.put(url, testCase)
 
-      logger.debug(`Successfully submitted test case: ${testCase.name}`)
+      const duration = Date.now() - startTime
+      logger.debug(`Successfully submitted test case: ${testCase.name} (took ${String(duration)}ms)`)
+      return true
     } catch (error) {
-      logger.error(`Failed to submit test case: ${testCase.name}`, error)
+      const duration = Date.now() - startTime
+      const axiosError = error as AxiosError
+
+      if (axiosError.code === 'ETIMEDOUT') {
+        logger.error(`TIMEOUT submitting test case: ${testCase.name} after ${String(duration)}ms`, error)
+
+        // Retry logic for timeouts
+        if (retryCount < MAX_RETRIES) {
+          logger.info(
+            `Retrying timed out test case: ${testCase.name} (attempt ${String(retryCount + 1)}/${String(MAX_RETRIES)})`,
+          )
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+          return this.submitTestCase(sessionId, testCase, retryCount + 1)
+        } else {
+          logger.error(`Max retries exceeded for test case: ${testCase.name}`, error)
+          logger.debug('Test case that failed after retries:', {
+            name: testCase.name,
+            classname: testCase.classname,
+            status: testCase.status,
+            sessionId,
+            errorCode: axiosError.code,
+            errorMessage: axiosError.message,
+            retriesAttempted: retryCount,
+          })
+        }
+      } else if (axiosError.code === 'ECONNABORTED') {
+        logger.error(`CONNECTION ABORTED submitting test case: ${testCase.name} after ${String(duration)}ms`, error)
+        logger.debug('Test case connection aborted:', {
+          name: testCase.name,
+          classname: testCase.classname,
+          status: testCase.status,
+          sessionId,
+          errorCode: axiosError.code,
+          errorMessage: axiosError.message,
+        })
+      } else {
+        logger.error(`Failed to submit test case: ${testCase.name} after ${String(duration)}ms`, error)
+      }
+
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
+      return false
     }
   }
 
   async submitTestCases(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]) {
-    const promises = testCases.map((testCase) => this.submitTestCase(sessionId, testCase))
-    await Promise.allSettled(promises)
+    // Batch configuration - limit concurrent requests to prevent API overload
+    const MAX_CONCURRENT_REQUESTS = 5 // Max number of concurrent API calls
+    const BATCH_DELAY_MS = 50 // Small delay between batches to prevent bursts
+
+    if (testCases.length === 0) return
+
+    logger.debug(
+      `Submitting ${String(testCases.length)} test cases with max ${String(MAX_CONCURRENT_REQUESTS)} concurrent requests`,
+    )
+
+    // Process test cases in controlled batches
+    for (let index = 0; index < testCases.length; index += MAX_CONCURRENT_REQUESTS) {
+      const batch = testCases.slice(index, index + MAX_CONCURRENT_REQUESTS)
+      const batchNumber = Math.floor(index / MAX_CONCURRENT_REQUESTS) + 1
+      const totalBatches = Math.ceil(testCases.length / MAX_CONCURRENT_REQUESTS)
+
+      if (testCases.length > MAX_CONCURRENT_REQUESTS) {
+        logger.debug(
+          `Processing batch ${String(batchNumber)}/${String(totalBatches)} (${String(batch.length)} test cases)`,
+        )
+      }
+
+      // Submit batch with all requests in parallel
+      const promises = batch.map((testCase) => this.submitTestCase(sessionId, testCase))
+      const results = await Promise.allSettled(promises)
+
+      // Log batch completion stats
+      const fulfilled = results.filter((r) => r.status === 'fulfilled').length
+      const rejected = results.filter((r) => r.status === 'rejected').length
+      if (rejected > 0) {
+        logger.debug(
+          `Batch ${String(batchNumber)} completed: ${String(fulfilled)} succeeded, ${String(rejected)} failed/timed out`,
+        )
+      }
+
+      // Add delay between batches to avoid overwhelming the API
+      if (index + MAX_CONCURRENT_REQUESTS < testCases.length) {
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
+      }
+    }
+
+    logger.debug(`Completed submitting all ${String(testCases.length)} test cases`)
   }
 
   async closeSession(sessionId: string, status = BUDDY_UNIT_TEST_STATUS.PASSED) {
