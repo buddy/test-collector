@@ -40,7 +40,11 @@ export default class TestResultMapper {
     )
   }
 
-  static mapJestResult(assertionResult: JestAssertionResult, testResult: JestTestResult): IBuddyUnitTestApiTestCase {
+  static mapJestResult(
+    assertionResult: JestAssertionResult,
+    testResult: JestTestResult,
+    relativeFilePath?: string,
+  ): IBuddyUnitTestApiTestCase {
     const status = this.#getStatusFromTestResult(assertionResult.status, {
       passed: BUDDY_UNIT_TEST_STATUS.PASSED,
       failed: BUDDY_UNIT_TEST_STATUS.FAILED,
@@ -51,25 +55,25 @@ export default class TestResultMapper {
       focused: BUDDY_UNIT_TEST_STATUS.SKIPPED,
     })
 
+    // Use relative file path as test group name if available, otherwise use full path
+    const testGroupName = relativeFilePath || testResult.testFilePath
+
+    // Build full test name with hierarchy
+    const nameParts: string[] = []
+    if (assertionResult.ancestorTitles.length > 0) {
+      nameParts.push(...assertionResult.ancestorTitles)
+    }
+    nameParts.push(assertionResult.title)
+    const testName = nameParts.join(' > ')
+
     const dataObject = {
       errorMessage: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
       errorStackTrace: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
       messages: assertionResult.ancestorTitles.join(' > ') || '',
     }
 
-    const fileName = testResult.testFilePath.split('/').pop()
-    const fileNameWithoutExtension = fileName?.replace(/\.[^/.]+$/, '')
-
-    if (!fileNameWithoutExtension) {
-      throw new Error('File name without extension could not be determined from test file path')
-    }
-
-    // Use the outermost describe block name or fallback to filename
-    const testGroupName =
-      assertionResult.ancestorTitles.length > 0 ? assertionResult.ancestorTitles[0] : fileNameWithoutExtension
-
     return {
-      name: assertionResult.title,
+      name: testName,
       classname: testGroupName,
       test_group_name: testGroupName,
       status,
@@ -78,12 +82,18 @@ export default class TestResultMapper {
     } satisfies IBuddyUnitTestApiTestCase
   }
 
-  static mapJasmineResult(result: jasmine.SpecResult): IBuddyUnitTestApiTestCase {
+  static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
       passed: BUDDY_UNIT_TEST_STATUS.PASSED,
       failed: BUDDY_UNIT_TEST_STATUS.FAILED,
       pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
     })
+
+    // Use relative file path as test group name if available
+    const testGroupName = relativeFilePath || result.filename || 'Unknown Test Group'
+
+    // Use fullName as the complete test name (includes hierarchy)
+    const testName = result.fullName || result.description
 
     const dataObject = {
       errorMessage: result.failedExpectations.map((exp) => exp.message).join('\n') || '',
@@ -91,17 +101,8 @@ export default class TestResultMapper {
       messages: result.fullName || '',
     }
 
-    // Extract suite name from fullName by removing the test description at the end
-    // fullName format: "[jasmine 5.9.0] Status Tests - Part 1 should pass"
-    // We want: "[jasmine 5.9.0] Status Tests - Part 1"
-    let testGroupName = result.fullName
-    if (result.description && testGroupName.endsWith(result.description)) {
-      // Remove the test description from the end, including the space before it
-      testGroupName = testGroupName.slice(0, -result.description.length).trim()
-    }
-
     return {
-      name: result.description,
+      name: testName,
       classname: testGroupName,
       test_group_name: testGroupName,
       status: status,
@@ -110,12 +111,18 @@ export default class TestResultMapper {
     }
   }
 
-  static mapMochaResult(test: MochaTest): IBuddyUnitTestApiTestCase {
+  static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
     const status = this.#getStatusFromTestResult(test.state, {
       passed: BUDDY_UNIT_TEST_STATUS.PASSED,
       failed: BUDDY_UNIT_TEST_STATUS.FAILED,
       pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
     })
+
+    // Use relative file path as test group name if available
+    const testGroupName = relativeFilePath || test.file || 'Unknown Test Group'
+
+    // Build full test name with hierarchy
+    const testName = test.fullTitle() || test.title
 
     const dataObject = {
       errorMessage: test.err ? test.err.message : '',
@@ -123,10 +130,8 @@ export default class TestResultMapper {
       messages: test.fullTitle() || '',
     }
 
-    const testGroupName = test.parent?.title ?? test.file ?? 'Unknown Test Group'
-
     return {
-      name: test.title,
+      name: testName,
       classname: testGroupName,
       test_group_name: testGroupName,
       status: status,
@@ -135,7 +140,11 @@ export default class TestResultMapper {
     }
   }
 
-  static mapPlaywrightResult(test: PlaywrightTestCase, result: PlaywrightTestResult): IBuddyUnitTestApiTestCase {
+  static mapPlaywrightResult(
+    test: PlaywrightTestCase,
+    result: PlaywrightTestResult,
+    relativeFilePath?: string,
+  ): IBuddyUnitTestApiTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
       passed: BUDDY_UNIT_TEST_STATUS.PASSED,
       failed: BUDDY_UNIT_TEST_STATUS.FAILED,
@@ -143,16 +152,40 @@ export default class TestResultMapper {
       timedOut: BUDDY_UNIT_TEST_STATUS.FAILED,
     })
 
+    // Use relative file path as test group name if available
+    const testGroupName = relativeFilePath || test.location.file
+
+    // Build test name with hierarchy - Playwright includes parent titles
+    // Filter out the file path from parent titles if it matches the test group name
+    const titles: string[] = []
+    let parent: typeof test.parent | undefined = test.parent
+    while (parent) {
+      if (
+        parent.title && // Skip the title if it's the same as the file path (test group name)
+        parent.title !== testGroupName &&
+        parent.title !== test.location.file
+      ) {
+        titles.unshift(parent.title)
+      }
+      parent = parent.parent
+    }
+
+    // Build the test name from parent titles and test title
+    const nameParts: string[] = []
+    if (titles.length > 0) {
+      nameParts.push(...titles)
+    }
+    nameParts.push(test.title)
+    const testName = nameParts.join(' > ')
+
     const dataObject = {
       errorMessage: result.error ? this.#stripAnsiCodes(result.error.message || '') : '',
       errorStackTrace: result.error ? this.#stripAnsiCodes(result.error.stack || '') : '',
       messages: test.location.file || '',
     }
 
-    const testGroupName = (test.parent.title || test.location.file.split('/').pop()) ?? 'Playwright Test Group'
-
     return {
-      name: test.title,
+      name: testName,
       classname: testGroupName,
       test_group_name: testGroupName,
       status: status,
