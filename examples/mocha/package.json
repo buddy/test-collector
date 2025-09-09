@@ -5,7 +5,7 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.49.0",
-    "mocha": "11.7.1"
+    "mocha": "latest"
   },
   "dependencies": {
     "@buddy-works/unit-tests": "file:../../unit-tests.tgz"

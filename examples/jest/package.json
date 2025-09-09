@@ -5,7 +5,7 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.49.0",
-    "jest": "30"
+    "jest": "latest"
   },
   "dependencies": {
     "@buddy-works/unit-tests": "file:../../unit-tests.tgz"

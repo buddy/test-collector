@@ -6,8 +6,8 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "1.49.0",
-    "cypress": "14.5.3",
-    "mocha": "11.7.1"
+    "cypress": "latest",
+    "mocha": "latest"
   },
   "dependencies": {
     "@buddy-works/unit-tests": "file:../../unit-tests.tgz"
