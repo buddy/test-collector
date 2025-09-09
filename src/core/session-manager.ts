@@ -214,6 +214,19 @@ class BuddyUnitTestSessionManager {
           sessionStatus = BUDDY_UNIT_TEST_STATUS.FAILED
         }
 
+        // Log memory usage before closing
+        const mem = process.memoryUsage()
+        logger.debug(`Memory usage at session close:`)
+        logger.debug(`  Heap Used: ${String(Math.round(mem.heapUsed / 1024 / 1024))}MB`)
+        logger.debug(`  Heap Total: ${String(Math.round(mem.heapTotal / 1024 / 1024))}MB`)
+        logger.debug(`  RSS: ${String(Math.round(mem.rss / 1024 / 1024))}MB`)
+
+        // Warn if memory usage is high
+        const heapUsedMB = Math.round(mem.heapUsed / 1024 / 1024)
+        if (heapUsedMB > 500) {
+          logger.warn(`High memory usage detected: ${String(heapUsedMB)}MB heap used`)
+        }
+
         logger.debug(`Closing session ${sessionId}`)
 
         await this.apiClient.closeSession(sessionId, sessionStatus)
