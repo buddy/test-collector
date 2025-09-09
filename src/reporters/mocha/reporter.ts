@@ -1,4 +1,5 @@
 import { MochaOptions, Runner, Test, reporters } from 'mocha'
+import { relative } from 'pathe'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import { IBuddyUnitTestApiTestCase } from '@/core/types'
@@ -49,7 +50,8 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
   onTestPass(test: Test) {
     const submissionPromise = this.submitTestWithTracking(test, () => {
       test.state = 'passed'
-      return TestResultMapper.mapMochaResult(test)
+      const relativeFilePath = this.getRelativeFilePath(test)
+      return TestResultMapper.mapMochaResult(test, relativeFilePath)
     })
 
     submissionPromise.catch((error: unknown) => {
@@ -61,7 +63,8 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     const submissionPromise = this.submitTestWithTracking(test, () => {
       test.state = 'failed'
       test.err = error
-      return TestResultMapper.mapMochaResult(test)
+      const relativeFilePath = this.getRelativeFilePath(test)
+      return TestResultMapper.mapMochaResult(test, relativeFilePath)
     })
 
     submissionPromise.catch((error: unknown) => {
@@ -73,7 +76,8 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     const submissionPromise = this.submitTestWithTracking(test, () => {
       test.state = 'pending'
       test.pending = true
-      return TestResultMapper.mapMochaResult(test)
+      const relativeFilePath = this.getRelativeFilePath(test)
+      return TestResultMapper.mapMochaResult(test, relativeFilePath)
     })
 
     submissionPromise.catch((error: unknown) => {
@@ -95,6 +99,25 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     } finally {
       this.pendingSubmissions.delete(submissionId)
     }
+  }
+
+  protected getRelativeFilePath(test: Test): string | undefined {
+    // First try test.file (standard Mocha)
+    if (test.file) {
+      return relative(process.cwd(), test.file)
+    }
+
+    // For Cypress or when test.file is not available, try to get from parent suite
+    let suite = test.parent
+    while (suite) {
+      const suiteFile = suite.file
+      if (suiteFile && typeof suiteFile === 'string') {
+        return relative(process.cwd(), suiteFile)
+      }
+      suite = suite.parent
+    }
+
+    return undefined
   }
 
   async onEnd() {
