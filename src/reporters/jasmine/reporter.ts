@@ -1,3 +1,4 @@
+import { relative } from 'pathe'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import logger from '@/utils/logger'
@@ -24,7 +25,9 @@ class BuddyJasmineReporter implements jasmine.CustomReporter {
 
   async specDone(result: jasmine.SpecResult) {
     try {
-      const mappedResult = TestResultMapper.mapJasmineResult(result)
+      const filename = result.filename
+      const relativeFilePath = filename ? relative(process.cwd(), filename) : undefined
+      const mappedResult = TestResultMapper.mapJasmineResult(result, relativeFilePath)
 
       await sessionManager.submitTestCase(mappedResult)
     } catch (error) {
