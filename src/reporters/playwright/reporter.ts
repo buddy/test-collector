@@ -1,4 +1,5 @@
 import type { Reporter, TestCase, TestError, TestResult } from '@playwright/test/reporter'
+import { relative } from 'pathe'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import logger from '@/utils/logger'
@@ -31,7 +32,8 @@ export default class BuddyPlaywrightReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult) {
     void (async () => {
       try {
-        const mappedResult = TestResultMapper.mapPlaywrightResult(test, result)
+        const relativeFilePath = relative(process.cwd(), test.location.file)
+        const mappedResult = TestResultMapper.mapPlaywrightResult(test, result, relativeFilePath)
         await sessionManager.submitTestCase(mappedResult)
       } catch (error) {
         logger.error('Error processing Playwright test result', error)
