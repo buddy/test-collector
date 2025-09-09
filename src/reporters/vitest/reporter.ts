@@ -1,3 +1,4 @@
+import { relative } from 'pathe'
 import type { RunnerTask, RunnerTaskResult, RunnerTaskResultPack, RunnerTestFile } from 'vitest'
 import type { Vitest } from 'vitest/node'
 import type { Reporter } from 'vitest/reporters'
@@ -92,7 +93,19 @@ export default class BuddyVitestReporter implements Reporter {
       return
     }
 
-    const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task)
+    // Compute relative file path if we have context and task
+    let relativeFilePath: string | undefined
+    if (this.context && task) {
+      const projectRoot = this.context.config.root
+      let filePath = ''
+      filePath = typeof task.file === 'string' ? task.file : task.file.filepath || task.file.name || ''
+
+      if (filePath) {
+        relativeFilePath = relative(projectRoot, filePath)
+      }
+    }
+
+    const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task, relativeFilePath)
 
     try {
       await sessionManager.submitTestCase(testResult)
@@ -203,7 +216,19 @@ export default class BuddyVitestReporter implements Reporter {
   }
 
   async processSkippedTest(taskId: RunnerTask['id'], taskResult: RunnerTaskResult, task?: RunnerTask) {
-    const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task)
+    // Compute relative file path if we have context and task
+    let relativeFilePath: string | undefined
+    if (this.context && task) {
+      const projectRoot = this.context.config.root
+      let filePath = ''
+      filePath = typeof task.file === 'string' ? task.file : task.file.filepath || task.file.name || ''
+
+      if (filePath) {
+        relativeFilePath = relative(projectRoot, filePath)
+      }
+    }
+
+    const testResult = TestResultMapper.mapVitestResult(taskId, taskResult, task, relativeFilePath)
 
     try {
       await sessionManager.submitTestCase(testResult)

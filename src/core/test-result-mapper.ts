@@ -165,6 +165,7 @@ export default class TestResultMapper {
     taskId: VitestRunnerTask['id'],
     taskResult: VitestRunnerTaskResult,
     task?: VitestRunnerTask,
+    relativeFilePath?: string,
   ): IBuddyUnitTestApiTestCase {
     const status = this.#getStatusFromTestResult(taskResult.state, {
       pass: BUDDY_UNIT_TEST_STATUS.PASSED,
@@ -172,48 +173,37 @@ export default class TestResultMapper {
       skip: BUDDY_UNIT_TEST_STATUS.SKIPPED,
     })
 
+    // Use relative file path as test group name if available
+    const testGroupName = relativeFilePath || 'Unknown Test Group'
+
+    // Build the full test name with hierarchy
+    let testName = 'Unknown Test'
+    if (task) {
+      const nameParts: string[] = []
+
+      // Add suite hierarchy if available
+      if (task.suite?.name) {
+        nameParts.push(task.suite.name)
+      }
+
+      // Add test name
+      if (task.name) {
+        nameParts.push(task.name)
+      } else if (taskId) {
+        nameParts.push(taskId)
+      }
+
+      testName = nameParts.join(' > ')
+    } else if (taskId) {
+      testName = taskId
+    }
+
     const dataObject = {
       errorMessage:
         (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.message).join('\n') : '',
       errorStackTrace:
         (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
       messages: task?.suite?.name || '',
-    }
-
-    let testName = 'Unknown Test'
-    let testGroupName = 'Unknown Test Group'
-
-    if (task) {
-      testName = task.name || taskId || 'Unknown Test'
-
-      if (task.suite?.name) {
-        testGroupName = task.suite.name
-      } else {
-        let filePath = ''
-        if (typeof task.file === 'string') {
-          filePath = task.file
-        } else if (task.file.filepath) {
-          filePath = task.file.filepath
-        } else if (task.file.name) {
-          filePath = task.file.name
-        }
-
-        if (filePath) {
-          const fileName = filePath.split('/').pop()
-          if (!fileName) {
-            throw new Error('File name could not be determined from task file path')
-          }
-          testGroupName = fileName.replace(/\.(test|spec)\.(js|ts|jsx|tsx)$/, '')
-        } else {
-          testGroupName = 'Vitest Test Group'
-        }
-      }
-    } else {
-      if (taskId) {
-        testName = taskId
-      }
-
-      testGroupName = 'Vitest Test Group'
     }
 
     return {
