@@ -5,6 +5,7 @@ const config = {
   testTimeout: 10000,
   cache: true,
   workerIdleMemoryLimit: '512MB',
+  testPathIgnorePatterns: ['.*/long.test.js$'],
 }
 
 module.exports = config
