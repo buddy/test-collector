@@ -1,4 +1,5 @@
 import type { Config, Reporter, Test, TestResult } from '@jest/reporters'
+import { relative } from 'pathe'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
 import logger from '@/utils/logger'
@@ -38,8 +39,11 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
     logger.debug('Jest onTestResult called:', summary)
 
     try {
+      // Compute relative file path
+      const relativeFilePath = relative(this.globalConfig.rootDir, testResult.testFilePath)
+
       for (const assertionResult of testResult.testResults) {
-        const mappedResult = TestResultMapper.mapJestResult(assertionResult, testResult)
+        const mappedResult = TestResultMapper.mapJestResult(assertionResult, testResult, relativeFilePath)
         await sessionManager.submitTestCase(mappedResult)
       }
     } catch (error) {
