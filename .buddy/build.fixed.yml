@@ -22,3 +22,10 @@
     package: test-collector
     versions:
     - latest
+  - action: Download from test-collector/l
+    type: DOWNLOAD_PACKAGE_VERSION
+    source_path: /unit-tests.tgz
+    overwrite: true
+    destination_path: /
+    package: test-collector
+    version: latest
