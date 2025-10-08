@@ -15,14 +15,13 @@
       value: 22
       type: VAR
   actions:
-    - action: Copy files
-      type: COPY_FILES
-      source_project: test-collector
-      source_pipeline: build
+    - action: Download test package
+      type: DOWNLOAD_PACKAGE_VERSION
       source_path: /unit-tests.tgz
-      target_project: test-collector
-      target_pipeline: mocha
-      target_path: /
+      overwrite: true
+      destination_path: /
+      package: test-collector
+      version: latest
     - action: Collect Mocha tests
       type: BUILD
       docker_image_name: library/node

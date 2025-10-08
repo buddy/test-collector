@@ -15,3 +15,10 @@
         - npm run cleanup:tests
         - npm run prepare:tests
       shell: BASH
+    - action: Publish tests package
+      type: PUBLISH_PACKAGE_VERSION
+      input_type: BUILD_ARTIFACTS
+      local_path: /unit-tests.tgz
+      package: test-collector
+      versions:
+        - latest

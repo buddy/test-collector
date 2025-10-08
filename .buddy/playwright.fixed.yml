@@ -18,14 +18,13 @@
       value: latest
       type: VAR
   actions:
-    - action: Copy files
-      type: COPY_FILES
-      source_project: test-collector
-      source_pipeline: build
+    - action: Download test package
+      type: DOWNLOAD_PACKAGE_VERSION
       source_path: /unit-tests.tgz
-      target_project: test-collector
-      target_pipeline: playwright
-      target_path: /
+      overwrite: true
+      destination_path: /
+      package: test-collector
+      version: latest
     - action: Collect Playwright tests
       type: BUILD
       docker_image_name: library/node
