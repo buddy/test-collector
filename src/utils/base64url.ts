@@ -1,6 +1,6 @@
 const base64urlDecode = (input: string): string | undefined => {
   try {
-    let normalized = input.replaceAll('-', '+').replaceAll('_', '/')
+    let normalized = input.replace(/-/g, '+').replace(/_/g, '/')
 
     const pad = normalized.length % 4
     if (pad) {
