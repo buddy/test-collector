@@ -31,7 +31,7 @@ export default class BuddyUnitTestCollectorConfig {
     this.#logEnvironmentVariables()
 
     this.utToken = environment.BUDDY_UT_TOKEN
-    this.debugEnabled = environment.BUDDY_LOGGER_DEBUG
+    this.debugEnabled = environment.BUDDY_LOGGER_LEVEL === 'debug'
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
     this.sessionId = environment.BUDDY_SESSION_ID
 

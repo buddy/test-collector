@@ -13,13 +13,13 @@ type EnvironmentConfigSchema = Readonly<Record<string, StringConfig | BooleanCon
 const environmentConfig = {
   BUDDY_UT_TOKEN: { type: 'string', required: true, secret: true },
   CI: { type: 'boolean' },
-
-  // Buddy environment variables
-  BUDDY: { type: 'boolean' },
-  BUDDY_LOGGER_DEBUG: { type: 'boolean' },
+  BUDDY_LOGGER_LEVEL: { type: 'string' },
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
   BUDDY_API_FAILURE: { type: 'boolean' },
+
+  // Buddy environment variables
+  BUDDY: { type: 'boolean' },
   BUDDY_RUN_HASH: { type: 'string' },
   BUDDY_RUN_REF_NAME: { type: 'string' },
   BUDDY_RUN_REF_TYPE: { type: 'string' },

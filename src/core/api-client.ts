@@ -17,9 +17,9 @@ export default class BuddyUnitTestApiClient {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
       timeout: 10_000,
-      transitional: {
-        clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
-      },
+      // transitional: {
+      //   clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
+      // },
     }
 
     logger.debug(`API Client configured with timeout: 10000ms`)

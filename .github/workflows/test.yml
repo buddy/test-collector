@@ -9,7 +9,7 @@ on:
 
 env:
   BUDDY_UT_TOKEN: ${{ secrets.BUDDY_UT_TOKEN }}
-  BUDDY_LOGGER_DEBUG: 1
+  BUDDY_LOGGER_LEVEL: debug
 
 jobs:
   build:

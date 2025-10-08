@@ -190,6 +190,9 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
+# WebStorm
+.idea/
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json

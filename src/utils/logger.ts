@@ -3,11 +3,11 @@ import environment from '@/utils/environment'
 
 class Logger {
   #prefix: string
-  #debugEnabled: boolean
+  #level?: string
 
   constructor() {
     this.#prefix = PACKAGE_NAME
-    this.#debugEnabled = environment.BUDDY_LOGGER_DEBUG
+    this.#level = environment.BUDDY_LOGGER_LEVEL
   }
 
   #safeStringify(object: unknown): string {
@@ -31,17 +31,21 @@ class Logger {
   }
 
   debug(message: string, data?: unknown) {
-    if (this.#debugEnabled) {
+    if (this.#level === 'debug') {
       console.log(`[${this.#prefix}] DEBUG: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
 
   info(message: string, data?: unknown) {
-    console.log(`[${this.#prefix}] INFO: ${message}`, data ? this.#safeStringify(data) : '')
+    if (this.#level && ['info', 'debug'].includes(this.#level)) {
+      console.log(`[${this.#prefix}] INFO: ${message}`, data ? this.#safeStringify(data) : '')
+    }
   }
 
   warn(message: string, data?: unknown) {
-    console.warn(`[${this.#prefix}] WARN: ${message}`, data ? this.#safeStringify(data) : '')
+    if (this.#level && ['info', 'debug'].includes(this.#level)) {
+      console.warn(`[${this.#prefix}] WARN: ${message}`, data ? this.#safeStringify(data) : '')
+    }
   }
 
   error(message: string, error: unknown) {
