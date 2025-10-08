@@ -1,6 +1,5 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
-import { base64urlDecode } from '@/utils/base64url'
 import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
@@ -114,10 +113,7 @@ export default class BuddyUnitTestCollectorConfig {
 
       // for non-prod tokens, the api url is base64url encoded in the 3rd part
       if (parts.length === 5) {
-        const apiUrl = base64urlDecode(parts[3])
-        if (apiUrl) {
-          return apiUrl
-        }
+        return Buffer.from(parts[3], 'base64url').toString('utf8')
       }
 
       return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
