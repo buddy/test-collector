@@ -1,0 +1,16 @@
+const base64urlDecode = (input: string): string | undefined => {
+  try {
+    let normalized = input.replaceAll('-', '+').replaceAll('_', '/')
+
+    const pad = normalized.length % 4
+    if (pad) {
+      normalized = normalized + '='.repeat(4 - pad)
+    }
+
+    return Buffer.from(normalized, 'base64').toString('utf8')
+  } catch {
+    return undefined
+  }
+}
+
+export { base64urlDecode }

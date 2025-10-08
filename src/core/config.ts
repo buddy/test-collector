@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
+import { base64urlDecode } from '@/utils/base64url'
 import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
@@ -13,7 +14,7 @@ export default class BuddyUnitTestCollectorConfig {
   utToken: string
   debugEnabled: boolean
   apiBaseUrl: string
-  runRefType: string
+  runRefType?: string
   sessionId?: string
   triggeringActorId?: string
 
@@ -33,21 +34,20 @@ export default class BuddyUnitTestCollectorConfig {
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_DEBUG
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
-    this.runRefType = this.#fallback.runRefType
     this.sessionId = environment.BUDDY_SESSION_ID
-    this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
 
     switch (this.ciProvider) {
       case CI_PROVIDER.BUDDY: {
         logger.debug('Loading Buddy CI configuration')
 
         this.runRefName = environment.BUDDY_RUN_REF_NAME
-        this.runRefType = environment.BUDDY_RUN_REF_TYPE || this.#fallback.runRefType
+        this.runRefType = environment.BUDDY_RUN_REF_TYPE
         this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
         this.runPreCommit = environment.BUDDY_RUN_PRE_COMMIT || this.#fallback.runPreCommit
         this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
         this.runId = environment.BUDDY_RUN_HASH
         this.runUrl = environment.BUDDY_RUN_URL
+        this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
         break
       }
       case CI_PROVIDER.GITHUB_ACTION: {
@@ -57,7 +57,7 @@ export default class BuddyUnitTestCollectorConfig {
         const repository = environment.GITHUB_REPOSITORY
 
         this.runRefName = environment.GITHUB_REF_NAME
-        this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase() || this.#fallback.runRefType
+        this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase()
         this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
         this.runPreCommit = this.#fallback.runPreCommit
         this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
@@ -108,12 +108,19 @@ export default class BuddyUnitTestCollectorConfig {
   }
 
   readonly #fallback = {
-    runRefType: 'BRANCH',
-
     get apiBaseUrl() {
-      return environment.BUDDY_UT_TOKEN.startsWith('bud_ut_eu')
-        ? 'https://api.eu.buddy.works/'
-        : 'https://api.buddy.works/'
+      const token = environment.BUDDY_UT_TOKEN
+      const parts = token.split('_')
+
+      // for non-prod tokens, the api url is base64url encoded in the 3rd part
+      if (parts.length === 5) {
+        const apiUrl = base64urlDecode(parts[3])
+        if (apiUrl) {
+          return apiUrl
+        }
+      }
+
+      return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
     },
 
     get runBranch() {
@@ -166,7 +173,7 @@ export default class BuddyUnitTestCollectorConfig {
       ...(this.runUrl && { run_url: this.runUrl }),
     }
 
-    logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type})`)
+    logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type || 'unknown'})`)
     return payload
   }
 
