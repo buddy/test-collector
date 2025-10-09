@@ -1,4 +1,6 @@
 import axios, { AxiosError, AxiosInstance, CreateAxiosDefaults } from 'axios'
+import http from 'node:http'
+import https from 'node:https'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import { setEnvironmentVariable } from '@/utils/environment'
@@ -13,10 +15,34 @@ export default class BuddyUnitTestApiClient {
   constructor(config: BuddyUnitTestCollectorConfig) {
     this.#config = config
 
+    // Reusable keep-alive agents
+    const httpAgent = new http.Agent({
+      keepAlive: true,
+      // Pool sizing: per host. Tune to your expected concurrency to that host.
+      maxSockets: Infinity, // try 100–400; measure & adjust
+      maxFreeSockets: 128, // idle sockets to keep
+      // Socket timeouts:
+      timeout: 0, // active socket timeout (0 = none; let request `timeout` handle it)
+      keepAliveMsecs: 1000, // TCP keep-alive probe interval
+      // Node will default maxCachedSessions (TLS sessions) for HTTPS agent below
+    })
+
+    const httpsAgent = new https.Agent({
+      keepAlive: true,
+      maxSockets: Infinity,
+      maxFreeSockets: 128,
+      timeout: 0,
+      keepAliveMsecs: 1000,
+      // TLS session reuse helps when many HTTPS connections are made to the same host
+      maxCachedSessions: 100, // default is fine; you can raise if many distinct hosts
+    })
+
     const axiosOptions: CreateAxiosDefaults = {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
-      // timeout: 10_000,
+      httpAgent,
+      httpsAgent,
+      timeout: 30_000,
       transitional: {
         clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
       },
