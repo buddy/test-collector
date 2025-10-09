@@ -16,10 +16,10 @@ export default class BuddyUnitTestApiClient {
     const axiosOptions: CreateAxiosDefaults = {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
-      timeout: 10_000,
-      // transitional: {
-      //   clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
-      // },
+      // timeout: 10_000,
+      transitional: {
+        clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
+      },
     }
 
     logger.debug(`API Client configured with timeout: 10000ms`)
@@ -34,6 +34,8 @@ export default class BuddyUnitTestApiClient {
         if (AxiosRequest.data) {
           logger.debug('Request payload:', AxiosRequest.data)
         }
+        AxiosRequest.headers['x-start-time'] = Date.now().toString()
+
         return AxiosRequest
       },
       (AxiosRequestError) => {
@@ -44,10 +46,14 @@ export default class BuddyUnitTestApiClient {
 
     this.#axiosInstance.interceptors.response.use(
       (AxiosResponse) => {
+        const start = Number.parseInt(AxiosResponse.config.headers['x-start-time'] as string, 10)
+        const duration = String(Date.now() - start)
+
         const resolvedUrl = this.#axiosInstance.getUri(AxiosResponse.config)
         logger.debug(
-          `API response: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`,
+          `API response: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl} took ${duration}ms`,
         )
+        logger.debug('API response payload:', AxiosResponse.data)
         return AxiosResponse
       },
       (AxiosResponseError: AxiosError) => {
