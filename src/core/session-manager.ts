@@ -19,12 +19,6 @@ class BuddyUnitTestSessionManager {
   hasErrorTests: boolean
   hasFailedTests: boolean
 
-  // Batching mechanism for improved performance
-  #testCaseQueue: IBuddyUnitTestApiTestCase[] = []
-  #batchTimer: NodeJS.Timeout | undefined
-  #batchSize = 25 // Optimal batch size for parallel processing
-  #batchDelayMs = 100 // Wait time before processing batch
-
   #config: BuddyUnitTestCollectorConfig | undefined
   get config() {
     if (!this.#config) {
@@ -162,68 +156,26 @@ class BuddyUnitTestSessionManager {
   async submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
     if (!this.initialized) throw new Error(`${BuddyUnitTestSessionManager.displayName} not initialized`)
 
-    // Track test status for session closure
-    if (testCase.status === BUDDY_UNIT_TEST_STATUS.ERROR) {
-      this.hasErrorTests = true
-      logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.ERROR} test result`)
-    } else if (testCase.status === BUDDY_UNIT_TEST_STATUS.FAILED) {
-      this.hasFailedTests = true
-      logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.FAILED} test result`)
-    }
-
-    // Add to batch queue for optimized processing
-    this.#testCaseQueue.push(testCase)
-
-    // Process immediately if batch is full
-    if (this.#testCaseQueue.length >= this.#batchSize) {
-      await this.#processBatch()
-      return
-    }
-
-    // Schedule batch processing if not already scheduled
-    if (!this.#batchTimer) {
-      this.#batchTimer = setTimeout(
-        () =>
-          void (async () => {
-            await this.#processBatch()
-          })(),
-        this.#batchDelayMs,
-      )
-    }
-  }
-
-  async #processBatch() {
-    if (this.#testCaseQueue.length === 0) return
-
-    // Clear timer and get current batch
-    if (this.#batchTimer) {
-      clearTimeout(this.#batchTimer)
-      this.#batchTimer = undefined
-    }
-
-    const batch = this.#testCaseQueue.splice(0)
-
     try {
       const sessionId = await this.getOrCreateSession()
 
-      if (!sessionId) {
-        throw new Error('Session ID is not available, cannot submit test cases batch')
+      if (testCase.status === BUDDY_UNIT_TEST_STATUS.ERROR) {
+        this.hasErrorTests = true
+        logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.ERROR} test result`)
+      } else if (testCase.status === BUDDY_UNIT_TEST_STATUS.FAILED) {
+        this.hasFailedTests = true
+        logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.FAILED} test result`)
       }
 
-      logger.debug(`Processing batch of ${String(batch.length)} test cases`)
-      await this.apiClient.submitTestCases(sessionId, batch)
+      if (!sessionId) {
+        throw new Error('Session ID is not available, cannot submit test case')
+      }
+
+      await this.apiClient.submitTestCase(sessionId, testCase)
     } catch (error) {
-      logger.error(`Failed to submit batch of ${String(batch.length)} test cases`, error)
+      logger.error('Failed to submit test case', error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
       this.hasFrameworkErrors = true
-    }
-  }
-
-  async #flushPendingTestCases() {
-    // Ensure all pending test cases are processed before closing session
-    if (this.#testCaseQueue.length > 0 || this.#batchTimer) {
-      logger.debug(`Flushing ${String(this.#testCaseQueue.length)} pending test cases`)
-      await this.#processBatch()
     }
   }
 
@@ -236,9 +188,6 @@ class BuddyUnitTestSessionManager {
     if (!this.#config) {
       return
     }
-
-    // Flush any pending test cases before closing
-    await this.#flushPendingTestCases()
 
     if (!this.sessionId && environment.BUDDY_SESSION_ID) {
       this.sessionId = environment.BUDDY_SESSION_ID
@@ -299,14 +248,6 @@ class BuddyUnitTestSessionManager {
         this.hasFrameworkErrors = false
         this.hasErrorTests = false
         this.hasFailedTests = false
-
-        // Clear batch timer and queue
-        if (this.#batchTimer) {
-          clearTimeout(this.#batchTimer)
-          this.#batchTimer = undefined
-        }
-        this.#testCaseQueue = []
-
         delete process.env.BUDDY_SESSION_ID
         logger.debug('Session ID and tracking flags cleared')
         this.#clearSessionFile()
