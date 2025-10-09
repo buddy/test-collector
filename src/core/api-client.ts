@@ -1,4 +1,6 @@
 import axios, { AxiosError, AxiosInstance, CreateAxiosDefaults } from 'axios'
+import { Agent as HttpAgent } from 'node:http'
+import { Agent as HttpsAgent } from 'node:https'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import { setEnvironmentVariable } from '@/utils/environment'
@@ -13,19 +15,41 @@ export default class BuddyUnitTestApiClient {
   constructor(config: BuddyUnitTestCollectorConfig) {
     this.#config = config
 
+    // Create optimized HTTP agents for connection pooling
+    const isHttps = config.apiBaseUrl.startsWith('https')
+    const httpAgent = new HttpAgent({
+      keepAlive: true,
+      keepAliveMsecs: 30_000, // 30 seconds
+      maxSockets: 50, // Increased from default 5
+      maxFreeSockets: 20, // Keep connections open
+      timeout: 30_000, // Socket timeout
+    })
+    const httpsAgent = new HttpsAgent({
+      keepAlive: true,
+      keepAliveMsecs: 30_000,
+      maxSockets: 50,
+      maxFreeSockets: 20,
+      timeout: 30_000,
+    })
+
     const axiosOptions: CreateAxiosDefaults = {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
-      // timeout: 10_000,
+      timeout: 30_000, // 30 second timeout
+      httpAgent: isHttps ? undefined : httpAgent,
+      httpsAgent: isHttps ? httpsAgent : undefined,
       transitional: {
         clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
       },
+      // Optimize for performance
+      maxRedirects: 3,
+      validateStatus: (status) => status < 500, // Don't throw on 4xx errors
     }
 
-    logger.debug(`API Client configured with timeout: 10000ms`)
+    logger.debug(`API Client configured with timeout: 30000ms, maxSockets: 50`)
 
     this.#axiosInstance = axios.create(axiosOptions)
-    logger.debug(`Axios instance created for ${config.apiBaseUrl}`)
+    logger.debug(`Axios instance created for ${config.apiBaseUrl} with optimized connection pooling`)
 
     this.#axiosInstance.interceptors.request.use(
       (AxiosRequest) => {
@@ -189,17 +213,22 @@ export default class BuddyUnitTestApiClient {
   }
 
   async submitTestCases(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]) {
-    // Batch configuration - limit concurrent requests to prevent API overload
-    const MAX_CONCURRENT_REQUESTS = 5 // Max number of concurrent API calls
-    const BATCH_DELAY_MS = 50 // Small delay between batches to prevent bursts
+    // Optimized batch configuration for high-throughput parallel processing
+    const MAX_CONCURRENT_REQUESTS = Math.min(25, testCases.length) // Adaptive batching
+    const BATCH_DELAY_MS = 10 // Minimal delay to prevent overwhelming
+    const RETRY_DELAY_MS = 100 // Quick retry for failed requests
 
     if (testCases.length === 0) return
 
     logger.debug(
-      `Submitting ${String(testCases.length)} test cases with max ${String(MAX_CONCURRENT_REQUESTS)} concurrent requests`,
+      `Submitting ${String(testCases.length)} test cases with max ${String(MAX_CONCURRENT_REQUESTS)} concurrent requests (optimized)`,
     )
 
-    // Process test cases in controlled batches
+    const startTime = Date.now()
+    let totalSuccessful = 0
+    let totalFailed = 0
+
+    // Process test cases in optimized batches
     for (let index = 0; index < testCases.length; index += MAX_CONCURRENT_REQUESTS) {
       const batch = testCases.slice(index, index + MAX_CONCURRENT_REQUESTS)
       const batchNumber = Math.floor(index / MAX_CONCURRENT_REQUESTS) + 1
@@ -215,22 +244,45 @@ export default class BuddyUnitTestApiClient {
       const promises = batch.map((testCase) => this.submitTestCase(sessionId, testCase))
       const results = await Promise.allSettled(promises)
 
-      // Log batch completion stats
-      const fulfilled = results.filter((r) => r.status === 'fulfilled').length
-      const rejected = results.filter((r) => r.status === 'rejected').length
-      if (rejected > 0) {
-        logger.debug(
-          `Batch ${String(batchNumber)} completed: ${String(fulfilled)} succeeded, ${String(rejected)} failed/timed out`,
-        )
+      // Collect failed requests for retry
+      const failedTestCases: IBuddyUnitTestApiTestCase[] = []
+      for (const [index, result] of results.entries()) {
+        if (result.status === 'fulfilled' && result.value) {
+          totalSuccessful++
+        } else {
+          totalFailed++
+          failedTestCases.push(batch[index])
+        }
       }
 
-      // Add delay between batches to avoid overwhelming the API
+      // Retry failed requests once with smaller batches
+      if (failedTestCases.length > 0) {
+        logger.debug(`Retrying ${String(failedTestCases.length)} failed requests from batch ${String(batchNumber)}`)
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+
+        const retryPromises = failedTestCases.map((testCase) => this.submitTestCase(sessionId, testCase))
+        const retryResults = await Promise.allSettled(retryPromises)
+
+        for (const result of retryResults) {
+          if (result.status === 'fulfilled' && result.value) {
+            totalSuccessful++
+            totalFailed--
+          }
+        }
+      }
+
+      // Minimal delay between batches
       if (index + MAX_CONCURRENT_REQUESTS < testCases.length) {
         await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
       }
     }
 
-    logger.debug(`Completed submitting all ${String(testCases.length)} test cases`)
+    const duration = Date.now() - startTime
+    const throughput = Math.round((testCases.length / duration) * 1000)
+
+    logger.debug(
+      `Completed submitting all ${String(testCases.length)} test cases in ${String(duration)}ms (${String(throughput)} req/s). Success: ${String(totalSuccessful)}, Failed: ${String(totalFailed)}`,
+    )
   }
 
   async closeSession(sessionId: string, status = BUDDY_UNIT_TEST_STATUS.PASSED) {
