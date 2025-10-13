@@ -14,8 +14,7 @@ class BuddyJasmineReporter implements jasmine.CustomReporter {
       await sessionManager.getOrCreateSession('jasmine')
       logger.debug('Session created at Jasmine test run start')
     } catch (error) {
-      logger.error('Error creating session at Jasmine test run start', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error creating session at Jasmine test run start', error)
     }
   }
 
@@ -31,8 +30,7 @@ class BuddyJasmineReporter implements jasmine.CustomReporter {
 
       await sessionManager.submitTestCase(mappedResult)
     } catch (error) {
-      logger.error('Error processing Jasmine spec result', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error processing Jasmine spec result', error)
     }
   }
 
@@ -47,8 +45,7 @@ class BuddyJasmineReporter implements jasmine.CustomReporter {
       await sessionManager.closeSession()
       logger.debug('Session closed after Jasmine test completion')
     } catch (error) {
-      logger.error('Error closing session after Jasmine test completion', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error closing session after Jasmine test completion', error)
     }
   }
 }

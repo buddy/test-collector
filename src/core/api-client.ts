@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosInstance, CreateAxiosDefaults } from 'axios'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
-import { setEnvironmentVariable } from '@/utils/environment'
 import logger from '@/utils/logger'
 
 export default class BuddyUnitTestApiClient {
@@ -22,110 +21,34 @@ export default class BuddyUnitTestApiClient {
     }
 
     logger.debug(`API Client configured with timeout: 10000ms`)
-
     this.#axiosInstance = axios.create(axiosOptions)
     logger.debug(`Axios instance created for ${config.apiBaseUrl}`)
-
-    this.#axiosInstance.interceptors.request.use(
-      (AxiosRequest) => {
-        const resolvedUrl = this.#axiosInstance.getUri(AxiosRequest)
-        logger.debug(`API request: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`)
-        if (AxiosRequest.data) {
-          logger.debug('Request payload:', AxiosRequest.data)
-        }
-        AxiosRequest.headers['x-start-time'] = Date.now().toString()
-
-        return AxiosRequest
-      },
-      (AxiosRequestError) => {
-        logger.error('API request failed:', AxiosRequestError)
-        return Promise.reject(AxiosRequestError as Error)
-      },
-    )
-
-    this.#axiosInstance.interceptors.response.use(
-      (AxiosResponse) => {
-        const start = Number.parseInt(AxiosResponse.config.headers['x-start-time'] as string, 10)
-        const duration = String(Date.now() - start)
-
-        const resolvedUrl = this.#axiosInstance.getUri(AxiosResponse.config)
-        logger.debug(
-          `API response: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl} took ${duration}ms`,
-        )
-        logger.debug('API response payload:', AxiosResponse.data)
-        return AxiosResponse
-      },
-      (AxiosResponseError: AxiosError) => {
-        const status = String(AxiosResponseError.response?.status ?? 'unknown')
-        const method = String(AxiosResponseError.config?.method?.toUpperCase() || 'unknown')
-        const resolvedUrl = AxiosResponseError.config
-          ? this.#axiosInstance.getUri(AxiosResponseError.config)
-          : 'unknown'
-
-        // Check if it's a timeout error (ETIMEDOUT with clarifyTimeoutError enabled)
-        if (AxiosResponseError.code === 'ETIMEDOUT') {
-          logger.error(`API TIMEOUT: ${method} ${resolvedUrl} - ${AxiosResponseError.message}`, AxiosResponseError)
-          logger.debug('Timeout details:', {
-            code: AxiosResponseError.code,
-            timeout: AxiosResponseError.config?.timeout,
-            data: AxiosResponseError.config?.data as unknown,
-            timestamp: new Date().toISOString(),
-          })
-        } else if (AxiosResponseError.code === 'ECONNABORTED') {
-          // Connection aborted but NOT a timeout (other reasons like network issues, user cancellation)
-          logger.error(
-            `API CONNECTION ABORTED: ${method} ${resolvedUrl} - ${AxiosResponseError.message}`,
-            AxiosResponseError,
-          )
-        } else {
-          logger.error(`API error: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
-        }
-
-        // Only log response payload for client/server errors (4xx/5xx)
-        const statusCode = AxiosResponseError.response?.status
-        if (statusCode && statusCode >= 400 && AxiosResponseError.response?.data) {
-          logger.error('Response payload:', AxiosResponseError.response.data)
-        }
-
-        return Promise.reject(AxiosResponseError as Error)
-      },
-    )
   }
 
   async createSession() {
-    try {
-      logger.debug('Creating new test session')
+    logger.debug('Creating new test session')
 
-      const url = '/unit-tests/sessions'
-      const response = await this.#axiosInstance.post<{ id: string }>(url, this.#config.sessionPayload)
+    const url = '/unit-tests/sessions'
+    const response = await this.#axiosInstance.post<{ id: string; html_url: string }>(url, this.#config.sessionPayload)
 
-      const sessionId = response.data.id
-      logger.info(`Created Buddy unit tests session with ID: ${sessionId}`)
+    const sessionUrl = response.data.html_url
+    const sessionId = response.data.id
+    logger.debug(`Created session with ID: ${sessionId}`)
+    logger.info(`Tests session created in Buddy: ${sessionUrl}`)
 
-      return sessionId
-    } catch (error) {
-      logger.error('Failed to create session', error)
-      setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      throw error
-    }
+    return sessionId
   }
 
   async reopenSession(sessionId: string) {
-    try {
-      logger.debug(`Reopening test session: ${sessionId}`)
+    logger.debug(`Reopening test session: ${sessionId}`)
 
-      const url = `/unit-tests/sessions/${sessionId}/reopen`
-      const response = await this.#axiosInstance.post<{ id: string }>(url)
+    const url = `/unit-tests/sessions/${sessionId}/reopen`
+    const response = await this.#axiosInstance.post<{ id: string }>(url)
 
-      const newSessionId = response.data.id
-      logger.info(`Reopened session with ID: ${newSessionId}`)
+    const newSessionId = response.data.id
+    logger.debug(`Reopened session with ID: ${newSessionId}`)
 
-      return newSessionId
-    } catch (error) {
-      logger.error(`Failed to reopen session: ${sessionId}`, error)
-      setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      throw error
-    }
+    return newSessionId
   }
 
   async submitTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase, retryCount = 0): Promise<boolean> {
@@ -151,7 +74,7 @@ export default class BuddyUnitTestApiClient {
 
         // Retry logic for timeouts
         if (retryCount < MAX_RETRIES) {
-          logger.info(
+          logger.debug(
             `Retrying timed out test case: ${testCase.name} (attempt ${String(retryCount + 1)}/${String(MAX_RETRIES)})`,
           )
           await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
@@ -182,69 +105,17 @@ export default class BuddyUnitTestApiClient {
         logger.error(`Failed to submit test case: ${testCase.name} after ${String(duration)}ms`, error)
       }
 
-      setEnvironmentVariable('BUDDY_API_FAILURE', true)
       return false
     }
   }
 
-  async submitTestCases(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]) {
-    // Batch configuration - limit concurrent requests to prevent API overload
-    const MAX_CONCURRENT_REQUESTS = 5 // Max number of concurrent API calls
-    const BATCH_DELAY_MS = 50 // Small delay between batches to prevent bursts
+  async closeSession(sessionId: string) {
+    logger.debug(`Closing test session: ${sessionId}`)
 
-    if (testCases.length === 0) return
+    const url = `/unit-tests/sessions/${sessionId}/close`
+    const response = await this.#axiosInstance.post<{ status: BUDDY_UNIT_TEST_STATUS }>(url)
 
-    logger.debug(
-      `Submitting ${String(testCases.length)} test cases with max ${String(MAX_CONCURRENT_REQUESTS)} concurrent requests`,
-    )
-
-    // Process test cases in controlled batches
-    for (let index = 0; index < testCases.length; index += MAX_CONCURRENT_REQUESTS) {
-      const batch = testCases.slice(index, index + MAX_CONCURRENT_REQUESTS)
-      const batchNumber = Math.floor(index / MAX_CONCURRENT_REQUESTS) + 1
-      const totalBatches = Math.ceil(testCases.length / MAX_CONCURRENT_REQUESTS)
-
-      if (testCases.length > MAX_CONCURRENT_REQUESTS) {
-        logger.debug(
-          `Processing batch ${String(batchNumber)}/${String(totalBatches)} (${String(batch.length)} test cases)`,
-        )
-      }
-
-      // Submit batch with all requests in parallel
-      const promises = batch.map((testCase) => this.submitTestCase(sessionId, testCase))
-      const results = await Promise.allSettled(promises)
-
-      // Log batch completion stats
-      const fulfilled = results.filter((r) => r.status === 'fulfilled').length
-      const rejected = results.filter((r) => r.status === 'rejected').length
-      if (rejected > 0) {
-        logger.debug(
-          `Batch ${String(batchNumber)} completed: ${String(fulfilled)} succeeded, ${String(rejected)} failed/timed out`,
-        )
-      }
-
-      // Add delay between batches to avoid overwhelming the API
-      if (index + MAX_CONCURRENT_REQUESTS < testCases.length) {
-        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
-      }
-    }
-
-    logger.debug(`Completed submitting all ${String(testCases.length)} test cases`)
-  }
-
-  async closeSession(sessionId: string, status = BUDDY_UNIT_TEST_STATUS.PASSED) {
-    try {
-      logger.debug(`Closing test session: ${sessionId} with status: ${status}`)
-
-      const url = `/unit-tests/sessions/${sessionId}/close`
-      const response = await this.#axiosInstance.post(url, { status })
-
-      logger.info(`Successfully closed session: ${sessionId} with status: ${status}`)
-      logger.debug(`Close session response:`, response.statusText)
-    } catch (error) {
-      logger.error(`Failed to close session: ${sessionId}`, error)
-      setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      throw error
-    }
+    logger.info(`Tests Session #${sessionId} completed with status: ${response.data.status}`)
+    logger.debug(`Close session response:`, response.statusText)
   }
 }

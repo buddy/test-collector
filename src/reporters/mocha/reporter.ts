@@ -42,8 +42,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
       await sessionManager.getOrCreateSession('mocha')
       logger.debug('Session created at Mocha test run start')
     } catch (error) {
-      logger.error('Error creating session at Mocha test run start', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error creating session at Mocha test run start', error)
     }
   }
 
@@ -55,7 +54,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     })
 
     submissionPromise.catch((error: unknown) => {
-      logger.error('Error processing Mocha test pass result', error)
+      logger.debug('Error processing Mocha test pass result', error)
     })
   }
 
@@ -94,8 +93,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
       await sessionManager.submitTestCase(testResult)
       logger.debug(`Successfully submitted: ${testResult.name}`)
     } catch (error) {
-      logger.error('Error processing Mocha test result', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error processing Mocha test result', error)
     } finally {
       this.pendingSubmissions.delete(submissionId)
     }
@@ -134,8 +132,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
       }
 
       if (this.pendingSubmissions.size > 0) {
-        logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
-        sessionManager.markFrameworkError()
+        logger.debug(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
       } else {
         logger.debug('All test submissions completed')
       }
@@ -145,8 +142,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
       await sessionManager.closeSession()
       logger.debug('Session closed after Mocha test completion')
     } catch (error) {
-      logger.error('Error closing session after Mocha test completion', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error closing session after Mocha test completion', error)
     }
   }
 }

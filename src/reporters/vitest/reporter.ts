@@ -32,8 +32,7 @@ export default class BuddyVitestReporter implements Reporter {
         await sessionManager.getOrCreateSession('vitest')
         logger.debug('Session created at Vitest reporter initialization')
       } catch (error) {
-        logger.error('Error creating session at Vitest reporter initialization', error)
-        sessionManager.markFrameworkError()
+        logger.debug('Error creating session at Vitest reporter initialization', error)
       }
     })()
   }
@@ -97,8 +96,7 @@ export default class BuddyVitestReporter implements Reporter {
     let relativeFilePath: string | undefined
     if (this.context && task) {
       const projectRoot = this.context.config.root
-      let filePath = ''
-      filePath = typeof task.file === 'string' ? task.file : task.file.filepath || task.file.name || ''
+      const filePath = typeof task.file === 'string' ? task.file : task.file.filepath || task.file.name || ''
 
       if (filePath) {
         relativeFilePath = relative(projectRoot, filePath)
@@ -121,11 +119,7 @@ export default class BuddyVitestReporter implements Reporter {
     }
 
     const task = this.getTaskById(taskId)
-    if (task && task.mode === 'skip') {
-      return true
-    }
-
-    return false
+    return task?.mode === 'skip'
   }
 
   getTaskById(taskId: RunnerTask['id']): RunnerTask | undefined {
@@ -156,8 +150,7 @@ export default class BuddyVitestReporter implements Reporter {
         logger.debug('Session closed after Vitest test completion')
       }
     } catch (error) {
-      logger.error('Error closing session after Vitest test completion', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error closing session after Vitest test completion', error)
     }
   }
 
@@ -220,8 +213,7 @@ export default class BuddyVitestReporter implements Reporter {
     let relativeFilePath: string | undefined
     if (this.context && task) {
       const projectRoot = this.context.config.root
-      let filePath = ''
-      filePath = typeof task.file === 'string' ? task.file : task.file.filepath || task.file.name || ''
+      const filePath = typeof task.file === 'string' ? task.file : task.file.filepath || task.file.name || ''
 
       if (filePath) {
         relativeFilePath = relative(projectRoot, filePath)

@@ -35,8 +35,7 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
 
       logger.debug('Session ready for Cypress spec file')
     } catch (error) {
-      logger.error('Error preparing session for Cypress spec file', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error preparing session for Cypress spec file', error)
     }
   }
 
@@ -54,7 +53,6 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
 
       if (this.pendingSubmissions.size > 0) {
         logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
-        sessionManager.markFrameworkError()
       } else {
         logger.debug('All test submissions completed')
       }

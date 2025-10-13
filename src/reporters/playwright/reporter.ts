@@ -23,8 +23,7 @@ export default class BuddyPlaywrightReporter implements Reporter {
         await sessionManager.getOrCreateSession('playwright')
         logger.debug('Session created at Playwright test run start')
       } catch (error) {
-        logger.error('Error creating session at Playwright test run start', error)
-        sessionManager.markFrameworkError()
+        logger.debug('Error creating session at Playwright test run start', error)
       }
     })()
   }
@@ -36,8 +35,7 @@ export default class BuddyPlaywrightReporter implements Reporter {
         const mappedResult = TestResultMapper.mapPlaywrightResult(test, result, relativeFilePath)
         await sessionManager.submitTestCase(mappedResult)
       } catch (error) {
-        logger.error('Error processing Playwright test result', error)
-        sessionManager.markFrameworkError()
+        logger.debug('Error processing Playwright test result', error)
       }
     })()
   }
@@ -53,15 +51,13 @@ export default class BuddyPlaywrightReporter implements Reporter {
       await sessionManager.closeSession()
       logger.debug('Session closed successfully after Playwright test completion')
     } catch (error) {
-      logger.error('Error closing session after Playwright test completion', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error closing session after Playwright test completion', error)
       // Re-throw to ensure Playwright knows about the failure
       throw error
     }
   }
 
   onError(error: TestError) {
-    logger.error('Playwright error', error)
-    sessionManager.markFrameworkError()
+    logger.debug('Playwright error', error)
   }
 }

@@ -23,8 +23,7 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
       await sessionManager.getOrCreateSession('jest')
       logger.debug('Session created at Jest test run start')
     } catch (error) {
-      logger.error('Error creating session at Jest test run start', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error creating session at Jest test run start', error)
     }
   }
 
@@ -47,8 +46,7 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
         await sessionManager.submitTestCase(mappedResult)
       }
     } catch (error) {
-      logger.error('Error processing Jest test result', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error processing Jest test result', error)
     }
   }
 
@@ -59,8 +57,7 @@ export default class BuddyJestReporter implements Pick<Reporter, 'onRunStart' | 
       await sessionManager.closeSession()
       logger.debug('Session closed after Jest test completion')
     } catch (error) {
-      logger.error('Error closing session after Jest test completion', error)
-      sessionManager.markFrameworkError()
+      logger.debug('Error closing session after Jest test completion', error)
     }
   }
 }
