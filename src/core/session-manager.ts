@@ -168,7 +168,8 @@ class BuddyUnitTestSessionManager {
         throw new Error('Session ID is not available, cannot submit test case')
       }
 
-      await this.apiClient.submitTestCase(sessionId, testCase)
+      // Submit test case to queue (non-blocking)
+      this.apiClient.submitTestCase(testCase)
     } catch (error) {
       logger.error('Failed to submit test case', error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)

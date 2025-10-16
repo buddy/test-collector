@@ -1,5 +1,6 @@
 import { IncomingHttpHeaders } from 'node:http'
 import BuddyUnitTestCollectorConfig from '@/core/config'
+import { TestCaseQueue } from '@/core/test-case-queue'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import { setEnvironmentVariable } from '@/utils/environment'
 import logger from '@/utils/logger'
@@ -22,6 +23,8 @@ export default class BuddyUnitTestApiClient {
 
   #config: BuddyUnitTestCollectorConfig
   #fetchConfig: FetchConfig
+  #queue: TestCaseQueue | undefined = undefined
+  #sessionId: string | undefined = undefined
 
   constructor(config: BuddyUnitTestCollectorConfig) {
     this.#config = config
@@ -123,6 +126,9 @@ export default class BuddyUnitTestApiClient {
       const sessionId = response.id
       logger.info(`Created Buddy unit tests session with ID: ${sessionId}`)
 
+      // Initialize and start the queue for this session
+      this.#initializeQueue(sessionId)
+
       return sessionId
     } catch (error) {
       logger.error('Failed to create session', error)
@@ -142,6 +148,9 @@ export default class BuddyUnitTestApiClient {
       const newSessionId = response.id
       logger.info(`Reopened session with ID: ${newSessionId}`)
 
+      // Initialize and start the queue for this session
+      this.#initializeQueue(newSessionId)
+
       return newSessionId
     } catch (error) {
       logger.error(`Failed to reopen session: ${sessionId}`, error)
@@ -150,103 +159,38 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async submitTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase, retryCount = 0): Promise<boolean> {
-    const MAX_RETRIES = 2
-    const RETRY_DELAY_MS = 1000 // 1 second delay before retry
+  async submitTestCaseBatch(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]): Promise<void> {
     const startTime = Date.now()
 
     try {
-      logger.debug(`Submitting test case: ${testCase.name}${retryCount > 0 ? ` (retry ${String(retryCount)})` : ''}`)
+      logger.debug(`Submitting batch of ${String(testCases.length)} test cases`)
 
-      await this.#fetch(`/unit-tests/sessions/${sessionId}/cases`, {
-        method: 'PUT',
-        body: JSON.stringify(testCase),
+      await this.#fetch(`/unit-tests/sessions/${sessionId}/cases/batch`, {
+        method: 'POST',
+        body: JSON.stringify({ cases: testCases }),
       })
 
       const duration = Date.now() - startTime
-      logger.debug(`Successfully submitted test case: ${testCase.name} (took ${String(duration)}ms)`)
-      return true
+      logger.debug(
+        `Successfully submitted batch of ${String(testCases.length)} test cases (took ${String(duration)}ms)`,
+      )
     } catch (error) {
       const duration = Date.now() - startTime
-
-      if (error instanceof TimeoutError) {
-        logger.error(`TIMEOUT submitting test case: ${testCase.name} after ${String(duration)}ms`, error)
-
-        // Retry logic for timeouts
-        if (retryCount < MAX_RETRIES) {
-          logger.info(
-            `Retrying timed out test case: ${testCase.name} (attempt ${String(retryCount + 1)}/${String(MAX_RETRIES)})`,
-          )
-          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
-          return this.submitTestCase(sessionId, testCase, retryCount + 1)
-        } else {
-          logger.error(`Max retries exceeded for test case: ${testCase.name}`, error)
-          logger.debug('Test case that failed after retries:', {
-            name: testCase.name,
-            classname: testCase.classname,
-            status: testCase.status,
-            sessionId,
-            errorMessage: error.message,
-            retriesAttempted: retryCount,
-          })
-        }
-      } else {
-        logger.error(`Failed to submit test case: ${testCase.name} after ${String(duration)}ms`, error)
-      }
-
+      logger.error(
+        `Failed to submit batch of ${String(testCases.length)} test cases after ${String(duration)}ms`,
+        error,
+      )
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      return false
+      throw error
     }
-  }
-
-  async submitTestCases(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]) {
-    // Batch configuration - limit concurrent requests to prevent API overload
-    const MAX_CONCURRENT_REQUESTS = 5 // Max number of concurrent API calls
-    const BATCH_DELAY_MS = 50 // Small delay between batches to prevent bursts
-
-    if (testCases.length === 0) return
-
-    logger.debug(
-      `Submitting ${String(testCases.length)} test cases with max ${String(MAX_CONCURRENT_REQUESTS)} concurrent requests`,
-    )
-
-    // Process test cases in controlled batches
-    for (let index = 0; index < testCases.length; index += MAX_CONCURRENT_REQUESTS) {
-      const batch = testCases.slice(index, index + MAX_CONCURRENT_REQUESTS)
-      const batchNumber = Math.floor(index / MAX_CONCURRENT_REQUESTS) + 1
-      const totalBatches = Math.ceil(testCases.length / MAX_CONCURRENT_REQUESTS)
-
-      if (testCases.length > MAX_CONCURRENT_REQUESTS) {
-        logger.debug(
-          `Processing batch ${String(batchNumber)}/${String(totalBatches)} (${String(batch.length)} test cases)`,
-        )
-      }
-
-      // Submit batch with all requests in parallel
-      const promises = batch.map((testCase) => this.submitTestCase(sessionId, testCase))
-      const results = await Promise.allSettled(promises)
-
-      // Log batch completion stats
-      const fulfilled = results.filter((r) => r.status === 'fulfilled').length
-      const rejected = results.filter((r) => r.status === 'rejected').length
-      if (rejected > 0) {
-        logger.debug(
-          `Batch ${String(batchNumber)} completed: ${String(fulfilled)} succeeded, ${String(rejected)} failed/timed out`,
-        )
-      }
-
-      // Add delay between batches to avoid overwhelming the API
-      if (index + MAX_CONCURRENT_REQUESTS < testCases.length) {
-        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
-      }
-    }
-
-    logger.debug(`Completed submitting all ${String(testCases.length)} test cases`)
   }
 
   async closeSession(sessionId: string, status = BUDDY_UNIT_TEST_STATUS.PASSED) {
     try {
       logger.debug(`Closing test session: ${sessionId} with status: ${status}`)
+
+      // Drain the queue before closing the session
+      await this.drainQueue()
 
       await this.#fetch(`/unit-tests/sessions/${sessionId}/close`, {
         method: 'POST',
@@ -255,10 +199,73 @@ export default class BuddyUnitTestApiClient {
 
       logger.info(`Successfully closed session: ${sessionId} with status: ${status}`)
       logger.debug(`Close session response: OK`)
+
+      // Clean up the queue after session is closed
+      this.#cleanupQueue()
     } catch (error) {
       logger.error(`Failed to close session: ${sessionId}`, error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
       throw error
     }
+  }
+
+  // Queue management methods
+
+  #initializeQueue(sessionId: string) {
+    // Clean up existing queue if any
+    this.#cleanupQueue()
+
+    this.#sessionId = sessionId
+    this.#queue = new TestCaseQueue({
+      batchIntervalMs: 3000, // Flush every 3 seconds
+      maxBatchSize: 100, // Max 100 test cases per batch
+      retryCount: 2,
+      retryDelayMs: 500,
+      onBatchSubmit: async (batch) => {
+        if (!this.#sessionId) {
+          throw new Error('Session ID not available for batch submission')
+        }
+        await this.submitTestCaseBatch(this.#sessionId, batch)
+      },
+    })
+
+    this.#queue.start()
+    logger.debug('TestCaseQueue initialized and started')
+  }
+
+  #cleanupQueue() {
+    if (this.#queue) {
+      this.#queue.stop()
+      this.#queue = undefined
+      this.#sessionId = undefined
+      logger.debug('TestCaseQueue cleaned up')
+    }
+  }
+
+  submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
+    if (!this.#queue) {
+      const error = new Error('Queue not initialized. Create a session first.')
+      logger.error('Queue not initialized - test case submission skipped', error)
+      throw error
+    }
+    this.#queue.submitTestCase(testCase)
+  }
+
+  async drainQueue() {
+    if (this.#queue) {
+      logger.debug('Draining queue before closing session')
+      await this.#queue.drain()
+      logger.debug('Queue drained successfully')
+    }
+  }
+
+  async flushQueue() {
+    if (this.#queue) {
+      await this.#queue.flushNow()
+    }
+  }
+
+  getQueueSize(): number {
+    return this.#queue?.getQueueSize() ?? 0
   }
 }
