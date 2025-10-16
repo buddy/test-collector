@@ -37,10 +37,8 @@
       variables:
         - key: CYPRESS_VERSION
           value: $CYPRESS_VERSION
-
         - key: NODE_VERSION
           value: $NODE_VERSION
-
       project: test-collector
       pipeline: cypress
     - action: Run jasmine
@@ -52,10 +50,8 @@
       variables:
         - key: JASMINE_VERSION
           value: $JASMINE_VERSION
-
         - key: NODE_VERSION
           value: $NODE_VERSION
-
       project: test-collector
       pipeline: jasmine
     - action: Run jest
@@ -67,10 +63,8 @@
       variables:
         - key: JEST_VERSION
           value: $JEST_VERSION
-
         - key: NODE_VERSION
           value: $NODE_VERSION
-
       project: test-collector
       pipeline: jest
     - action: Run mocha
@@ -82,10 +76,8 @@
       variables:
         - key: MOCHA_VERSION
           value: $MOCHA_VERSION
-
         - key: NODE_VERSION
           value: $NODE_VERSION
-
       project: test-collector
       pipeline: mocha
     - action: Run playwright
@@ -97,10 +89,8 @@
       variables:
         - key: NODE_VERSION
           value: $NODE_VERSION
-
         - key: PLAYWRIGHT_VERSION
           value: $PLAYWRIGHT_VERSION
-
       project: test-collector
       pipeline: playwright
     - action: Run vitest
@@ -111,9 +101,7 @@
       variables:
         - key: NODE_VERSION
           value: $NODE_VERSION
-
         - key: VITEST_VERSION
           value: $VITEST_VERSION
-
       project: test-collector
       pipeline: vitest
