@@ -1,4 +1,6 @@
 - pipeline: run_all
+  refs:
+  - refs/heads/*
   events:
   - type: PUSH
   terminate_stale_runs: true
