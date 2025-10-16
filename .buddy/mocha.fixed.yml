@@ -1,4 +1,6 @@
 - pipeline: mocha
+  refs:
+  - refs/heads/*
   always_from_scratch: true
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
