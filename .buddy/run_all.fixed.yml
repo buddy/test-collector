@@ -1,6 +1,4 @@
 - pipeline: run_all
-  refs:
-  - :default
   events:
   - type: PUSH
   terminate_stale_runs: true
@@ -8,25 +6,18 @@
   variables:
   - key: CYPRESS_VERSION
     value: latest
-    type: VAR
   - key: JASMINE_VERSION
     value: latest
-    type: VAR
   - key: JEST_VERSION
     value: latest
-    type: VAR
   - key: MOCHA_VERSION
     value: latest
-    type: VAR
   - key: NODE_VERSION
     value: 22
-    type: VAR
   - key: PLAYWRIGHT_VERSION
     value: latest
-    type: VAR
   - key: VITEST_VERSION
     value: latest
-    type: VAR
   actions:
   - action: Run build
     type: RUN_NEXT_PIPELINE
@@ -44,10 +35,8 @@
     variables:
     - key: CYPRESS_VERSION
       value: $CYPRESS_VERSION
-      type: VAR
     - key: NODE_VERSION
       value: $NODE_VERSION
-      type: VAR
     project: test-collector
     pipeline: cypress
   - action: Run jasmine
@@ -59,10 +48,8 @@
     variables:
     - key: JASMINE_VERSION
       value: $JASMINE_VERSION
-      type: VAR
     - key: NODE_VERSION
       value: $NODE_VERSION
-      type: VAR
     project: test-collector
     pipeline: jasmine
   - action: Run jest
@@ -74,10 +61,8 @@
     variables:
     - key: JEST_VERSION
       value: $JEST_VERSION
-      type: VAR
     - key: NODE_VERSION
       value: $NODE_VERSION
-      type: VAR
     project: test-collector
     pipeline: jest
   - action: Run mocha
@@ -89,10 +74,8 @@
     variables:
     - key: MOCHA_VERSION
       value: $MOCHA_VERSION
-      type: VAR
     - key: NODE_VERSION
       value: $NODE_VERSION
-      type: VAR
     project: test-collector
     pipeline: mocha
   - action: Run playwright
@@ -104,10 +87,8 @@
     variables:
     - key: NODE_VERSION
       value: $NODE_VERSION
-      type: VAR
     - key: PLAYWRIGHT_VERSION
       value: $PLAYWRIGHT_VERSION
-      type: VAR
     project: test-collector
     pipeline: playwright
   - action: Run vitest
@@ -118,9 +99,7 @@
     variables:
     - key: NODE_VERSION
       value: $NODE_VERSION
-      type: VAR
     - key: VITEST_VERSION
       value: $VITEST_VERSION
-      type: VAR
     project: test-collector
     pipeline: vitest
