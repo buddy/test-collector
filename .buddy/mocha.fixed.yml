@@ -1,29 +1,28 @@
 - pipeline: mocha
-  refs:
-    - refs/heads/*
+  always_from_scratch: true
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
   variables:
-    - key: BUDDY_LOGGER_LEVEL
-      value: debug
-    - key: MOCHA_VERSION
-      value: latest
-    - key: NODE_VERSION
-      value: 22
+  - key: BUDDY_LOGGER_LEVEL
+    value: debug
+  - key: MOCHA_VERSION
+    value: latest
+  - key: NODE_VERSION
+    value: 22
   actions:
-    - action: Download test package
-      type: DOWNLOAD_PACKAGE_VERSION
-      source_path: /unit-tests.tgz
-      overwrite: true
-      destination_path: /
-      package: test-collector
-      version: latest
-    - action: Collect Mocha tests
-      type: BUILD
-      docker_image_name: library/node
-      docker_image_tag: $NODE_VERSION
-      execute_commands:
-        - npm run test:mocha
-      setup_commands:
-        - apt-get update && apt-get -y install jq
-      shell: BASH
+  - action: Download test package
+    type: DOWNLOAD_PACKAGE_VERSION
+    source_path: /unit-tests.tgz
+    overwrite: true
+    destination_path: /
+    package: test-collector
+    version: latest
+  - action: Collect Mocha tests
+    type: BUILD
+    docker_image_name: library/node
+    docker_image_tag: $NODE_VERSION
+    execute_commands:
+    - npm run test:mocha
+    setup_commands:
+    - apt-get update && apt-get -y install jq
+    shell: BASH
