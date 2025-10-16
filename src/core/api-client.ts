@@ -1,105 +1,126 @@
-import axios, { AxiosError, AxiosInstance, CreateAxiosDefaults } from 'axios'
+import { IncomingHttpHeaders } from 'node:http'
 import BuddyUnitTestCollectorConfig from '@/core/config'
 import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
 import { setEnvironmentVariable } from '@/utils/environment'
 import logger from '@/utils/logger'
 
+interface FetchConfig {
+  baseURL: string
+  headers: IncomingHttpHeaders
+  timeout: number
+}
+
+class TimeoutError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TimeoutError'
+  }
+}
+
 export default class BuddyUnitTestApiClient {
   static displayName = 'BuddyUnitTestApiClient'
 
   #config: BuddyUnitTestCollectorConfig
-  #axiosInstance: AxiosInstance
+  #fetchConfig: FetchConfig
 
   constructor(config: BuddyUnitTestCollectorConfig) {
     this.#config = config
-    const axiosOptions: CreateAxiosDefaults = {
+    this.#fetchConfig = {
       baseURL: config.apiBaseUrl,
       headers: config.headers,
       timeout: 10_000,
-      transitional: {
-        clarifyTimeoutError: true, // This will throw ETIMEDOUT instead of ECONNABORTED for timeouts
-      },
     }
 
     logger.debug(`API Client configured with timeout: 10000ms`)
+    logger.debug(`Fetch client created for ${config.apiBaseUrl}`)
+  }
 
-    this.#axiosInstance = axios.create(axiosOptions)
-    logger.debug(`Axios instance created for ${config.apiBaseUrl}`)
+  async #fetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
+    // Remove leading slash from path to avoid double slashes when baseURL ends with /
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path
+    const url = `${this.#fetchConfig.baseURL}${cleanPath}`
+    const startTime = Date.now()
 
-    this.#axiosInstance.interceptors.request.use(
-      (AxiosRequest) => {
-        const resolvedUrl = this.#axiosInstance.getUri(AxiosRequest)
-        logger.debug(`API request: ${AxiosRequest.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl}`)
-        if (AxiosRequest.data) {
-          logger.debug('Request payload:', AxiosRequest.data)
+    try {
+      // Log request
+      const method = options.method?.toUpperCase() || 'GET'
+      logger.debug(`API request: ${method} ${url}`)
+      if (options.body) {
+        logger.debug('Request payload:', JSON.parse(options.body as string))
+      }
+
+      // Create abort controller for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => {
+        controller.abort()
+      }, this.#fetchConfig.timeout)
+
+      try {
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            ...this.#fetchConfig.headers,
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeoutId)
+
+        const duration = Date.now() - startTime
+        logger.debug(`API response: ${String(response.status)} ${method} ${url} took ${String(duration)}ms`)
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          if (response.status >= 400) {
+            logger.error('Response payload:', errorData)
+          }
+          throw new Error(`HTTP ${String(response.status)}: ${response.statusText}`)
         }
-        AxiosRequest.headers['x-start-time'] = Date.now().toString()
 
-        return AxiosRequest
-      },
-      (AxiosRequestError) => {
-        logger.error('API request failed:', AxiosRequestError)
-        return Promise.reject(AxiosRequestError as Error)
-      },
-    )
+        const data = await response.json()
+        logger.debug('API response payload:', data)
+        return data as T
+      } catch (error) {
+        clearTimeout(timeoutId)
 
-    this.#axiosInstance.interceptors.response.use(
-      (AxiosResponse) => {
-        const start = Number.parseInt(AxiosResponse.config.headers['x-start-time'] as string, 10)
-        const duration = String(Date.now() - start)
-
-        const resolvedUrl = this.#axiosInstance.getUri(AxiosResponse.config)
-        logger.debug(
-          `API response: ${String(AxiosResponse.status)} ${AxiosResponse.config.method?.toUpperCase() || 'UNKNOWN'} ${resolvedUrl} took ${duration}ms`,
-        )
-        logger.debug('API response payload:', AxiosResponse.data)
-        return AxiosResponse
-      },
-      (AxiosResponseError: AxiosError) => {
-        const status = String(AxiosResponseError.response?.status ?? 'unknown')
-        const method = String(AxiosResponseError.config?.method?.toUpperCase() || 'unknown')
-        const resolvedUrl = AxiosResponseError.config
-          ? this.#axiosInstance.getUri(AxiosResponseError.config)
-          : 'unknown'
-
-        // Check if it's a timeout error (ETIMEDOUT with clarifyTimeoutError enabled)
-        if (AxiosResponseError.code === 'ETIMEDOUT') {
-          logger.error(`API TIMEOUT: ${method} ${resolvedUrl} - ${AxiosResponseError.message}`, AxiosResponseError)
+        // Check if it's an abort error (timeout)
+        if (error instanceof Error && error.name === 'AbortError') {
+          const duration = Date.now() - startTime
+          const timeoutError = new TimeoutError(`Request timeout after ${String(duration)}ms`)
+          logger.error(`API TIMEOUT: ${method} ${url} - ${timeoutError.message}`, timeoutError)
           logger.debug('Timeout details:', {
-            code: AxiosResponseError.code,
-            timeout: AxiosResponseError.config?.timeout,
-            data: AxiosResponseError.config?.data as unknown,
+            timeout: this.#fetchConfig.timeout,
+            data: options.body,
             timestamp: new Date().toISOString(),
           })
-        } else if (AxiosResponseError.code === 'ECONNABORTED') {
-          // Connection aborted but NOT a timeout (other reasons like network issues, user cancellation)
-          logger.error(
-            `API CONNECTION ABORTED: ${method} ${resolvedUrl} - ${AxiosResponseError.message}`,
-            AxiosResponseError,
-          )
-        } else {
-          logger.error(`API error: ${status} ${method} ${resolvedUrl}`, AxiosResponseError)
+          throw timeoutError
         }
 
-        // Only log response payload for client/server errors (4xx/5xx)
-        const statusCode = AxiosResponseError.response?.status
-        if (statusCode && statusCode >= 400 && AxiosResponseError.response?.data) {
-          logger.error('Response payload:', AxiosResponseError.response.data)
-        }
+        throw error
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime
 
-        return Promise.reject(AxiosResponseError as Error)
-      },
-    )
+      if (!(error instanceof TimeoutError)) {
+        const method = options.method?.toUpperCase() || 'GET'
+        logger.error(`API error: ${method} ${url} after ${String(duration)}ms`, error)
+      }
+
+      throw error
+    }
   }
 
   async createSession() {
     try {
       logger.debug('Creating new test session')
 
-      const url = '/unit-tests/sessions'
-      const response = await this.#axiosInstance.post<{ id: string }>(url, this.#config.sessionPayload)
+      const response = await this.#fetch<{ id: string }>('/unit-tests/sessions', {
+        method: 'POST',
+        body: JSON.stringify(this.#config.sessionPayload),
+      })
 
-      const sessionId = response.data.id
+      const sessionId = response.id
       logger.info(`Created Buddy unit tests session with ID: ${sessionId}`)
 
       return sessionId
@@ -114,10 +135,11 @@ export default class BuddyUnitTestApiClient {
     try {
       logger.debug(`Reopening test session: ${sessionId}`)
 
-      const url = `/unit-tests/sessions/${sessionId}/reopen`
-      const response = await this.#axiosInstance.post<{ id: string }>(url)
+      const response = await this.#fetch<{ id: string }>(`/unit-tests/sessions/${sessionId}/reopen`, {
+        method: 'POST',
+      })
 
-      const newSessionId = response.data.id
+      const newSessionId = response.id
       logger.info(`Reopened session with ID: ${newSessionId}`)
 
       return newSessionId
@@ -136,17 +158,18 @@ export default class BuddyUnitTestApiClient {
     try {
       logger.debug(`Submitting test case: ${testCase.name}${retryCount > 0 ? ` (retry ${String(retryCount)})` : ''}`)
 
-      const url = `/unit-tests/sessions/${sessionId}/cases`
-      await this.#axiosInstance.put(url, testCase)
+      await this.#fetch(`/unit-tests/sessions/${sessionId}/cases`, {
+        method: 'PUT',
+        body: JSON.stringify(testCase),
+      })
 
       const duration = Date.now() - startTime
       logger.debug(`Successfully submitted test case: ${testCase.name} (took ${String(duration)}ms)`)
       return true
     } catch (error) {
       const duration = Date.now() - startTime
-      const axiosError = error as AxiosError
 
-      if (axiosError.code === 'ETIMEDOUT') {
+      if (error instanceof TimeoutError) {
         logger.error(`TIMEOUT submitting test case: ${testCase.name} after ${String(duration)}ms`, error)
 
         // Retry logic for timeouts
@@ -163,21 +186,10 @@ export default class BuddyUnitTestApiClient {
             classname: testCase.classname,
             status: testCase.status,
             sessionId,
-            errorCode: axiosError.code,
-            errorMessage: axiosError.message,
+            errorMessage: error.message,
             retriesAttempted: retryCount,
           })
         }
-      } else if (axiosError.code === 'ECONNABORTED') {
-        logger.error(`CONNECTION ABORTED submitting test case: ${testCase.name} after ${String(duration)}ms`, error)
-        logger.debug('Test case connection aborted:', {
-          name: testCase.name,
-          classname: testCase.classname,
-          status: testCase.status,
-          sessionId,
-          errorCode: axiosError.code,
-          errorMessage: axiosError.message,
-        })
       } else {
         logger.error(`Failed to submit test case: ${testCase.name} after ${String(duration)}ms`, error)
       }
@@ -236,11 +248,13 @@ export default class BuddyUnitTestApiClient {
     try {
       logger.debug(`Closing test session: ${sessionId} with status: ${status}`)
 
-      const url = `/unit-tests/sessions/${sessionId}/close`
-      const response = await this.#axiosInstance.post(url, { status })
+      await this.#fetch(`/unit-tests/sessions/${sessionId}/close`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+      })
 
       logger.info(`Successfully closed session: ${sessionId} with status: ${status}`)
-      logger.debug(`Close session response:`, response.statusText)
+      logger.debug(`Close session response: OK`)
     } catch (error) {
       logger.error(`Failed to close session: ${sessionId}`, error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)

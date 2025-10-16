@@ -30,7 +30,7 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       } else {
         // Only create new session if none exists
         logger.debug('Creating new session for Cypress')
-        await sessionManager.getOrCreateSession('cypress')
+        await sessionManager.getOrCreateSession()
       }
 
       logger.debug('Session ready for Cypress spec file')

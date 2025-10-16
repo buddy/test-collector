@@ -39,7 +39,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     logger.debug('Mocha test run started')
 
     try {
-      await sessionManager.getOrCreateSession('mocha')
+      await sessionManager.getOrCreateSession()
       logger.debug('Session created at Mocha test run start')
     } catch (error) {
       logger.error('Error creating session at Mocha test run start', error)

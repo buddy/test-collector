@@ -7,7 +7,6 @@ export default class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
   static libraryName = '@buddy-works/unit-tests'
 
-  context: string
   ciProvider: CI_PROVIDER
 
   utToken: string
@@ -24,8 +23,7 @@ export default class BuddyUnitTestCollectorConfig {
   runBranch?: string
   runUrl?: string
 
-  constructor(context: string) {
-    this.context = context
+  constructor() {
     this.ciProvider = detectCIProvider()
 
     this.#logEnvironmentVariables()

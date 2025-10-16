@@ -29,7 +29,7 @@ export default class BuddyVitestReporter implements Reporter {
 
     void (async () => {
       try {
-        await sessionManager.getOrCreateSession('vitest')
+        await sessionManager.getOrCreateSession()
         logger.debug('Session created at Vitest reporter initialization')
       } catch (error) {
         logger.error('Error creating session at Vitest reporter initialization', error)

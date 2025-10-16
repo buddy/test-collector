@@ -53,7 +53,6 @@
     "test:cypress": "./scripts/test-cypress.sh"
   },
   "dependencies": {
-    "axios": "1.10.0",
     "pathe": "2.0.3"
   },
   "devDependencies": {

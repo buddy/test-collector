@@ -20,7 +20,7 @@ export default class BuddyPlaywrightReporter implements Reporter {
 
     void (async () => {
       try {
-        await sessionManager.getOrCreateSession('playwright')
+        await sessionManager.getOrCreateSession()
         logger.debug('Session created at Playwright test run start')
       } catch (error) {
         logger.error('Error creating session at Playwright test run start', error)
