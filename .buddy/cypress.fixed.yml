@@ -6,16 +6,12 @@
   variables:
     - key: BUDDY_LOGGER_LEVEL
       value: debug
-      type: VAR
     - key: CYPRESS_VERSION
       value: latest
-      type: VAR
     - key: MOCHA_VERSION
       value: latest
-      type: VAR
     - key: NODE_VERSION
       value: 22
-      type: VAR
   actions:
     - action: Download test package
       type: DOWNLOAD_PACKAGE_VERSION

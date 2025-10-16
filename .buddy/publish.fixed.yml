@@ -10,7 +10,6 @@
       pipeline: run_all
   variables:
     - key: VERSION_BUMP_TYPE
-      type: VAR
   actions:
     - action: Select version bump
       type: WAIT_FOR_VARIABLES
