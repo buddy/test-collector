@@ -1,19 +1,15 @@
 - pipeline: jasmine
   refs:
-    - refs/heads/master
-  always_from_scratch: true
+    - refs/heads/*
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
   variables:
     - key: BUDDY_LOGGER_LEVEL
       value: debug
-      type: VAR
     - key: JASMINE_VERSION
       value: latest
-      type: VAR
     - key: NODE_VERSION
       value: 22
-      type: VAR
   actions:
     - action: Download test package
       type: DOWNLOAD_PACKAGE_VERSION

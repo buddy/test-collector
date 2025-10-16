@@ -1,34 +1,35 @@
 - pipeline: playwright
-  always_from_scratch: true
+  refs:
+    - refs/heads/*
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
   variables:
-  - key: BUDDY_LOGGER_LEVEL
-    value: debug
-  - key: NODE_VERSION
-    value: 22
-  - key: PLAYWRIGHT_BROWSERS_PATH
-    value: browsers
-  - key: PLAYWRIGHT_VERSION
-    value: latest
+    - key: BUDDY_LOGGER_LEVEL
+      value: debug
+    - key: NODE_VERSION
+      value: 22
+    - key: PLAYWRIGHT_BROWSERS_PATH
+      value: browsers
+    - key: PLAYWRIGHT_VERSION
+      value: latest
   actions:
-  - action: Download test package
-    type: DOWNLOAD_PACKAGE_VERSION
-    source_path: /unit-tests.tgz
-    overwrite: true
-    destination_path: /
-    package: test-collector
-    version: latest
-  - action: Collect Playwright tests
-    type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: $NODE_VERSION
-    execute_commands:
-    - cd examples/playwright
-    - npm install
-    - npx playwright install --with-deps chromium
-    - cd ../..
-    - npm run test:playwright
-    setup_commands:
-    - apt-get update && apt-get -y install jq
-    shell: BASH
+    - action: Download test package
+      type: DOWNLOAD_PACKAGE_VERSION
+      source_path: /unit-tests.tgz
+      overwrite: true
+      destination_path: /
+      package: test-collector
+      version: latest
+    - action: Collect Playwright tests
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: $NODE_VERSION
+      execute_commands:
+        - cd examples/playwright
+        - npm install
+        - npx playwright install --with-deps chromium
+        - cd ../..
+        - npm run test:playwright
+      setup_commands:
+        - apt-get update && apt-get -y install jq
+      shell: BASH

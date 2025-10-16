@@ -10,8 +10,6 @@ import logger from '@/utils/logger'
 class BuddyUnitTestSessionManager {
   static displayName = 'BuddyUnitTestSessionManager'
 
-  #context = 'generic'
-
   sessionId: string | undefined
   createSession: Promise<string | undefined> | undefined
   initialized: boolean
@@ -114,7 +112,7 @@ class BuddyUnitTestSessionManager {
     if (this.initialized) return
 
     try {
-      this.#config = new BuddyUnitTestCollectorConfig(this.#context)
+      this.#config = new BuddyUnitTestCollectorConfig()
       this.#apiClient = new BuddyUnitTestApiClient(this.#config)
       this.initialized = true
       logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
@@ -127,9 +125,8 @@ class BuddyUnitTestSessionManager {
     }
   }
 
-  async getOrCreateSession(context?: string) {
+  async getOrCreateSession() {
     if (!this.initialized) {
-      if (context) this.#context = context
       this.#initialize()
     }
 

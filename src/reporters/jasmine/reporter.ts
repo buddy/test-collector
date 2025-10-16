@@ -11,7 +11,7 @@ class BuddyJasmineReporter implements jasmine.CustomReporter {
     logger.debug('Jasmine test run started')
 
     try {
-      await sessionManager.getOrCreateSession('jasmine')
+      await sessionManager.getOrCreateSession()
       logger.debug('Session created at Jasmine test run start')
     } catch (error) {
       logger.error('Error creating session at Jasmine test run start', error)
