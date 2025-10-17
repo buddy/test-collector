@@ -69,3 +69,15 @@
     volume_mappings:
     - /:/buddy-works/unit-tests
     shell: BASH
+    trigger_conditions:
+    - trigger_condition: OR
+      trigger_operands:
+      - trigger_condition: VAR_IS
+        trigger_variable_value: major
+        trigger_variable_key: VERSION_BUMP_TYPE
+      - trigger_condition: VAR_IS
+        trigger_variable_value: minor
+        trigger_variable_key: VERSION_BUMP_TYPE
+      - trigger_condition: VAR_IS
+        trigger_variable_value: patch
+        trigger_variable_key: VERSION_BUMP_TYPE
