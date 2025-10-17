@@ -21,6 +21,7 @@ const environmentConfig = {
   // Buddy environment variables
   BUDDY: { type: 'boolean' },
   BUDDY_RUN_HASH: { type: 'string' },
+  BUDDY_ACTION_RUN_HASH: { type: 'string' },
   BUDDY_RUN_REF_NAME: { type: 'string' },
   BUDDY_RUN_REF_TYPE: { type: 'string' },
   BUDDY_RUN_COMMIT: { type: 'string' },
