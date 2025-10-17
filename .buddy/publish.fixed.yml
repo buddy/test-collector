@@ -65,7 +65,12 @@
     docker_image_tag: 22
     execute_commands:
     - npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-    - npm publish --no-git-checks --access public
+    - ""
+    - "if [[ \"$VERSION_BUMP_TYPE\" =~ ^pre ]]; then"
+    - '  npm publish --no-git-checks --access public --tag rc'
+    - else
+    - '  npm publish --no-git-checks --access public'
+    - fi
     volume_mappings:
     - /:/buddy-works/unit-tests
     shell: BASH
