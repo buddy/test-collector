@@ -1,107 +1,108 @@
 - pipeline: run_all
   refs:
-    - refs/heads/*
+  - refs/heads/*
   events:
-    - type: PUSH
+  - type: PUSH
   terminate_stale_runs: true
   fail_on_prepare_env_warning: true
   variables:
-    - key: CYPRESS_VERSION
-      value: latest
-    - key: JASMINE_VERSION
-      value: latest
-    - key: JEST_VERSION
-      value: latest
-    - key: MOCHA_VERSION
-      value: latest
-    - key: NODE_VERSION
-      value: 22
-    - key: PLAYWRIGHT_VERSION
-      value: latest
-    - key: VITEST_VERSION
-      value: latest
+  - key: CYPRESS_VERSION
+    value: latest
+  - key: JASMINE_VERSION
+    value: latest
+  - key: JEST_VERSION
+    value: latest
+  - key: MOCHA_VERSION
+    value: latest
+  - key: NODE_VERSION
+    value: 22
+  - key: PLAYWRIGHT_VERSION
+    value: latest
+  - key: VITEST_VERSION
+    value: latest
   actions:
-    - action: Run build
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      project: test-collector
-      pipeline: build
-    - action: Run cypress
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      run_next: IN_SOFT_PARALLEL
-      variables:
-        - key: CYPRESS_VERSION
-          value: $CYPRESS_VERSION
-        - key: NODE_VERSION
-          value: $NODE_VERSION
-      project: test-collector
-      pipeline: cypress
-    - action: Run jasmine
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      run_next: IN_SOFT_PARALLEL
-      variables:
-        - key: JASMINE_VERSION
-          value: $JASMINE_VERSION
-        - key: NODE_VERSION
-          value: $NODE_VERSION
-      project: test-collector
-      pipeline: jasmine
-    - action: Run jest
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      run_next: IN_SOFT_PARALLEL
-      variables:
-        - key: JEST_VERSION
-          value: $JEST_VERSION
-        - key: NODE_VERSION
-          value: $NODE_VERSION
-      project: test-collector
-      pipeline: jest
-    - action: Run mocha
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      run_next: IN_SOFT_PARALLEL
-      variables:
-        - key: MOCHA_VERSION
-          value: $MOCHA_VERSION
-        - key: NODE_VERSION
-          value: $NODE_VERSION
-      project: test-collector
-      pipeline: mocha
-    - action: Run playwright
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      run_next: IN_SOFT_PARALLEL
-      variables:
-        - key: NODE_VERSION
-          value: $NODE_VERSION
-        - key: PLAYWRIGHT_VERSION
-          value: $PLAYWRIGHT_VERSION
-      project: test-collector
-      pipeline: playwright
-    - action: Run vitest
-      type: RUN_NEXT_PIPELINE
-      wait: true
-      comment: 'Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID'
-      priority: NORMAL
-      variables:
-        - key: NODE_VERSION
-          value: $NODE_VERSION
-        - key: VITEST_VERSION
-          value: $VITEST_VERSION
-      project: test-collector
-      pipeline: vitest
+  - action: Run build
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    revision: INHERIT
+    project: test-collector
+    pipeline: build
+  - action: Run cypress
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    run_next: IN_SOFT_PARALLEL
+    variables:
+    - key: CYPRESS_VERSION
+      value: $CYPRESS_VERSION
+    - key: NODE_VERSION
+      value: $NODE_VERSION
+    project: test-collector
+    pipeline: cypress
+  - action: Run jasmine
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    run_next: IN_SOFT_PARALLEL
+    variables:
+    - key: JASMINE_VERSION
+      value: $JASMINE_VERSION
+    - key: NODE_VERSION
+      value: $NODE_VERSION
+    project: test-collector
+    pipeline: jasmine
+  - action: Run jest
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    run_next: IN_SOFT_PARALLEL
+    variables:
+    - key: JEST_VERSION
+      value: $JEST_VERSION
+    - key: NODE_VERSION
+      value: $NODE_VERSION
+    project: test-collector
+    pipeline: jest
+  - action: Run mocha
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    run_next: IN_SOFT_PARALLEL
+    variables:
+    - key: MOCHA_VERSION
+      value: $MOCHA_VERSION
+    - key: NODE_VERSION
+      value: $NODE_VERSION
+    project: test-collector
+    pipeline: mocha
+  - action: Run playwright
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    run_next: IN_SOFT_PARALLEL
+    variables:
+    - key: NODE_VERSION
+      value: $NODE_VERSION
+    - key: PLAYWRIGHT_VERSION
+      value: $PLAYWRIGHT_VERSION
+    project: test-collector
+    pipeline: playwright
+  - action: Run vitest
+    type: RUN_NEXT_PIPELINE
+    wait: true
+    comment: "Triggered by $BUDDY_PIPELINE_NAME execution #$BUDDY_RUN_ID"
+    priority: NORMAL
+    variables:
+    - key: NODE_VERSION
+      value: $NODE_VERSION
+    - key: VITEST_VERSION
+      value: $VITEST_VERSION
+    project: test-collector
+    pipeline: vitest
