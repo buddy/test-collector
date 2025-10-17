@@ -9,13 +9,6 @@ export interface TestCaseQueueOptions {
   onBatchSubmit: (batch: IBuddyUnitTestApiTestCase[]) => Promise<void> // Callback to submit batch
 }
 
-const DEFAULTS: Required<Omit<TestCaseQueueOptions, 'onBatchSubmit'>> = {
-  batchIntervalMs: 3000,
-  maxBatchSize: 100,
-  retryCount: 2,
-  retryDelayMs: 500,
-}
-
 export class TestCaseQueue {
   private readonly batchIntervalMs: number
   private readonly maxBatchSize: number
@@ -30,10 +23,10 @@ export class TestCaseQueue {
   private inFlight = 0 // Count of in-flight batch submissions
 
   constructor(options: TestCaseQueueOptions) {
-    this.batchIntervalMs = options.batchIntervalMs ?? DEFAULTS.batchIntervalMs
-    this.maxBatchSize = options.maxBatchSize ?? DEFAULTS.maxBatchSize
-    this.retryCount = options.retryCount ?? DEFAULTS.retryCount
-    this.retryDelayMs = options.retryDelayMs ?? DEFAULTS.retryDelayMs
+    this.batchIntervalMs = options.batchIntervalMs ?? 3000
+    this.maxBatchSize = options.maxBatchSize ?? 100
+    this.retryCount = options.retryCount ?? 2
+    this.retryDelayMs = options.retryDelayMs ?? 500
     this.onBatchSubmit = options.onBatchSubmit
   }
 

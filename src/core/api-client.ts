@@ -25,6 +25,8 @@ export default class BuddyUnitTestApiClient {
   #fetchConfig: FetchConfig
   #queue: TestCaseQueue | undefined = undefined
   #sessionId: string | undefined = undefined
+  // TODO: Remove fallback flag once batch endpoint is fully deployed to production (2-3 weeks after release)
+  #useBatchFallback = false // True when batch endpoint returns 404
 
   constructor(config: BuddyUnitTestCollectorConfig) {
     this.#config = config
@@ -176,11 +178,93 @@ export default class BuddyUnitTestApiClient {
       )
     } catch (error) {
       const duration = Date.now() - startTime
+
+      // TODO: Remove 404 detection and fallback logic once batch endpoint is fully deployed to production
+      // Check if this is a 404 error (batch endpoint not available)
+      const is404 = error instanceof Error && error.message.includes('HTTP 404')
+
+      if (is404 && !this.#useBatchFallback) {
+        logger.warn(
+          `Batch endpoint not available (404), switching to fallback mode for ${String(testCases.length)} test cases`,
+        )
+        this.#useBatchFallback = true
+
+        // Retry this batch using fallback method
+        await this.submitTestCaseFallback(sessionId, testCases)
+        return
+      }
+
       logger.error(
         `Failed to submit batch of ${String(testCases.length)} test cases after ${String(duration)}ms`,
         error,
       )
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
+      throw error
+    }
+  }
+
+  // TODO: Remove this entire method once batch endpoint is fully deployed to production (2-3 weeks after release)
+  // This fallback method submits test cases individually using the old PUT endpoint
+  async submitTestCaseFallback(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]): Promise<void> {
+    const startTime = Date.now()
+    const MAX_CONCURRENT = 5 // Max concurrent individual requests
+    const BATCH_DELAY_MS = 50 // Small delay between batches
+
+    try {
+      logger.debug(
+        `Submitting ${String(testCases.length)} test cases individually (fallback mode) with max ${String(MAX_CONCURRENT)} concurrent requests`,
+      )
+
+      // Process test cases in controlled batches
+      for (let index = 0; index < testCases.length; index += MAX_CONCURRENT) {
+        const batch = testCases.slice(index, index + MAX_CONCURRENT)
+
+        // Submit batch with all requests in parallel
+        const promises = batch.map((testCase) => this.#submitSingleTestCase(sessionId, testCase))
+        const results = await Promise.allSettled(promises)
+
+        // Log batch completion stats
+        const fulfilled = results.filter((r) => r.status === 'fulfilled').length
+        const rejected = results.filter((r) => r.status === 'rejected').length
+        if (rejected > 0) {
+          logger.debug(`Fallback batch completed: ${String(fulfilled)} succeeded, ${String(rejected)} failed/timed out`)
+        }
+
+        // Add delay between batches to avoid overwhelming the API
+        if (index + MAX_CONCURRENT < testCases.length) {
+          await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
+        }
+      }
+
+      const duration = Date.now() - startTime
+      logger.debug(
+        `Successfully submitted ${String(testCases.length)} test cases individually (took ${String(duration)}ms)`,
+      )
+    } catch (error) {
+      const duration = Date.now() - startTime
+      logger.error(`Failed to submit test cases individually after ${String(duration)}ms`, error)
+      setEnvironmentVariable('BUDDY_API_FAILURE', true)
+      throw error
+    }
+  }
+
+  // TODO: Remove this entire method once batch endpoint is fully deployed to production (used only by fallback)
+  async #submitSingleTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase, retryCount = 0): Promise<void> {
+    const MAX_RETRIES = 2
+    const RETRY_DELAY_MS = 500
+
+    try {
+      await this.#fetch(`/unit-tests/sessions/${sessionId}/cases`, {
+        method: 'PUT',
+        body: JSON.stringify(testCase),
+      })
+    } catch (error) {
+      if (retryCount < MAX_RETRIES) {
+        logger.debug(`Retrying test case: ${testCase.name} (attempt ${String(retryCount + 1)}/${String(MAX_RETRIES)})`)
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+        return this.#submitSingleTestCase(sessionId, testCase, retryCount + 1)
+      }
+      logger.error(`Failed to submit test case: ${testCase.name} after ${String(MAX_RETRIES)} retries`, error)
       throw error
     }
   }
@@ -215,6 +299,10 @@ export default class BuddyUnitTestApiClient {
     // Clean up existing queue if any
     this.#cleanupQueue()
 
+    // TODO: Remove this line once batch endpoint is fully deployed to production
+    // Reset fallback flag for new session to retry batch endpoint
+    this.#useBatchFallback = false
+
     this.#sessionId = sessionId
     this.#queue = new TestCaseQueue({
       batchIntervalMs: 3000, // Flush every 3 seconds
@@ -225,7 +313,12 @@ export default class BuddyUnitTestApiClient {
         if (!this.#sessionId) {
           throw new Error('Session ID not available for batch submission')
         }
-        await this.submitTestCaseBatch(this.#sessionId, batch)
+
+        // TODO: Remove fallback conditional once batch endpoint is fully deployed to production
+        // Use fallback method if batch endpoint is not available
+        await (this.#useBatchFallback
+          ? this.submitTestCaseFallback(this.#sessionId, batch)
+          : this.submitTestCaseBatch(this.#sessionId, batch))
       },
     })
 
