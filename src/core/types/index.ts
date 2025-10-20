@@ -27,5 +27,10 @@ export interface IBuddyUnitTestApiTestCase {
   classname: string
   status: BUDDY_UNIT_TEST_STATUS
   time: number
-  data?: string
+  data: Omit<IBuddyUnitTestApiTestCase, 'data'> & {
+    failure?: {
+      message: string
+      stackTrace?: string
+    }
+  }
 }
