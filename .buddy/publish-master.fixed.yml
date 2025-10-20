@@ -1,0 +1,67 @@
+- pipeline: Publish master version
+  refs:
+    - refs/heads/master
+  always_from_scratch: true
+  auto_clear_cache: true
+  fail_on_prepare_env_warning: true
+  trigger_conditions:
+    - trigger_condition: SUCCESS_PIPELINE
+      project: test-collector
+      pipeline: run_all
+  variables:
+    - key: VERSION_BUMP_TYPE
+  actions:
+    - action: Select version bump
+      type: WAIT_FOR_VARIABLES
+      variables:
+        - key: VERSION_BUMP_TYPE
+          defaults: |-
+            patch
+            minor
+            major
+    - action: Install packages
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - npm ci
+      volume_mappings:
+        - /:/buddy-works/unit-tests
+      shell: BASH
+    - action: Build
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - npm run build
+      volume_mappings:
+        - /:/buddy-works/unit-tests
+      shell: BASH
+    - action: Bump version
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - git config user.email "ci@buddy.works"
+        - git config user.name "Buddy CI"
+        - 'npm version $VERSION_BUMP_TYPE -m "chore(release): bump version to %s"'
+      volume_mappings:
+        - /:/buddy-works/unit-tests
+      shell: BASH
+    - action: Git Push
+      type: PUSH
+      push_tags: true
+      target_branch: $BUDDY_RUN_BRANCH
+      targets:
+        - project_repository
+      isolated: true
+    - action: Publish
+      type: BUILD
+      docker_image_name: library/node
+      docker_image_tag: 22
+      execute_commands:
+        - npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+        - npm publish --no-git-checks --access public
+      volume_mappings:
+        - /:/buddy-works/unit-tests
+      shell: BASH
