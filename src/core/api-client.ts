@@ -179,14 +179,13 @@ export default class BuddyUnitTestApiClient {
     } catch (error) {
       const duration = Date.now() - startTime
 
-      // TODO: Remove 400/404 detection and fallback logic once batch endpoint is fully deployed to production
-      // Check if this is a 400/404 error (batch endpoint not available)
-      const isEndpointUnavailable =
-        error instanceof Error && (error.message.includes('HTTP 404') || error.message.includes('HTTP 400'))
+      // TODO: Remove 404 detection and fallback logic once batch endpoint is fully deployed to production
+      // Check if this is a 404 error (batch endpoint not available)
+      const is404 = error instanceof Error && error.message.includes('HTTP 404')
 
-      if (isEndpointUnavailable && !this.#useBatchFallback) {
+      if (is404 && !this.#useBatchFallback) {
         logger.warn(
-          `Batch endpoint not available (${error.message}), switching to fallback mode for ${String(testcases.length)} test cases`,
+          `Batch endpoint not available (404), switching to fallback mode for ${String(testcases.length)} test cases`,
         )
         this.#useBatchFallback = true
 
