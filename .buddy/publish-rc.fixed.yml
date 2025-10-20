@@ -1,4 +1,4 @@
-- pipeline: Publish RC version
+- pipeline: Publish rc
   refs:
     - refs/heads/rc
   always_from_scratch: true

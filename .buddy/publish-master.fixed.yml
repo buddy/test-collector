@@ -1,4 +1,4 @@
-- pipeline: Publish master version
+- pipeline: Publish master
   refs:
     - refs/heads/master
   always_from_scratch: true
