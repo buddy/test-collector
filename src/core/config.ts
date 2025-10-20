@@ -1,6 +1,5 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
-import { IBuddySessionRequestPayload } from '@/core/types'
 import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
@@ -17,7 +16,7 @@ export default class BuddyUnitTestCollectorConfig {
   sessionId?: string
   triggeringActorId?: string
 
-  executionId?: string
+  runId?: string
   actionExecutionId?: string
   runRefName?: string
   runCommit?: string
@@ -44,7 +43,7 @@ export default class BuddyUnitTestCollectorConfig {
         this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
         this.runPreCommit = environment.BUDDY_RUN_PRE_COMMIT || this.#fallback.runPreCommit
         this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
-        this.executionId = environment.BUDDY_RUN_HASH
+        this.runId = environment.BUDDY_RUN_HASH
         this.actionExecutionId = environment.BUDDY_ACTION_RUN_HASH
         this.runUrl = environment.BUDDY_RUN_URL
         this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
@@ -61,10 +60,8 @@ export default class BuddyUnitTestCollectorConfig {
         this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
         this.runPreCommit = this.#fallback.runPreCommit
         this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
-        this.runUrl =
-          repository && environment.GITHUB_RUN_ID
-            ? `${serverUrl}/${repository}/actions/runs/${environment.GITHUB_RUN_ID}`
-            : undefined
+        this.runId = environment.GITHUB_RUN_ID
+        this.runUrl = repository && this.runId ? `${serverUrl}/${repository}/actions/runs/${this.runId}` : undefined
 
         break
       }
@@ -160,7 +157,7 @@ export default class BuddyUnitTestCollectorConfig {
     }
   }
 
-  get sessionPayload(): IBuddySessionRequestPayload {
+  get sessionPayload() {
     const basePayload = {
       ref_type: this.runRefType,
       ref_name: this.runRefName ?? this.runBranch,
@@ -170,15 +167,18 @@ export default class BuddyUnitTestCollectorConfig {
       ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
     }
 
+    // Provider-specific fields
     if (this.ciProvider === CI_PROVIDER.BUDDY) {
+      // For Buddy: send execution_id and action_execution_id
       const payload = {
         ...basePayload,
-        ...(this.executionId && { execution_id: this.executionId }),
+        ...(this.runId && { execution_id: this.runId }),
         ...(this.actionExecutionId && { action_execution_id: this.actionExecutionId }),
       }
       logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type || 'unknown'})`)
       return payload
     } else {
+      // For external providers: send ci_run_url
       const payload = {
         ...basePayload,
         ...(this.runUrl && { ci_run_url: this.runUrl }),
@@ -201,7 +201,7 @@ export default class BuddyUnitTestCollectorConfig {
       runCommit: this.runCommit,
       runPreCommit: this.runPreCommit,
       runBranch: this.runBranch,
-      executionId: this.executionId,
+      runId: this.runId,
       actionExecutionId: this.actionExecutionId,
       runUrl: this.runUrl,
     }
