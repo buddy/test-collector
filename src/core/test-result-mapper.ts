@@ -10,18 +10,19 @@ import logger from '@/utils/logger'
 export default class TestResultMapper {
   static displayName = 'TestResultMapper'
 
-  static #makeTestCase(
-    testcase: Omit<IBuddyUnitTestApiTestCase, 'data'>,
-    data: Omit<IBuddyUnitTestApiTestCase['data'], keyof typeof testcase>,
-  ): IBuddyUnitTestApiTestCase {
-    return {
-      ...testcase,
-      data: {
-        ...testcase,
-        ...data,
-        failure: testcase.status === BUDDY_UNIT_TEST_STATUS.PASSED ? undefined : data.failure,
-      },
+  static #toXml(object: Record<string, string | undefined>): string {
+    let xml = '<data>'
+    for (const [key, value] of Object.entries(object)) {
+      xml += value ? `<${key}><![CDATA[${value}]]></${key}>` : `<${key}></${key}>`
     }
+    xml += '</data>'
+    return xml
+  }
+
+  static #stripAnsiCodes(text: string): string {
+    // Remove ANSI escape codes for colors, formatting, etc.
+    // eslint-disable-next-line no-control-regex, unicorn/prefer-string-replace-all
+    return text.replace(/\u001B\[[0-9;]*[mGKHF]/g, '')
   }
 
   static #getStatusFromTestResult<T extends string>(
@@ -65,26 +66,20 @@ export default class TestResultMapper {
     nameParts.push(assertionResult.title)
     const testName = nameParts.join(' > ')
 
-    return TestResultMapper.#makeTestCase(
-      {
-        name: testName,
-        classname: testGroupName,
-        test_group_name: testGroupName,
-        status,
-        time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
-      },
-      {
-        failure: {
-          message:
-            assertionResult.failureDetails.length > 0
-              ? (assertionResult.failureDetails as { matcherResult?: { message: string } }[])
-                  .map((d) => d.matcherResult?.message ?? '')
-                  .join('\n')
-              : '',
-          stackTrace: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
-        },
-      },
-    )
+    const dataObject = {
+      errorMessage: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
+      errorStackTrace: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
+      messages: assertionResult.ancestorTitles.join(' > ') || '',
+    }
+
+    return {
+      name: testName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
+      status,
+      time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
+      data: this.#toXml(dataObject),
+    } satisfies IBuddyUnitTestApiTestCase
   }
 
   static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
@@ -100,21 +95,20 @@ export default class TestResultMapper {
     // Use fullName as the complete test name (includes hierarchy)
     const testName = result.fullName || result.description
 
-    return TestResultMapper.#makeTestCase(
-      {
-        name: testName,
-        classname: testGroupName,
-        test_group_name: testGroupName,
-        status: status,
-        time: (result.duration ?? 0) / 1000 || 0,
-      },
-      {
-        failure: {
-          message: result.failedExpectations.map((exp) => exp.message).join('\n') || '',
-          stackTrace: result.failedExpectations.map((exp) => exp.stack).join('\n') || '',
-        },
-      },
-    )
+    const dataObject = {
+      errorMessage: result.failedExpectations.map((exp) => exp.message).join('\n') || '',
+      errorStackTrace: result.failedExpectations.map((exp) => exp.stack).join('\n') || '',
+      messages: result.fullName || '',
+    }
+
+    return {
+      name: testName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
+      status: status,
+      time: (result.duration ?? 0) / 1000 || 0,
+      data: this.#toXml(dataObject),
+    }
   }
 
   static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
@@ -130,21 +124,20 @@ export default class TestResultMapper {
     // Build full test name with hierarchy
     const testName = test.fullTitle() || test.title
 
-    return TestResultMapper.#makeTestCase(
-      {
-        name: testName,
-        classname: testGroupName,
-        test_group_name: testGroupName,
-        status: status,
-        time: test.duration ? test.duration / 1000 : 0,
-      },
-      {
-        failure: {
-          stackTrace: test.err ? test.err.stack : '',
-          message: test.err ? test.err.message : '',
-        },
-      },
-    )
+    const dataObject = {
+      errorMessage: test.err ? test.err.message : '',
+      errorStackTrace: test.err ? test.err.stack : '',
+      messages: test.fullTitle() || '',
+    }
+
+    return {
+      name: testName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
+      status: status,
+      time: test.duration ? test.duration / 1000 : 0,
+      data: this.#toXml(dataObject),
+    }
   }
 
   static mapPlaywrightResult(
@@ -185,21 +178,20 @@ export default class TestResultMapper {
     nameParts.push(test.title)
     const testName = nameParts.join(' > ')
 
-    return TestResultMapper.#makeTestCase(
-      {
-        name: testName,
-        classname: testGroupName,
-        test_group_name: testGroupName,
-        status: status,
-        time: result.duration ? result.duration / 1000 : 0,
-      },
-      {
-        failure: {
-          message: result.error ? result.error.message || '' : '',
-          stackTrace: result.error ? result.error.stack || '' : '',
-        },
-      },
-    )
+    const dataObject = {
+      errorMessage: result.error ? this.#stripAnsiCodes(result.error.message || '') : '',
+      errorStackTrace: result.error ? this.#stripAnsiCodes(result.error.stack || '') : '',
+      messages: test.location.file || '',
+    }
+
+    return {
+      name: testName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
+      status: status,
+      time: result.duration ? result.duration / 1000 : 0,
+      data: this.#toXml(dataObject),
+    }
   }
 
   static mapVitestResult(
@@ -239,24 +231,21 @@ export default class TestResultMapper {
       testName = taskId
     }
 
-    return TestResultMapper.#makeTestCase(
-      {
-        name: testName,
-        classname: testGroupName,
-        test_group_name: testGroupName,
-        status,
-        time: taskResult.duration ? taskResult.duration / 1000 : 0,
-      },
-      {
-        failure: {
-          message:
-            (taskResult.errors?.length ?? 0) > 0
-              ? (taskResult.errors?.map((error) => error.message).join('\n') ?? '')
-              : '',
-          stackTrace:
-            (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
-        },
-      },
-    )
+    const dataObject = {
+      errorMessage:
+        (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.message).join('\n') : '',
+      errorStackTrace:
+        (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
+      messages: task?.suite?.name || '',
+    }
+
+    return {
+      name: testName,
+      classname: testGroupName,
+      test_group_name: testGroupName,
+      status,
+      time: taskResult.duration ? taskResult.duration / 1000 : 0,
+      data: this.#toXml(dataObject),
+    }
   }
 }

@@ -161,20 +161,20 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async submitTestCaseBatch(sessionId: string, testcases: IBuddyUnitTestApiTestCase[]): Promise<void> {
+  async submitTestCaseBatch(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]): Promise<void> {
     const startTime = Date.now()
 
     try {
-      logger.debug(`Submitting batch of ${String(testcases.length)} test cases`)
+      logger.debug(`Submitting batch of ${String(testCases.length)} test cases`)
 
       await this.#fetch(`/unit-tests/sessions/${sessionId}/cases/batch`, {
         method: 'POST',
-        body: JSON.stringify({ cases: testcases.map((testcase) => this.#processTestcaseForSubmit(testcase)) }),
+        body: JSON.stringify({ cases: testCases }),
       })
 
       const duration = Date.now() - startTime
       logger.debug(
-        `Successfully submitted batch of ${String(testcases.length)} test cases (took ${String(duration)}ms)`,
+        `Successfully submitted batch of ${String(testCases.length)} test cases (took ${String(duration)}ms)`,
       )
     } catch (error) {
       const duration = Date.now() - startTime
@@ -185,17 +185,17 @@ export default class BuddyUnitTestApiClient {
 
       if (is404 && !this.#useBatchFallback) {
         logger.warn(
-          `Batch endpoint not available (404), switching to fallback mode for ${String(testcases.length)} test cases`,
+          `Batch endpoint not available (404), switching to fallback mode for ${String(testCases.length)} test cases`,
         )
         this.#useBatchFallback = true
 
         // Retry this batch using fallback method
-        await this.submitTestCaseFallback(sessionId, testcases)
+        await this.submitTestCaseFallback(sessionId, testCases)
         return
       }
 
       logger.error(
-        `Failed to submit batch of ${String(testcases.length)} test cases after ${String(duration)}ms`,
+        `Failed to submit batch of ${String(testCases.length)} test cases after ${String(duration)}ms`,
         error,
       )
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
@@ -205,22 +205,22 @@ export default class BuddyUnitTestApiClient {
 
   // TODO: Remove this entire method once batch endpoint is fully deployed to production (2-3 weeks after release)
   // This fallback method submits test cases individually using the old PUT endpoint
-  async submitTestCaseFallback(sessionId: string, testcases: IBuddyUnitTestApiTestCase[]): Promise<void> {
+  async submitTestCaseFallback(sessionId: string, testCases: IBuddyUnitTestApiTestCase[]): Promise<void> {
     const startTime = Date.now()
     const MAX_CONCURRENT = 5 // Max concurrent individual requests
     const BATCH_DELAY_MS = 50 // Small delay between batches
 
     try {
       logger.debug(
-        `Submitting ${String(testcases.length)} test cases individually (fallback mode) with max ${String(MAX_CONCURRENT)} concurrent requests`,
+        `Submitting ${String(testCases.length)} test cases individually (fallback mode) with max ${String(MAX_CONCURRENT)} concurrent requests`,
       )
 
       // Process test cases in controlled batches
-      for (let index = 0; index < testcases.length; index += MAX_CONCURRENT) {
-        const batch = testcases.slice(index, index + MAX_CONCURRENT)
+      for (let index = 0; index < testCases.length; index += MAX_CONCURRENT) {
+        const batch = testCases.slice(index, index + MAX_CONCURRENT)
 
         // Submit batch with all requests in parallel
-        const promises = batch.map((testcase) => this.#submitSingleTestCase(sessionId, testcase))
+        const promises = batch.map((testCase) => this.#submitSingleTestCase(sessionId, testCase))
         const results = await Promise.allSettled(promises)
 
         // Log batch completion stats
@@ -231,14 +231,14 @@ export default class BuddyUnitTestApiClient {
         }
 
         // Add delay between batches to avoid overwhelming the API
-        if (index + MAX_CONCURRENT < testcases.length) {
+        if (index + MAX_CONCURRENT < testCases.length) {
           await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
         }
       }
 
       const duration = Date.now() - startTime
       logger.debug(
-        `Successfully submitted ${String(testcases.length)} test cases individually (took ${String(duration)}ms)`,
+        `Successfully submitted ${String(testCases.length)} test cases individually (took ${String(duration)}ms)`,
       )
     } catch (error) {
       const duration = Date.now() - startTime
@@ -249,22 +249,22 @@ export default class BuddyUnitTestApiClient {
   }
 
   // TODO: Remove this entire method once batch endpoint is fully deployed to production (used only by fallback)
-  async #submitSingleTestCase(sessionId: string, testcase: IBuddyUnitTestApiTestCase, retryCount = 0): Promise<void> {
+  async #submitSingleTestCase(sessionId: string, testCase: IBuddyUnitTestApiTestCase, retryCount = 0): Promise<void> {
     const MAX_RETRIES = 2
     const RETRY_DELAY_MS = 500
 
     try {
       await this.#fetch(`/unit-tests/sessions/${sessionId}/cases`, {
         method: 'PUT',
-        body: JSON.stringify(this.#processTestcaseForSubmit(testcase)),
+        body: JSON.stringify(testCase),
       })
     } catch (error) {
       if (retryCount < MAX_RETRIES) {
-        logger.debug(`Retrying test case: ${testcase.name} (attempt ${String(retryCount + 1)}/${String(MAX_RETRIES)})`)
+        logger.debug(`Retrying test case: ${testCase.name} (attempt ${String(retryCount + 1)}/${String(MAX_RETRIES)})`)
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
-        return this.#submitSingleTestCase(sessionId, testcase, retryCount + 1)
+        return this.#submitSingleTestCase(sessionId, testCase, retryCount + 1)
       }
-      logger.error(`Failed to submit test case: ${testcase.name} after ${String(MAX_RETRIES)} retries`, error)
+      logger.error(`Failed to submit test case: ${testCase.name} after ${String(MAX_RETRIES)} retries`, error)
       throw error
     }
   }
@@ -335,13 +335,13 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  submitTestCase(testcase: IBuddyUnitTestApiTestCase) {
+  submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
     if (!this.#queue) {
       const error = new Error('Queue not initialized. Create a session first.')
       logger.error('Queue not initialized - test case submission skipped', error)
       throw error
     }
-    this.#queue.submitTestCase(testcase)
+    this.#queue.submitTestCase(testCase)
   }
 
   async drainQueue() {
@@ -360,28 +360,5 @@ export default class BuddyUnitTestApiClient {
 
   getQueueSize(): number {
     return this.#queue?.getQueueSize() ?? 0
-  }
-
-  #stripAnsiCodes(text?: string): string | undefined {
-    // Remove ANSI escape codes for colors, formatting, etc.
-    // eslint-disable-next-line no-control-regex
-    return text?.replace(/\u001B\[[0-9;]*[mGKHF]/g, '')
-  }
-
-  #processTestcaseForSubmit(
-    testcase: IBuddyUnitTestApiTestCase,
-  ): Omit<IBuddyUnitTestApiTestCase, 'data'> & { data: string } {
-    const processedData = { ...testcase.data }
-
-    if (processedData.failure) {
-      processedData.failure = Object.fromEntries(
-        Object.entries(processedData.failure).map(([key, value]) => [key, this.#stripAnsiCodes(value)]),
-      ) as typeof processedData.failure
-    }
-
-    return {
-      ...testcase,
-      data: JSON.stringify(processedData),
-    }
   }
 }
