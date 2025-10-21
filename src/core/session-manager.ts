@@ -16,6 +16,7 @@ class BuddyUnitTestSessionManager {
   hasFrameworkErrors: boolean
   hasErrorTests: boolean
   hasFailedTests: boolean
+  #isClosing = false
 
   #config: BuddyUnitTestCollectorConfig | undefined
   get config() {
@@ -48,9 +49,9 @@ class BuddyUnitTestSessionManager {
     if (this.sessionId) return this.sessionId
 
     try {
-      this.sessionId = await (this.config.sessionId
-        ? this.apiClient.reopenSession(this.config.sessionId)
-        : this.apiClient.createSession())
+      this.sessionId = this.config.sessionId
+        ? this.apiClient.useExistingSession(this.config.sessionId)
+        : await this.apiClient.createSession()
 
       setEnvironmentVariable('BUDDY_SESSION_ID', this.sessionId)
       if (environment.BUDDY_SESSION_ID === this.sessionId) {
@@ -61,7 +62,7 @@ class BuddyUnitTestSessionManager {
 
       this.#writeSessionToFile(this.sessionId)
     } catch (error) {
-      logger.error('Failed to create/reopen session', error)
+      logger.error('Failed to create session', error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
       // Don't throw - let the error be handled by the caller
     }
@@ -178,6 +179,12 @@ class BuddyUnitTestSessionManager {
   }
 
   async closeSession() {
+    // Prevent multiple simultaneous close attempts (e.g., from beforeExit event loop)
+    if (this.#isClosing) {
+      logger.debug('Session close already in progress, skipping duplicate call')
+      return
+    }
+
     if (!this.initialized) {
       this.#initialize()
     }
@@ -200,6 +207,7 @@ class BuddyUnitTestSessionManager {
     }
 
     if (this.sessionId) {
+      this.#isClosing = true
       const startTime = Date.now()
       const sessionId = this.sessionId
 
@@ -246,6 +254,7 @@ class BuddyUnitTestSessionManager {
         this.hasFrameworkErrors = false
         this.hasErrorTests = false
         this.hasFailedTests = false
+        // Don't reset #isClosing - once we start closing, prevent all future attempts
         delete process.env.BUDDY_SESSION_ID
         logger.debug('Session ID and tracking flags cleared')
         this.#clearSessionFile()

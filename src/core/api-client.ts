@@ -139,26 +139,14 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async reopenSession(sessionId: string) {
-    try {
-      logger.debug(`Reopening test session: ${sessionId}`)
+  useExistingSession(sessionId: string) {
+    logger.debug(`Using existing test session: ${sessionId}`)
+    logger.info(`Using existing session with ID: ${sessionId}`)
 
-      const response = await this.#fetch<{ id: string }>(`/unit-tests/sessions/${sessionId}/reopen`, {
-        method: 'POST',
-      })
+    // Initialize and start the queue for this session
+    this.#initializeQueue(sessionId)
 
-      const newSessionId = response.id
-      logger.info(`Reopened session with ID: ${newSessionId}`)
-
-      // Initialize and start the queue for this session
-      this.#initializeQueue(newSessionId)
-
-      return newSessionId
-    } catch (error) {
-      logger.error(`Failed to reopen session: ${sessionId}`, error)
-      setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      throw error
-    }
+    return sessionId
   }
 
   async submitTestCaseBatch(sessionId: string, testcases: IBuddyUnitTestApiTestCase[]): Promise<void> {
