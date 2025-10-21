@@ -74,12 +74,15 @@ interface EnvironmentResult {
 }
 
 function loadEnvironment(): EnvironmentResult {
-  const entries = []
+  const variables = {} as EnvironmentConfig
 
+  // validate required variables at load time for early error detection
   for (const key of Object.keys(environmentConfig) as (keyof typeof environmentConfig)[]) {
     try {
-      const value = processConfigEntry(key, environmentConfig[key])
-      entries.push([key, value])
+      const config = environmentConfig[key]
+      if (config.type === 'string' && (config as StringConfig).required) {
+        getEnvironment(key as string, true)
+      }
     } catch (error: unknown) {
       return {
         error,
@@ -88,8 +91,19 @@ function loadEnvironment(): EnvironmentResult {
     }
   }
 
+  // define getters for all variables to read fresh from process.env
+  for (const key of Object.keys(environmentConfig) as (keyof typeof environmentConfig)[]) {
+    Object.defineProperty(variables, key, {
+      get() {
+        return processConfigEntry(key, environmentConfig[key])
+      },
+      enumerable: true,
+      configurable: true,
+    })
+  }
+
   return {
-    variables: Object.fromEntries(entries) as EnvironmentConfig,
+    variables,
   }
 }
 
