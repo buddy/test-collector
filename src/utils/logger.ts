@@ -1,4 +1,4 @@
-import { PACKAGE_NAME } from '@/core/const'
+import { PACKAGE_NAME, PACKAGE_VERSION } from '@/core/const'
 import environment from '@/utils/environment'
 
 class Logger {
@@ -6,7 +6,7 @@ class Logger {
   #level?: string
 
   constructor() {
-    this.#prefix = PACKAGE_NAME
+    this.#prefix = `${PACKAGE_NAME}@${PACKAGE_VERSION}`
     this.#level = environment.BUDDY_LOGGER_LEVEL
   }
 
