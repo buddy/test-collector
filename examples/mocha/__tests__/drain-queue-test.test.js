@@ -1,0 +1,33 @@
+const { prefixedDescribe } = require('../prefix')
+const assert = require('assert')
+
+console.log('=== DRAIN QUEUE TEST START ===')
+console.log('Generating 750 tests that complete instantly')
+console.log('maxBatchSize: 100, batchIntervalMs: 3000ms')
+console.log('Tests complete in < 1 second')
+console.log('All 750 tests should be in queue when reporter ends')
+console.log('===================================')
+console.log('EXPECTED: drain() should flush ALL 750 tests (8 batches)')
+console.log('If drain() has bug: Only 200 tests submitted, 550 TESTS LOST!')
+console.log('============================================')
+
+prefixedDescribe('DRAIN QUEUE TEST - 750 Instant Tests', () => {
+  // Generate 750 tests = 7.5x maxBatchSize (100)
+  // These will execute nearly instantly in Mocha
+  for (let i = 1; i <= 750; i++) {
+    it(`test ${i} - instant pass`, () => {
+      assert.strictEqual(true, true)
+    })
+  }
+
+  // Final marker test
+  it('test 751 - final marker', () => {
+    const timestamp = new Date().toISOString()
+    assert.strictEqual(true, true)
+    console.log(`\n=== ALL 751 TESTS COMPLETED at ${timestamp} ===`)
+    console.log('Spec ended. Now drain() should process the queue.')
+    console.log('Check API logs:')
+    console.log('  - WITH BUG: ~200 tests received (550 TESTS LOST)')
+    console.log('  - WITHOUT BUG: ALL 751 tests received (drain loops until empty)')
+  })
+})
