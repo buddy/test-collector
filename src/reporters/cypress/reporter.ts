@@ -60,14 +60,10 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       }
     }
 
-    // Flush the queue immediately to ensure all tests are submitted before spec process ends
-    // This is critical in Cypress because each spec runs in a separate process
     try {
-      logger.debug('Flushing test case queue before spec process ends')
-      await sessionManager.apiClient.flushQueue()
-      logger.debug('Queue flushed successfully')
+      await sessionManager.apiClient.drainQueue()
     } catch (error) {
-      logger.error('Error flushing queue at spec end', error)
+      logger.error('Error draining queue at spec end', error)
       sessionManager.markFrameworkError()
     }
 
