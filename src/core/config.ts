@@ -144,7 +144,7 @@ export default class BuddyUnitTestCollectorConfig {
 
     get runPreCommit() {
       try {
-        return execSync('git rev-parse HEAD', {
+        return execSync('git rev-parse HEAD^1', {
           encoding: 'utf8',
         }).trim()
       } catch {
