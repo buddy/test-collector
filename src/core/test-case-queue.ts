@@ -61,20 +61,32 @@ export class TestCaseQueue {
 
   /** Drain everything (awaits in-flight tasks and flushes remaining queue). */
   async drain(): Promise<void> {
-    logger.debug('Draining TestCaseQueue...')
-    await this.flushBatch() // Kick one pass
+    logger.debug(`Draining TestCaseQueue... (initial queue size: ${String(this.queue.length)})`)
 
-    // Wait for any in-flight batches to complete
-    while (this.inFlight > 0 || this.batching) {
-      await sleep(50)
+    // Stop the automatic batch timer to prevent interference
+    this.stop()
+
+    let iterations = 0
+    // Loop until queue is completely empty
+    // This handles cases where queue size exceeds maxBatchSize (e.g., 750 tests with maxBatchSize: 100)
+    while (this.queue.length > 0 || this.inFlight > 0 || this.batching) {
+      iterations++
+      logger.debug(
+        `Drain loop iteration ${String(iterations)}: queue=${String(this.queue.length)}, inFlight=${String(this.inFlight)}, batching=${String(this.batching)}`,
+      )
+
+      // Flush a batch if queue has items and we're not already batching
+      if (this.queue.length > 0 && !this.batching) {
+        await this.flushBatch()
+      }
+
+      // Wait for any in-flight batches to complete before checking again
+      if (this.inFlight > 0 || this.batching) {
+        await sleep(50)
+      }
     }
 
-    // Final flush if anything was added during drain
-    if (this.queue.length > 0) {
-      await this.flushBatch()
-    }
-
-    logger.debug('TestCaseQueue drained')
+    logger.debug(`TestCaseQueue drained after ${String(iterations)} iterations`)
   }
 
   /** Get current queue size. */
