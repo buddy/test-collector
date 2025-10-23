@@ -46,6 +46,7 @@ export default tseslint.config([
           ignorePrimitives: { string: true },
         },
       ],
+      'no-control-regex': 0,
     },
   },
 ])
