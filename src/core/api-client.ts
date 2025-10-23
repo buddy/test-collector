@@ -353,8 +353,7 @@ export default class BuddyUnitTestApiClient {
 
   #stripAnsiCodes(text?: string): string | undefined {
     // Remove ANSI escape codes for colors, formatting, etc.
-    // eslint-disable-next-line no-control-regex
-    return text?.replace(/\u001B\[[0-9;]*[mGKHF]/g, '')
+    return text?.replaceAll(/\u001B\[[0-9;]*[mGKHF]/g, '')
   }
 
   #processTestcaseForSubmit(
