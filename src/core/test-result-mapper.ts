@@ -1,9 +1,9 @@
 import type { TestResult as JestTestResult } from '@jest/reporters'
-import { AssertionResult as JestAssertionResult } from '@jest/test-result'
+import type { AssertionResult as JestAssertionResult } from '@jest/test-result'
 import type { TestCase as PlaywrightTestCase, TestResult as PlaywrightTestResult } from '@playwright/test/reporter'
-import { Test as MochaTest } from 'mocha'
-import { RunnerTask as VitestRunnerTask, RunnerTaskResult as VitestRunnerTaskResult } from 'vitest'
-import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
+import type { Test as MochaTest } from 'mocha'
+import type { TestCase as VitestTestCase, TestResult as VitestTestResult } from 'vitest/node'
+import { BUDDY_UNIT_TEST_STATUS, type IBuddyUnitTestApiTestCase } from '@/core/types'
 import logger from '@/utils/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -203,15 +203,15 @@ export default class TestResultMapper {
   }
 
   static mapVitestResult(
-    taskId: VitestRunnerTask['id'],
-    taskResult: VitestRunnerTaskResult,
-    task?: VitestRunnerTask,
+    test: VitestTestCase,
+    result: VitestTestResult,
     relativeFilePath?: string,
   ): IBuddyUnitTestApiTestCase {
-    const status = this.#getStatusFromTestResult(taskResult.state, {
-      pass: BUDDY_UNIT_TEST_STATUS.PASSED,
-      fail: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skip: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+    const status = this.#getStatusFromTestResult(result.state, {
+      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
+      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
+      skipped: BUDDY_UNIT_TEST_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available
@@ -219,25 +219,18 @@ export default class TestResultMapper {
 
     // Build the full test name with hierarchy
     let testName = 'Unknown Test'
-    if (task) {
-      const nameParts: string[] = []
+    const nameParts: string[] = []
 
-      // Add suite hierarchy if available
-      if (task.suite?.name) {
-        nameParts.push(task.suite.name)
-      }
-
-      // Add test name
-      if (task.name) {
-        nameParts.push(task.name)
-      } else if (taskId) {
-        nameParts.push(taskId)
-      }
-
-      testName = nameParts.join(' > ')
-    } else if (taskId) {
-      testName = taskId
+    // Add suite hierarchy if available
+    if (test.parent.type === 'suite') {
+      nameParts.push(test.parent.name, test.name)
+    } else {
+      nameParts.push(test.parent.project.name, test.name)
     }
+
+    testName = nameParts.join(' > ')
+
+    const duration = test.diagnostic()?.duration
 
     return TestResultMapper.#makeTestCase(
       {
@@ -245,16 +238,13 @@ export default class TestResultMapper {
         classname: testGroupName,
         test_group_name: testGroupName,
         status,
-        time: taskResult.duration ? taskResult.duration / 1000 : 0,
+        time: duration ? duration / 1000 : 0,
       },
       {
         failure: {
           message:
-            (taskResult.errors?.length ?? 0) > 0
-              ? (taskResult.errors?.map((error) => error.message).join('\n') ?? '')
-              : '',
-          stackTrace:
-            (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
+            (result.errors?.length ?? 0) > 0 ? (result.errors?.map((error) => error.message).join('\n') ?? '') : '',
+          stackTrace: (result.errors?.length ?? 0) > 0 ? result.errors?.map((error) => error.stack).join('\n') : '',
         },
       },
     )
