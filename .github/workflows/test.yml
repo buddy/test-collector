@@ -2,9 +2,7 @@ name: Build and Test All Frameworks
 
 on:
   push:
-    branches: ['master']
   pull_request:
-    branches: ['master']
   workflow_dispatch:
 
 env:
