@@ -126,7 +126,7 @@ export class TestCaseQueue {
 
     try {
       await this.sendBatchWithRetry(batch)
-      logger.debug(`Successfully submitted batch of ${batch.length} test cases`)
+      logger.debug(`Successfully flushed batch of ${batch.length} test cases`)
     } catch (error) {
       logger.error(`Batch request failed after retries (${batch.length} test cases)`, error)
 

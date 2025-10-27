@@ -213,13 +213,7 @@ export default class TestResultMapper {
     })
 
     const testGroupName = relativeFilePath || 'Unknown Test Group'
-
     const testName = test.fullName
-
-    if (test.options.each) {
-      logger.debug('Vitest test case', test)
-    }
-
     const duration = test.diagnostic()?.duration
 
     return TestResultMapper.#makeTestCase(

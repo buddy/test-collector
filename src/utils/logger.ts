@@ -7,7 +7,7 @@ class Logger {
 
   constructor() {
     this.#prefix = `${PACKAGE_NAME}@${PACKAGE_VERSION}`
-    this.#level = environment.BUDDY_LOGGER_LEVEL
+    this.#level = environment.BUDDY_LOGGER_LEVEL || 'info'
   }
 
   #safeStringify(object: unknown): string {

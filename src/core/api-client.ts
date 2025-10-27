@@ -133,6 +133,7 @@ export default class BuddyUnitTestApiClient {
       })
 
       const sessionId = response.id
+
       if (!sessionId) {
         throw new Error('Session ID not returned from API')
       }
@@ -151,7 +152,6 @@ export default class BuddyUnitTestApiClient {
   }
 
   useExistingSession(sessionId: IBuddyUTSession['id']) {
-    logger.debug(`Using existing test session: ${sessionId}`)
     logger.info(`Using existing session with ID: ${sessionId}`)
 
     // Initialize and start the queue for this session
@@ -173,8 +173,7 @@ export default class BuddyUnitTestApiClient {
         } satisfies IBuddyUTTestCasesBatchPayload),
       })
 
-      const duration = Date.now() - startTime
-      logger.debug(`Successfully submitted batch of ${testcases.length} test cases (took ${duration}ms)`)
+      logger.info(`Successfully submitted ${testcases.length} test case${testcases.length === 1 ? '' : 's'}`)
     } catch (error) {
       const duration = Date.now() - startTime
 
@@ -200,7 +199,6 @@ export default class BuddyUnitTestApiClient {
       })
 
       logger.info(`Successfully closed session: ${sessionId} with status: ${status}`)
-      logger.debug(`Close session response: OK`)
 
       // Clean up the queue after session is closed
       this.#cleanupQueue()
