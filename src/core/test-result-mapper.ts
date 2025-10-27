@@ -3,7 +3,7 @@ import type { AssertionResult as JestAssertionResult } from '@jest/test-result'
 import type { TestCase as PlaywrightTestCase, TestResult as PlaywrightTestResult } from '@playwright/test/reporter'
 import type { Test as MochaTest } from 'mocha'
 import type { TestCase as VitestTestCase, TestResult as VitestTestResult } from 'vitest/node'
-import { BUDDY_UNIT_TEST_STATUS, type IBuddyUnitTestApiTestCase } from '@/core/types'
+import { type IBuddyUTPreparsedTestCase } from '@/core/types'
 import logger from '@/utils/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -11,30 +11,28 @@ export default class TestResultMapper {
   static displayName = 'TestResultMapper'
 
   static #makeTestCase(
-    testcase: Omit<IBuddyUnitTestApiTestCase, 'data'>,
-    data: Omit<IBuddyUnitTestApiTestCase['data'], keyof typeof testcase>,
-  ): IBuddyUnitTestApiTestCase {
+    testcase: Omit<IBuddyUTPreparsedTestCase, 'data'>,
+    data: Omit<IBuddyUTPreparsedTestCase['data'], keyof typeof testcase>,
+  ): IBuddyUTPreparsedTestCase {
     return {
       ...testcase,
       data: {
         ...testcase,
         ...data,
-        failure: testcase.status === BUDDY_UNIT_TEST_STATUS.PASSED ? undefined : data.failure,
+        failure: testcase.status === 'PASSED' ? undefined : data.failure,
       },
     }
   }
 
   static #getStatusFromTestResult<T extends string>(
     testResult: T | undefined | null,
-    statusMap: Partial<Record<NonNullable<T>, BUDDY_UNIT_TEST_STATUS>>,
-  ): BUDDY_UNIT_TEST_STATUS {
+    statusMap: Partial<Record<NonNullable<T>, IBuddyUTPreparsedTestCase['status']>>,
+  ): IBuddyUTPreparsedTestCase['status'] {
     return (
       statusMap[testResult] ??
       (() => {
-        logger.debug(
-          `Unknown test result status: ${String(testResult)}. Defaulting to ${BUDDY_UNIT_TEST_STATUS.ERROR}.`,
-        )
-        return BUDDY_UNIT_TEST_STATUS.ERROR
+        logger.debug(`Unknown test result status: ${testResult}. Defaulting to ERROR.`)
+        return 'ERROR' as IBuddyUTPreparsedTestCase['status']
       })()
     )
   }
@@ -43,15 +41,15 @@ export default class TestResultMapper {
     assertionResult: JestAssertionResult,
     testResult: JestTestResult,
     relativeFilePath?: string,
-  ): IBuddyUnitTestApiTestCase {
+  ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(assertionResult.status, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skipped: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      todo: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      disabled: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      focused: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: 'PASSED',
+      failed: 'FAILED',
+      skipped: 'SKIPPED',
+      pending: 'SKIPPED',
+      todo: 'SKIPPED',
+      disabled: 'SKIPPED',
+      focused: 'SKIPPED',
     })
 
     // Use relative file path as test group name if available, otherwise use full path
@@ -87,11 +85,11 @@ export default class TestResultMapper {
     )
   }
 
-  static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
+  static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: 'PASSED',
+      failed: 'FAILED',
+      pending: 'SKIPPED',
     })
 
     // Use relative file path as test group name if available
@@ -117,11 +115,11 @@ export default class TestResultMapper {
     )
   }
 
-  static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
+  static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(test.state, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: 'PASSED',
+      failed: 'FAILED',
+      pending: 'SKIPPED',
     })
 
     // Use relative file path as test group name if available
@@ -151,12 +149,12 @@ export default class TestResultMapper {
     test: PlaywrightTestCase,
     result: PlaywrightTestResult,
     relativeFilePath?: string,
-  ): IBuddyUnitTestApiTestCase {
+  ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skipped: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      timedOut: BUDDY_UNIT_TEST_STATUS.FAILED,
+      passed: 'PASSED',
+      failed: 'FAILED',
+      skipped: 'SKIPPED',
+      timedOut: 'FAILED',
     })
 
     // Use relative file path as test group name if available
@@ -206,29 +204,21 @@ export default class TestResultMapper {
     test: VitestTestCase,
     result: VitestTestResult,
     relativeFilePath?: string,
-  ): IBuddyUnitTestApiTestCase {
+  ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.state, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skipped: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: 'PASSED',
+      pending: 'SKIPPED',
+      failed: 'FAILED',
+      skipped: 'SKIPPED',
     })
 
-    // Use relative file path as test group name if available
     const testGroupName = relativeFilePath || 'Unknown Test Group'
 
-    // Build the full test name with hierarchy
-    let testName = 'Unknown Test'
-    const nameParts: string[] = []
+    const testName = test.fullName
 
-    // Add suite hierarchy if available
-    if (test.parent.type === 'suite') {
-      nameParts.push(test.parent.name, test.name)
-    } else {
-      nameParts.push(test.parent.project.name, test.name)
+    if (test.options.each) {
+      logger.debug('Vitest test case', test)
     }
-
-    testName = nameParts.join(' > ')
 
     const duration = test.diagnostic()?.duration
 

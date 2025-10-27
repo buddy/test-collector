@@ -1,5 +1,7 @@
+import { BuddyUnitTestCollectorConfig } from '@/core/config'
 import sessionManager from '@/core/session-manager'
 import BuddyMochaReporter from '@/reporters/mocha/reporter'
+import environment from '@/utils/environment'
 import logger from '@/utils/logger'
 
 /**
@@ -19,14 +21,13 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
 
     try {
       // Check if session already exists (from previous spec files or environment)
-      const existingSessionId = sessionManager.sessionId || process.env.BUDDY_SESSION_ID
+      const existingSessionId =
+        sessionManager.sessionId ?? BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
 
       if (existingSessionId) {
         logger.debug(`Reusing existing session: ${existingSessionId}`)
         // Set the session ID if not already set in session manager
-        if (!sessionManager.sessionId) {
-          sessionManager.sessionId = existingSessionId
-        }
+        sessionManager.sessionId ??= existingSessionId
       } else {
         // Only create new session if none exists
         logger.debug('Creating new session for Cypress')
@@ -44,7 +45,7 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
     logger.debug('Cypress spec file completed')
 
     if (this.pendingSubmissions.size > 0) {
-      logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
+      logger.debug(`Waiting for ${this.pendingSubmissions.size} pending test submissions to complete`)
       const maxWaitTime = 10_000
       const startTime = Date.now()
 
@@ -53,7 +54,7 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       }
 
       if (this.pendingSubmissions.size > 0) {
-        logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
+        logger.warn(`Timed out waiting for ${this.pendingSubmissions.size} test submissions`)
         sessionManager.markFrameworkError()
       } else {
         logger.debug('All test submissions completed')

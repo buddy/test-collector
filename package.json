@@ -38,6 +38,7 @@
     "./vitest": "./dist/reporters/vitest/index.js"
   },
   "scripts": {
+    "fetch:types": "openapi-typescript https://schemas-openapi-buddy-swagger-ui-beta.eu-1.agent-sls.net/dev/restapi.json -o src/api/types/rest.ts --immutable --exclude-deprecated --empty-objects-unknown --alphabetize",
     "build": "npm run lint && rimraf dist && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "format": "prettier --write --cache . && eslint . --cache --fix",
     "lint": "eslint . --cache --quiet",
@@ -72,6 +73,7 @@
     "jasmine": "5.12.0",
     "lint-staged": "16.2.6",
     "mocha": "11.7.4",
+    "openapi-typescript": "7.10.1",
     "prettier": "3.6.2",
     "rimraf": "6.0.1",
     "tsc-alias": "1.8.16",

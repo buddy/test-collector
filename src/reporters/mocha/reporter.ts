@@ -2,7 +2,7 @@ import { MochaOptions, Runner, Test, reporters } from 'mocha'
 import { relative } from 'pathe'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
-import { IBuddyUnitTestApiTestCase } from '@/core/types'
+import { IBuddyUTPreparsedTestCase } from '@/core/types'
 import logger from '@/utils/logger'
 
 const { EVENT_RUN_BEGIN, EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_PENDING } = Runner.constants
@@ -85,7 +85,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     })
   }
 
-  async submitTestWithTracking(_test: Test, resultMapperFunction: () => IBuddyUnitTestApiTestCase) {
+  async submitTestWithTracking(_test: Test, resultMapperFunction: () => IBuddyUTPreparsedTestCase) {
     const submissionId = Symbol()
     this.pendingSubmissions.add(submissionId)
 
@@ -124,7 +124,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     logger.debug('Mocha test run completed')
 
     if (this.pendingSubmissions.size > 0) {
-      logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
+      logger.debug(`Waiting for ${this.pendingSubmissions.size} pending test submissions to complete`)
 
       const maxWaitTime = 10_000
       const startTime = Date.now()
@@ -134,7 +134,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
       }
 
       if (this.pendingSubmissions.size > 0) {
-        logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
+        logger.warn(`Timed out waiting for ${this.pendingSubmissions.size} test submissions`)
         sessionManager.markFrameworkError()
       } else {
         logger.debug('All test submissions completed')

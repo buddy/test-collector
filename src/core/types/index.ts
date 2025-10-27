@@ -1,33 +1,33 @@
-import { CI_PROVIDER } from '@/utils/environment'
+import { components, paths } from '@/api/types/rest'
 
-export enum BUDDY_UNIT_TEST_STATUS {
-  PASSED = 'PASSED',
-  SKIPPED = 'SKIPPED',
-  ERROR = 'ERROR',
-  FAILED = 'FAILED',
-}
+type Prettify<T> = {
+  [K in keyof T]: T[K]
+} & {}
 
-export interface IBuddySessionRequestPayload {
-  ci_provider: CI_PROVIDER
-  ref_type?: string
-  ref_name?: string
-  from_revision?: string
-  to_revision?: string
-  execution_id?: string
-  action_execution_id?: string
-  ci_run_url?: string
-}
+export type IBuddyUTSession = Prettify<Required<components['schemas']['TestSessionView']>>
 
-export interface IBuddyUnitTestApiTestCase {
-  url?: string
-  htmlUrl?: string
-  id?: string
-  name: string
-  test_group_name: string
-  classname: string
-  status: BUDDY_UNIT_TEST_STATUS
-  time: number
-  data: Omit<IBuddyUnitTestApiTestCase, 'data'> & {
+export type IBuddyUTSessionsPayload = Prettify<
+  NonNullable<paths['/unit-tests/sessions']['post']['requestBody']>['content']['application/json']
+>
+
+export type IBuddyUTSessionsSuccessResponse = Prettify<
+  paths['/unit-tests/sessions']['post']['responses']['201']['content']['application/json']
+>
+
+export type IBuddyUTTestCase = Prettify<Required<components['schemas']['AddTestCaseRequest']>>
+
+export type IBuddyUTTestCasesBatchPayload = Prettify<
+  NonNullable<
+    paths['/unit-tests/sessions/{sessionId}/cases/batch']['post']['requestBody']
+  >['content']['application/json']
+>
+
+export type IBuddyUTTestCasesBatchSuccessResponse = Prettify<
+  paths['/unit-tests/sessions/{sessionId}/cases/batch']['post']['responses']['201']['content']['application/json']
+>
+
+export interface IBuddyUTPreparsedTestCase extends Omit<IBuddyUTTestCase, 'data'> {
+  data: Omit<IBuddyUTPreparsedTestCase, 'data'> & {
     failure?: {
       message: string
       stackTrace?: string

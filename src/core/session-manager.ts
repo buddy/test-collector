@@ -2,16 +2,16 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import BuddyUnitTestApiClient from '@/core/api-client'
-import BuddyUnitTestCollectorConfig from '@/core/config'
-import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
+import { BuddyUnitTestCollectorConfig } from '@/core/config'
+import { IBuddyUTPreparsedTestCase, IBuddyUTSession } from '@/core/types'
 import environment, { setEnvironmentVariable } from '@/utils/environment'
 import logger from '@/utils/logger'
 
 class BuddyUnitTestSessionManager {
   static displayName = 'BuddyUnitTestSessionManager'
 
-  sessionId: string | undefined
-  createSession: Promise<string | undefined> | undefined
+  sessionId: number | undefined
+  createSession: Promise<IBuddyUTSession['id'] | undefined> | undefined
   initialized: boolean
   hasFrameworkErrors: boolean
   hasErrorTests: boolean
@@ -53,9 +53,11 @@ class BuddyUnitTestSessionManager {
         ? this.apiClient.useExistingSession(this.config.sessionId)
         : await this.apiClient.createSession()
 
-      setEnvironmentVariable('BUDDY_SESSION_ID', this.sessionId)
-      if (environment.BUDDY_SESSION_ID === this.sessionId) {
-        logger.debug(`Session ID stored in environment variable BUDDY_SESSION_ID: ${environment.BUDDY_SESSION_ID}`)
+      setEnvironmentVariable('BUDDY_SESSION_ID', String(this.sessionId))
+      if (BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID) === this.sessionId) {
+        logger.debug(
+          `Session ID stored in environment variable BUDDY_SESSION_ID: ${BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)}`,
+        )
       } else {
         logger.debug('BUDDY_SESSION_ID environment variable could not be updated to match current session ID')
       }
@@ -74,9 +76,9 @@ class BuddyUnitTestSessionManager {
     return path.join(os.tmpdir(), 'buddy-session-id.txt')
   }
 
-  #writeSessionToFile(sessionId: string) {
+  #writeSessionToFile(sessionId: IBuddyUTSession['id']) {
     try {
-      fs.writeFileSync(this.#getSessionFilePath(), sessionId, 'utf8')
+      fs.writeFileSync(this.#getSessionFilePath(), String(sessionId), 'utf8')
       logger.debug(`Session ID written to file: ${sessionId}`)
     } catch (error) {
       logger.error('Failed to write session ID to file', error)
@@ -87,7 +89,7 @@ class BuddyUnitTestSessionManager {
     try {
       const filePath = this.#getSessionFilePath()
       if (fs.existsSync(filePath)) {
-        const sessionId = fs.readFileSync(filePath, 'utf8').trim()
+        const sessionId = BuddyUnitTestCollectorConfig.getSessionId(fs.readFileSync(filePath, 'utf8').trim())
         logger.debug(`Session ID read from file: ${sessionId}`)
         return sessionId
       }
@@ -151,18 +153,16 @@ class BuddyUnitTestSessionManager {
     }
   }
 
-  async submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
+  async submitTestCase(testCase: IBuddyUTPreparsedTestCase) {
     if (!this.initialized) throw new Error(`${BuddyUnitTestSessionManager.displayName} not initialized`)
 
     try {
       const sessionId = await this.getOrCreateSession()
 
-      if (testCase.status === BUDDY_UNIT_TEST_STATUS.ERROR) {
+      if (testCase.status === 'ERROR') {
         this.hasErrorTests = true
-        logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.ERROR} test result`)
-      } else if (testCase.status === BUDDY_UNIT_TEST_STATUS.FAILED) {
+      } else if (testCase.status === 'FAILED') {
         this.hasFailedTests = true
-        logger.debug(`Tracked ${BUDDY_UNIT_TEST_STATUS.FAILED} test result`)
       }
 
       if (!sessionId) {
@@ -195,7 +195,7 @@ class BuddyUnitTestSessionManager {
     }
 
     if (!this.sessionId && environment.BUDDY_SESSION_ID) {
-      this.sessionId = environment.BUDDY_SESSION_ID
+      this.sessionId = BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
       logger.debug(`Retrieved session ID from BUDDY_SESSION_ID environment variable: ${this.sessionId}`)
     }
 
@@ -212,25 +212,25 @@ class BuddyUnitTestSessionManager {
       const sessionId = this.sessionId
 
       try {
-        let sessionStatus = BUDDY_UNIT_TEST_STATUS.PASSED
+        let sessionStatus: IBuddyUTPreparsedTestCase['status'] = 'PASSED'
 
         if (this.hasFrameworkErrors || this.hasErrorTests) {
-          sessionStatus = BUDDY_UNIT_TEST_STATUS.ERROR
+          sessionStatus = 'ERROR'
         } else if (this.hasFailedTests) {
-          sessionStatus = BUDDY_UNIT_TEST_STATUS.FAILED
+          sessionStatus = 'FAILED'
         }
 
         // Log memory usage before closing
         const mem = process.memoryUsage()
         logger.debug(`Memory usage at session close:`)
-        logger.debug(`  Heap Used: ${String(Math.round(mem.heapUsed / 1024 / 1024))}MB`)
-        logger.debug(`  Heap Total: ${String(Math.round(mem.heapTotal / 1024 / 1024))}MB`)
-        logger.debug(`  RSS: ${String(Math.round(mem.rss / 1024 / 1024))}MB`)
+        logger.debug(`  Heap Used: ${Math.round(mem.heapUsed / 1024 / 1024)}MB`)
+        logger.debug(`  Heap Total: ${Math.round(mem.heapTotal / 1024 / 1024)}MB`)
+        logger.debug(`  RSS: ${Math.round(mem.rss / 1024 / 1024)}MB`)
 
         // Warn if memory usage is high
         const heapUsedMB = Math.round(mem.heapUsed / 1024 / 1024)
         if (heapUsedMB > 500) {
-          logger.warn(`High memory usage detected: ${String(heapUsedMB)}MB heap used`)
+          logger.warn(`High memory usage detected: ${heapUsedMB}MB heap used`)
         }
 
         logger.debug(`Closing session ${sessionId}`)
@@ -238,12 +238,10 @@ class BuddyUnitTestSessionManager {
         await this.apiClient.closeSession(sessionId, sessionStatus)
 
         const duration = Date.now() - startTime
-        logger.info(
-          `Session ${sessionId} closed successfully with status: ${sessionStatus} (took ${String(duration)}ms)`,
-        )
+        logger.info(`Session ${sessionId} closed successfully with status: ${sessionStatus} (took ${duration}ms)`)
       } catch (error) {
         const duration = Date.now() - startTime
-        logger.error(`Failed to close session ${sessionId} after ${String(duration)}ms`, error)
+        logger.error(`Failed to close session ${sessionId} after ${duration}ms`, error)
         setEnvironmentVariable('BUDDY_API_FAILURE', true)
 
         // Still cleanup even if close failed - prevents zombie sessions

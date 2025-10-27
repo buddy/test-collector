@@ -1,10 +1,10 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
-import { IBuddySessionRequestPayload } from '@/core/types'
+import { IBuddyUTSession, IBuddyUTSessionsPayload } from '@/core/types'
 import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
-export default class BuddyUnitTestCollectorConfig {
+export class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
   static libraryName = '@buddy-works/unit-tests'
 
@@ -13,8 +13,8 @@ export default class BuddyUnitTestCollectorConfig {
   utToken: string
   debugEnabled: boolean
   apiBaseUrl: string
-  runRefType?: string
-  sessionId?: string
+  runRefType?: 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+  sessionId?: IBuddyUTSession['id']
   triggeringActorId?: string
 
   executionId?: string
@@ -25,6 +25,20 @@ export default class BuddyUnitTestCollectorConfig {
   runBranch?: string
   runUrl?: string
 
+  static getSessionId(sessionId?: string): IBuddyUTSession['id'] | undefined {
+    if (!sessionId) return
+    return Number(sessionId)
+  }
+
+  static getRunRefType(runRefType?: string) {
+    const validTypes = ['BRANCH', 'TAG', 'PULL_REQUEST']
+
+    const runRefTypeUpper = runRefType?.toUpperCase()
+    if (!(runRefTypeUpper && validTypes.includes(runRefTypeUpper))) return
+
+    return runRefTypeUpper as 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+  }
+
   constructor() {
     this.ciProvider = detectCIProvider()
 
@@ -33,14 +47,14 @@ export default class BuddyUnitTestCollectorConfig {
     this.utToken = environment.BUDDY_UT_TOKEN
     this.debugEnabled = environment.BUDDY_LOGGER_LEVEL === 'debug'
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
-    this.sessionId = environment.BUDDY_SESSION_ID
+    this.sessionId = BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
 
     switch (this.ciProvider) {
       case CI_PROVIDER.BUDDY: {
         logger.debug('Loading Buddy CI configuration')
 
         this.runRefName = environment.BUDDY_RUN_REF_NAME
-        this.runRefType = environment.BUDDY_RUN_REF_TYPE
+        this.runRefType = BuddyUnitTestCollectorConfig.getRunRefType(environment.BUDDY_RUN_REF_TYPE)
         this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
         this.runPreCommit = environment.BUDDY_RUN_PRE_COMMIT || this.#fallback.runPreCommit
         this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
@@ -57,7 +71,7 @@ export default class BuddyUnitTestCollectorConfig {
         const repository = environment.GITHUB_REPOSITORY
 
         this.runRefName = environment.GITHUB_REF_NAME
-        this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase()
+        this.runRefType = BuddyUnitTestCollectorConfig.getRunRefType(environment.GITHUB_REF_TYPE)
         this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
         this.runPreCommit = this.#fallback.runPreCommit
         this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
@@ -112,13 +126,6 @@ export default class BuddyUnitTestCollectorConfig {
   readonly #fallback = {
     get apiBaseUrl() {
       const token = environment.BUDDY_UT_TOKEN
-      const parts = token.split('_')
-
-      // for non-prod tokens, the api url is base64url encoded in the 3rd part
-      if (parts.length === 5) {
-        return Buffer.from(parts[3], 'base64url').toString('utf8')
-      }
-
       return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
     },
 
@@ -160,14 +167,13 @@ export default class BuddyUnitTestCollectorConfig {
     }
   }
 
-  get sessionPayload(): IBuddySessionRequestPayload {
+  get sessionPayload(): IBuddyUTSessionsPayload {
     const basePayload = {
       ref_type: this.runRefType,
       ref_name: this.runRefName ?? this.runBranch,
-      from_revision: this.runPreCommit,
-      to_revision: this.runCommit,
+      revision: this.runCommit,
       ci_provider: this.ciProvider,
-      ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
+      ...(this.triggeringActorId && { created_by: { id: Number(this.triggeringActorId) } }),
     }
 
     if (this.ciProvider === CI_PROVIDER.BUDDY) {

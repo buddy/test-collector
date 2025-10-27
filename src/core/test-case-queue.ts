@@ -1,4 +1,4 @@
-import { IBuddyUnitTestApiTestCase } from '@/core/types'
+import { IBuddyUTPreparsedTestCase } from '@/core/types'
 import logger from '@/utils/logger'
 
 export interface TestCaseQueueOptions {
@@ -6,7 +6,7 @@ export interface TestCaseQueueOptions {
   maxBatchSize?: number // Maximum items per batch (default 100)
   retryCount?: number // Retry attempts (default 2)
   retryDelayMs?: number // Fixed backoff delay (default 500ms)
-  onBatchSubmit: (batch: IBuddyUnitTestApiTestCase[]) => Promise<void> // Callback to submit batch
+  onBatchSubmit: (batch: IBuddyUTPreparsedTestCase[]) => Promise<void> // Callback to submit batch
 }
 
 export class TestCaseQueue {
@@ -14,9 +14,9 @@ export class TestCaseQueue {
   private readonly maxBatchSize: number
   private readonly retryCount: number
   private readonly retryDelayMs: number
-  private readonly onBatchSubmit: (batch: IBuddyUnitTestApiTestCase[]) => Promise<void>
+  private readonly onBatchSubmit: (batch: IBuddyUTPreparsedTestCase[]) => Promise<void>
 
-  private queue: IBuddyUnitTestApiTestCase[] = []
+  private queue: IBuddyUTPreparsedTestCase[] = []
   private running = false
   private batchTimer: ReturnType<typeof setInterval> | undefined = undefined
   private batching = false // Lock to prevent overlapping flushes
@@ -31,9 +31,9 @@ export class TestCaseQueue {
   }
 
   /** Enqueue a new test case. */
-  submitTestCase(testCase: IBuddyUnitTestApiTestCase) {
+  submitTestCase(testCase: IBuddyUTPreparsedTestCase) {
     this.queue.push(testCase)
-    logger.debug(`Test case queued: ${testCase.name} (queue size: ${String(this.queue.length)})`)
+    logger.debug(`Test case queued: ${testCase.name} (queue size: ${this.queue.length})`)
   }
 
   /** Start processing (idempotent). */
@@ -61,7 +61,7 @@ export class TestCaseQueue {
 
   /** Drain everything (awaits in-flight tasks and flushes remaining queue). */
   async drain(): Promise<void> {
-    logger.debug(`Draining TestCaseQueue... (initial queue size: ${String(this.queue.length)})`)
+    logger.debug(`Draining TestCaseQueue... (initial queue size: ${this.queue.length})`)
 
     // Stop the automatic batch timer to prevent interference
     this.stop()
@@ -72,7 +72,7 @@ export class TestCaseQueue {
     while (this.queue.length > 0 || this.inFlight > 0 || this.batching) {
       iterations++
       logger.debug(
-        `Drain loop iteration ${String(iterations)}: queue=${String(this.queue.length)}, inFlight=${String(this.inFlight)}, batching=${String(this.batching)}`,
+        `Drain loop iteration ${iterations}: queue=${this.queue.length}, inFlight=${this.inFlight}, batching=${this.batching}`,
       )
 
       // Flush a batch if queue has items and we're not already batching
@@ -86,7 +86,7 @@ export class TestCaseQueue {
       }
     }
 
-    logger.debug(`TestCaseQueue drained after ${String(iterations)} iterations`)
+    logger.debug(`TestCaseQueue drained after ${iterations} iterations`)
   }
 
   /** Get current queue size. */
@@ -110,7 +110,7 @@ export class TestCaseQueue {
     this.batching = true
 
     // Drain up to maxBatchSize
-    const batch: IBuddyUnitTestApiTestCase[] = []
+    const batch: IBuddyUTPreparsedTestCase[] = []
     while (batch.length < this.maxBatchSize && this.queue.length > 0) {
       const item = this.queue.shift()
       if (item) batch.push(item)
@@ -121,24 +121,33 @@ export class TestCaseQueue {
       return
     }
 
-    logger.debug(`Flushing batch of ${String(batch.length)} test cases`)
+    logger.debug(`Flushing batch of ${batch.length} test cases`)
     this.inFlight++
 
     try {
       await this.sendBatchWithRetry(batch)
-      logger.debug(`Successfully submitted batch of ${String(batch.length)} test cases`)
+      logger.debug(`Successfully submitted batch of ${batch.length} test cases`)
     } catch (error) {
-      logger.error(`Batch request failed after retries (${String(batch.length)} test cases)`, error)
-      // Push back preserving order
-      this.queue.unshift(...batch)
-      logger.debug(`Re-queued ${String(batch.length)} test cases after failure`)
+      logger.error(`Batch request failed after retries (${batch.length} test cases)`, error)
+
+      // Only re-queue on transient errors (5xx, timeouts, network errors)
+      // Don't re-queue on client errors (4xx) as they won't be fixed by retrying
+      const isClientError = error instanceof Error && /HTTP 4\d\d/.test(error.message)
+
+      if (isClientError) {
+        logger.error(`Dropping ${batch.length} test cases due to client error (won't retry 4xx errors)`, error)
+      } else {
+        // Push back preserving order for transient errors only
+        this.queue.unshift(...batch)
+        logger.debug(`Re-queued ${batch.length} test cases after transient failure`)
+      }
     } finally {
       this.inFlight--
       this.batching = false
     }
   }
 
-  private async sendBatchWithRetry(batch: IBuddyUnitTestApiTestCase[]): Promise<void> {
+  private async sendBatchWithRetry(batch: IBuddyUTPreparsedTestCase[]): Promise<void> {
     await retry(
       async () => {
         await this.onBatchSubmit(batch)
@@ -151,7 +160,9 @@ export class TestCaseQueue {
 
 // --------------- helpers ----------------
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms))
+}
 
 async function retry<T>(function_: () => Promise<T>, attempts: number, delayMs: number): Promise<T> {
   let lastError: unknown
@@ -161,7 +172,7 @@ async function retry<T>(function_: () => Promise<T>, attempts: number, delayMs: 
     } catch (error) {
       lastError = error
       if (index < attempts) {
-        logger.debug(`Retry ${String(index + 1)}/${String(attempts)} after ${String(delayMs)}ms delay`)
+        logger.debug(`Retry ${index + 1}/${attempts} after ${delayMs}ms delay`)
         await sleep(delayMs)
       }
     }
