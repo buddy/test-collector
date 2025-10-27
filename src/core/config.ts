@@ -23,7 +23,8 @@ export class BuddyUnitTestCollectorConfig {
   runCommit?: string
   runPreCommit?: string
   runBranch?: string
-  runUrl?: string
+  runId?: IBuddyUTSessionsPayload['run_id']
+  runUrl?: IBuddyUTSessionsPayload['ci_run_url']
 
   static getSessionId(sessionId?: string): IBuddyUTSession['id'] | undefined {
     if (!sessionId) return
@@ -60,6 +61,7 @@ export class BuddyUnitTestCollectorConfig {
         this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
         this.executionId = environment.BUDDY_RUN_HASH
         this.actionExecutionId = environment.BUDDY_ACTION_RUN_HASH
+        this.runId = environment.BUDDY_RUN_ID
         this.runUrl = environment.BUDDY_RUN_URL
         this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
         break
@@ -75,6 +77,7 @@ export class BuddyUnitTestCollectorConfig {
         this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
         this.runPreCommit = this.#fallback.runPreCommit
         this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
+        this.runId = environment.GITHUB_RUN_ID
         this.runUrl =
           repository && environment.GITHUB_RUN_ID
             ? `${serverUrl}/${repository}/actions/runs/${environment.GITHUB_RUN_ID}`
@@ -168,7 +171,7 @@ export class BuddyUnitTestCollectorConfig {
   }
 
   get sessionPayload(): IBuddyUTSessionsPayload {
-    const basePayload = {
+    const basePayload: Partial<IBuddyUTSessionsPayload> = {
       ref_type: this.runRefType,
       ref_name: this.runRefName ?? this.runBranch,
       revision: this.runCommit,
@@ -187,6 +190,7 @@ export class BuddyUnitTestCollectorConfig {
     } else {
       const payload = {
         ...basePayload,
+        ...(this.runId && { run_id: this.runId }),
         ...(this.runUrl && { ci_run_url: this.runUrl }),
       }
       logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type || 'unknown'})`)
