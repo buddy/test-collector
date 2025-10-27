@@ -1,3 +1,5 @@
+import { CI_PROVIDER } from '@/core/types'
+
 interface StringConfig {
   type: 'string'
   required?: boolean
@@ -145,12 +147,6 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
   return !falseValues.includes(value.toLowerCase().trim())
 }
 
-enum CI_PROVIDER {
-  BUDDY = 'BUDDY',
-  GITHUB_ACTION = 'GITHUB_ACTION',
-  NONE = 'NONE',
-}
-
 function detectCIProvider(): CI_PROVIDER {
   const result = loadEnvironment()
 
@@ -169,4 +165,4 @@ const environmentResult = loadEnvironment()
 export default environmentResult.variables
 export const environmentError = environmentResult.error
 
-export { setEnvironmentVariable, detectCIProvider, environmentConfig, CI_PROVIDER, type EnvironmentResult }
+export { setEnvironmentVariable, detectCIProvider, environmentConfig, type EnvironmentResult }

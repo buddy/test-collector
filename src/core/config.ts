@@ -1,43 +1,46 @@
 import { execSync } from 'node:child_process'
 import { IncomingHttpHeaders } from 'node:http'
-import { IBuddyUTSession, IBuddyUTSessionsPayload } from '@/core/types'
-import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
+import { CI_PROVIDER, IBuddyUTSession, IBuddyUTSessionsPayload, SESSION_REF_TYPE } from '@/core/types'
+import environment, { detectCIProvider, environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
 export class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
   static libraryName = '@buddy-works/unit-tests'
 
-  ciProvider: CI_PROVIDER
-
   utToken: string
   debugEnabled: boolean
   apiBaseUrl: string
-  runRefType?: 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+  runRefType?: IBuddyUTSessionsPayload['ref_type']
   sessionId?: IBuddyUTSession['id']
-  triggeringActorId?: string
+  triggeringActorId?: NonNullable<IBuddyUTSessionsPayload['created_by']>['id']
 
-  executionId?: string
-  actionExecutionId?: string
-  runRefName?: string
-  runCommit?: string
-  runPreCommit?: string
-  runBranch?: string
+  ciProvider: IBuddyUTSessionsPayload['ci_provider']
+  executionId?: IBuddyUTSessionsPayload['execution_id']
+  actionExecutionId?: IBuddyUTSessionsPayload['action_execution_id']
+  runRefName?: IBuddyUTSessionsPayload['ref_name']
+  runCommit?: IBuddyUTSessionsPayload['revision']
   runId?: IBuddyUTSessionsPayload['run_id']
   runUrl?: IBuddyUTSessionsPayload['ci_run_url']
+  runBranch?: string
 
-  static getSessionId(sessionId?: string): IBuddyUTSession['id'] | undefined {
-    if (!sessionId) return
-    return Number(sessionId)
+  static getSessionId(sessionIdEnvironment?: string): IBuddyUTSession['id'] | undefined {
+    if (!sessionIdEnvironment) return
+    return Number(sessionIdEnvironment)
   }
 
-  static getRunRefType(runRefType?: string) {
-    const validTypes = ['BRANCH', 'TAG', 'PULL_REQUEST']
+  static getRunRefType(runRefTypeEnvironment?: string): IBuddyUTSession['ref_type'] | undefined {
+    const validTypes = Object.values(SESSION_REF_TYPE)
 
-    const runRefTypeUpper = runRefType?.toUpperCase()
-    if (!(runRefTypeUpper && validTypes.includes(runRefTypeUpper))) return
+    const runRefTypeUpper = runRefTypeEnvironment?.toUpperCase()
+    if (!(runRefTypeUpper && (validTypes as string[]).includes(runRefTypeUpper))) return
 
-    return runRefTypeUpper as 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+    return runRefTypeUpper as SESSION_REF_TYPE
+  }
+
+  static getTriggeringActorId(triggeringActorIdEnvironment?: string) {
+    if (!triggeringActorIdEnvironment) return
+    return Number(triggeringActorIdEnvironment)
   }
 
   constructor() {
@@ -57,13 +60,14 @@ export class BuddyUnitTestCollectorConfig {
         this.runRefName = environment.BUDDY_RUN_REF_NAME
         this.runRefType = BuddyUnitTestCollectorConfig.getRunRefType(environment.BUDDY_RUN_REF_TYPE)
         this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
-        this.runPreCommit = environment.BUDDY_RUN_PRE_COMMIT || this.#fallback.runPreCommit
         this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
         this.executionId = environment.BUDDY_RUN_HASH
         this.actionExecutionId = environment.BUDDY_ACTION_RUN_HASH
         this.runId = environment.BUDDY_RUN_ID
         this.runUrl = environment.BUDDY_RUN_URL
-        this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
+        this.triggeringActorId = BuddyUnitTestCollectorConfig.getTriggeringActorId(
+          environment.BUDDY_TRIGGERING_ACTOR_ID,
+        )
         break
       }
       case CI_PROVIDER.GITHUB_ACTION: {
@@ -75,7 +79,6 @@ export class BuddyUnitTestCollectorConfig {
         this.runRefName = environment.GITHUB_REF_NAME
         this.runRefType = BuddyUnitTestCollectorConfig.getRunRefType(environment.GITHUB_REF_TYPE)
         this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
-        this.runPreCommit = this.#fallback.runPreCommit
         this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
         this.runId = environment.GITHUB_RUN_ID
         this.runUrl =
@@ -176,7 +179,7 @@ export class BuddyUnitTestCollectorConfig {
       ref_name: this.runRefName ?? this.runBranch,
       revision: this.runCommit,
       ci_provider: this.ciProvider,
-      ...(this.triggeringActorId && { created_by: { id: Number(this.triggeringActorId) } }),
+      ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
     }
 
     if (this.ciProvider === CI_PROVIDER.BUDDY) {
@@ -209,7 +212,6 @@ export class BuddyUnitTestCollectorConfig {
       runRefName: this.runRefName,
       runRefType: this.runRefType,
       runCommit: this.runCommit,
-      runPreCommit: this.runPreCommit,
       runBranch: this.runBranch,
       executionId: this.executionId,
       actionExecutionId: this.actionExecutionId,

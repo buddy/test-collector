@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import BuddyUnitTestApiClient from '@/core/api-client'
 import { BuddyUnitTestCollectorConfig } from '@/core/config'
-import { IBuddyUTPreparsedTestCase, IBuddyUTSession } from '@/core/types'
+import { IBuddyUTPreparsedTestCase, IBuddyUTSession, UT_TESTCASE_STATUS } from '@/core/types'
 import environment, { setEnvironmentVariable } from '@/utils/environment'
 import logger from '@/utils/logger'
 
@@ -159,9 +159,9 @@ class BuddyUnitTestSessionManager {
     try {
       const sessionId = await this.getOrCreateSession()
 
-      if (testCase.status === 'ERROR') {
+      if (testCase.status === UT_TESTCASE_STATUS.ERROR) {
         this.hasErrorTests = true
-      } else if (testCase.status === 'FAILED') {
+      } else if (testCase.status === UT_TESTCASE_STATUS.FAILED) {
         this.hasFailedTests = true
       }
 
@@ -212,12 +212,12 @@ class BuddyUnitTestSessionManager {
       const sessionId = this.sessionId
 
       try {
-        let sessionStatus: IBuddyUTPreparsedTestCase['status'] = 'PASSED'
+        let sessionStatus: IBuddyUTPreparsedTestCase['status'] = UT_TESTCASE_STATUS.PASSED
 
         if (this.hasFrameworkErrors || this.hasErrorTests) {
-          sessionStatus = 'ERROR'
+          sessionStatus = UT_TESTCASE_STATUS.ERROR
         } else if (this.hasFailedTests) {
-          sessionStatus = 'FAILED'
+          sessionStatus = UT_TESTCASE_STATUS.FAILED
         }
 
         // Log memory usage before closing

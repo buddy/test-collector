@@ -3,7 +3,7 @@ import type { AssertionResult as JestAssertionResult } from '@jest/test-result'
 import type { TestCase as PlaywrightTestCase, TestResult as PlaywrightTestResult } from '@playwright/test/reporter'
 import type { Test as MochaTest } from 'mocha'
 import type { TestCase as VitestTestCase, TestResult as VitestTestResult } from 'vitest/node'
-import { type IBuddyUTPreparsedTestCase } from '@/core/types'
+import { type IBuddyUTPreparsedTestCase, UT_TESTCASE_STATUS } from '@/core/types'
 import logger from '@/utils/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -19,7 +19,7 @@ export default class TestResultMapper {
       data: {
         ...testcase,
         ...data,
-        failure: testcase.status === 'PASSED' ? undefined : data.failure,
+        failure: testcase.status === UT_TESTCASE_STATUS.PASSED ? undefined : data.failure,
       },
     }
   }
@@ -43,13 +43,13 @@ export default class TestResultMapper {
     relativeFilePath?: string,
   ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(assertionResult.status, {
-      passed: 'PASSED',
-      failed: 'FAILED',
-      skipped: 'SKIPPED',
-      pending: 'SKIPPED',
-      todo: 'SKIPPED',
-      disabled: 'SKIPPED',
-      focused: 'SKIPPED',
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      skipped: UT_TESTCASE_STATUS.SKIPPED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
+      todo: UT_TESTCASE_STATUS.SKIPPED,
+      disabled: UT_TESTCASE_STATUS.SKIPPED,
+      focused: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available, otherwise use full path
@@ -87,9 +87,9 @@ export default class TestResultMapper {
 
   static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
-      passed: 'PASSED',
-      failed: 'FAILED',
-      pending: 'SKIPPED',
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available
@@ -117,9 +117,9 @@ export default class TestResultMapper {
 
   static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(test.state, {
-      passed: 'PASSED',
-      failed: 'FAILED',
-      pending: 'SKIPPED',
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available
@@ -151,10 +151,10 @@ export default class TestResultMapper {
     relativeFilePath?: string,
   ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
-      passed: 'PASSED',
-      failed: 'FAILED',
-      skipped: 'SKIPPED',
-      timedOut: 'FAILED',
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      skipped: UT_TESTCASE_STATUS.SKIPPED,
+      timedOut: UT_TESTCASE_STATUS.FAILED,
     })
 
     // Use relative file path as test group name if available
@@ -206,10 +206,10 @@ export default class TestResultMapper {
     relativeFilePath?: string,
   ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.state, {
-      passed: 'PASSED',
-      pending: 'SKIPPED',
-      failed: 'FAILED',
-      skipped: 'SKIPPED',
+      passed: UT_TESTCASE_STATUS.PASSED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      skipped: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     const testGroupName = relativeFilePath || 'Unknown Test Group'

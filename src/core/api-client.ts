@@ -9,6 +9,7 @@ import {
   IBuddyUTTestCase,
   IBuddyUTTestCasesBatchPayload,
   IBuddyUTTestCasesBatchSuccessResponse,
+  UT_TESTCASE_STATUS,
 } from '@/core/types'
 import { setEnvironmentVariable } from '@/utils/environment'
 import logger from '@/utils/logger'
@@ -183,7 +184,10 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  async closeSession(sessionId: IBuddyUTSession['id'], status: IBuddyUTPreparsedTestCase['status'] = 'PASSED') {
+  async closeSession(
+    sessionId: IBuddyUTSession['id'],
+    status: IBuddyUTPreparsedTestCase['status'] = UT_TESTCASE_STATUS.PASSED,
+  ) {
     try {
       logger.debug(`Closing test session: ${sessionId} with status: ${status}`)
 

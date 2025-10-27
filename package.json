@@ -38,7 +38,7 @@
     "./vitest": "./dist/reporters/vitest/index.js"
   },
   "scripts": {
-    "fetch:types": "openapi-typescript https://schemas-openapi-buddy-swagger-ui-beta.eu-1.agent-sls.net/dev/restapi.json -o src/api/types/rest.ts --immutable --exclude-deprecated --empty-objects-unknown --alphabetize",
+    "fetch:types": "openapi-typescript https://schemas-openapi-buddy-swagger-ui-beta.eu-1.agent-sls.net/dev/restapi.json -o src/api/types/rest.ts --enum --dedupe-enums --immutable --exclude-deprecated --empty-objects-unknown --alphabetize --make-paths-enum --enum-values",
     "build": "npm run lint && rimraf dist && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "format": "prettier --write --cache . && eslint . --cache --fix",
     "lint": "eslint . --cache --quiet",

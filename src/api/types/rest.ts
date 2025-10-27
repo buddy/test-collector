@@ -1977,48 +1977,7 @@ export interface components {
       /** @description The name/description of the access token */
       readonly name?: string
       /** @description The array of OAuth scopes granted to the token */
-      readonly scopes?: readonly (
-        | 'WORKSPACE'
-        | 'WORKSPACES_MANAGE'
-        | 'PROJECT_DELETE'
-        | 'REPOSITORY_READ'
-        | 'REPOSITORY_WRITE'
-        | 'EXECUTION_INFO'
-        | 'EXECUTION_RUN'
-        | 'EXECUTION_MANAGE'
-        | 'USER_INFO'
-        | 'USER_KEY'
-        | 'MANAGE_EMAILS'
-        | 'USER_EMAIL'
-        | 'MEMBER_EMAIL'
-        | 'WEBHOOK_INFO'
-        | 'WEBHOOK_ADD'
-        | 'WEBHOOK_MANAGE'
-        | 'ENVIRONMENT_INFO'
-        | 'ENVIRONMENT_ADD'
-        | 'ENVIRONMENT_MANAGE'
-        | 'VARIABLE_INFO'
-        | 'VARIABLE_ADD'
-        | 'VARIABLE_MANAGE'
-        | 'TARGET_INFO'
-        | 'TARGET_ADD'
-        | 'TARGET_MANAGE'
-        | 'INTEGRATION_INFO'
-        | 'INTEGRATION_ADD'
-        | 'INTEGRATION_MANAGE'
-        | 'TOKEN_INFO'
-        | 'TOKEN_MANAGE'
-        | 'PACKAGE_READ'
-        | 'PACKAGE_WRITE'
-        | 'PACKAGE_MANAGE'
-        | 'ZONE_READ'
-        | 'ZONE_WRITE'
-        | 'ZONE_MANAGE'
-        | 'UNIT_TEST_INFO'
-        | 'UNIT_TEST_MANAGE'
-        | 'SANDBOX_INFO'
-        | 'SANDBOX_MANAGE'
-      )[]
+      readonly scopes?: readonly AccessTokenViewScopes[]
       readonly token?: string
       /** @description API endpoint to GET this object */
       readonly url?: string
@@ -2070,19 +2029,7 @@ export interface components {
        * @description The current status of the action execution
        * @enum {string}
        */
-      readonly status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly status?: ActionExecutionViewStatus
       /** @description The target identifier where the action was executed */
       readonly target?: string
       /**
@@ -2119,15 +2066,7 @@ export interface components {
       /** Format: int32 */
       readonly accessibility?: number
       /** @enum {string} */
-      readonly acl?:
-        | 'PRIVATE'
-        | 'PUBLIC_READ'
-        | 'PUBLIC_READ_WRITE'
-        | 'AWS_EXEC_READ'
-        | 'AUTHENTICATED_READ'
-        | 'BUCKET_OWNER_READ'
-        | 'BUCKET_OWNER_FULL_CONTROL'
-        | 'LOG_DELIVERY_WRITE'
+      readonly acl?: ActionViewAcl
       /** Format: int32 */
       readonly after_action_id?: number
       readonly aggregation_key?: string
@@ -2146,23 +2085,14 @@ export interface components {
       readonly assets?: readonly components['schemas']['GitHubReleaseAsset'][]
       readonly attachments?: readonly string[]
       /** @enum {string} */
-      readonly auth_type?: 'TOKEN' | 'BASIC' | 'CERTS' | 'SERVICE_ACCOUNT'
+      readonly auth_type?: ActionViewAuth_type
       /** @enum {string} */
-      readonly authentication_mode?:
-        | 'PASS'
-        | 'PRIVATE_KEY'
-        | 'PRIVATE_KEY_AND_PASS'
-        | 'PUBLIC_KEY'
-        | 'ENV_KEY'
-        | 'WORKSPACE_KEY'
-        | 'SAME_AS_PROXY'
-        | 'PROXY_KEY'
-        | 'CUSTOM_PROXY_KEY'
+      readonly authentication_mode?: ActionViewAuthentication_mode
       readonly auto_assign_release?: boolean
       readonly ba_password?: string
       readonly ba_username?: string
       /** @enum {string} */
-      readonly backend?: 'CUSTOM' | 'AMAZON' | 'GOOGLE'
+      readonly backend?: ActionViewBackend
       readonly base_url?: string
       /** Format: int32 */
       readonly best_practices?: number
@@ -2178,11 +2108,11 @@ export interface components {
       readonly cache_base_image?: boolean
       readonly cache_control?: string
       /** @enum {string} */
-      readonly cache_mode?: 'MIN' | 'MAX'
+      readonly cache_mode?: ActionViewCache_mode
       readonly cache_types?: readonly string[]
       readonly cached_dirs?: readonly string[]
       /** @enum {string} */
-      readonly cascade?: 'BACKGROUND' | 'ORPHAN' | 'FOREGROUND'
+      readonly cascade?: ActionViewCascade
       readonly cascade_arg?: boolean
       readonly certificates?: readonly string[]
       readonly changelog?: string
@@ -2242,10 +2172,10 @@ export interface components {
       readonly disable_notification?: boolean
       readonly disabled?: boolean
       /** @enum {string} */
-      readonly distribution?: 'UBUNTU_20_04' | 'AMI' | 'WINDOWS_SERVER_2019' | 'PREVIOUS_ACTION'
+      readonly distribution?: ActionViewDistribution
       readonly distribution_id?: string
       /** @enum {string} */
-      readonly distribution_method?: 'APP_STORE' | 'AD_HOC' | 'DEVELOPMENT' | 'ENTERPRISE'
+      readonly distribution_method?: ActionViewDistribution_method
       readonly do_not_prune_images?: boolean
       /** Format: int32 */
       readonly docker_build_action_id?: number
@@ -2253,16 +2183,7 @@ export interface components {
       readonly docker_image_name?: string
       readonly docker_image_tag?: string
       /** @enum {string} */
-      readonly docker_registry?:
-        | 'NONE'
-        | 'DOCKER_HUB'
-        | 'AMAZON_ECR'
-        | 'GOOGLE_GCR'
-        | 'GOOGLE_ARTIFACT_REGISTRY'
-        | 'OTHER'
-        | 'GIT_HUB_CONTAINER_REGISTRY'
-        | 'PACKAGE_REGISTRY'
-        | 'DIGITAL_OCEAN_CONTAINER_REGISTRY'
+      readonly docker_registry?: ActionViewDocker_registry
       readonly dockerfile_path?: string
       readonly download_excludes?: readonly string[]
       readonly download_includes?: readonly string[]
@@ -2286,7 +2207,7 @@ export interface components {
       readonly file_attachments?: readonly string[]
       readonly file_exist_behavior?: string
       /** @enum {string} */
-      readonly files_order?: 'alphabetically' | 'size'
+      readonly files_order?: ActionViewFiles_order
       readonly filesystem_access?: boolean
       /** Format: float */
       readonly first_contentful_paint?: number
@@ -2300,13 +2221,13 @@ export interface components {
       readonly folder_id?: string
       readonly force_arg?: boolean
       /** @enum {string} */
-      readonly from?: 'SCRATCH' | 'SANDBOX' | 'SNAPSHOT'
+      readonly from?: ActionViewFrom
       readonly from_name?: string
       readonly function_name?: string
       /** @enum {string} */
-      readonly git_auth_mode?: 'HTTP' | 'PRIVATE_KEY' | 'PUBLIC_BUDDY_KEY' | 'ENV_KEY' | 'CURRENT'
+      readonly git_auth_mode?: ActionViewGit_auth_mode
       /** @enum {string} */
-      readonly gke_auth_type?: 'BASIC' | 'CERTS' | 'SERVICE_ACCOUNT'
+      readonly gke_auth_type?: ActionViewGke_auth_type
       /** Format: int32 */
       readonly grace_period_arg?: number
       readonly group_name?: string
@@ -2337,7 +2258,7 @@ export interface components {
       readonly ignores_path?: string
       readonly image?: string
       /** @enum {string} */
-      readonly image_location?: 'PUBLIC_REGISTRY' | 'PRIVATE_REGISTRY' | 'ACTION' | 'PACKAGE_REGISTRY'
+      readonly image_location?: ActionViewImage_location
       readonly image_name?: string
       readonly image_tag?: string
       readonly image_url?: string
@@ -2346,30 +2267,14 @@ export interface components {
       readonly immediate?: boolean
       readonly inline_commands?: string
       /** @enum {string} */
-      readonly input_type?: 'SCM_REPOSITORY' | 'BUILD_ARTIFACTS'
+      readonly input_type?: ActionViewInput_type
       readonly inputs?: readonly components['schemas']['InputView'][]
       readonly insecure_registry?: boolean
       /** @enum {string} */
-      readonly instance_type?:
-        | 'GENERAL_MEDIUM'
-        | 'GENERAL_LARGE'
-        | 'GENERAL_XLARGE'
-        | 'GENERAL_2XLARGE'
-        | 'COMPUTE_MEDIUM'
-        | 'COMPUTE_LARGE'
-        | 'COMPUTE_XLARGE'
-        | 'COMPUTE_2XLARGE'
-        | 'ARM_GENERAL_MEDIUM'
-        | 'ARM_GENERAL_LARGE'
-        | 'ARM_GENERAL_XLARGE'
-        | 'ARM_GENERAL_2XLARGE'
-        | 'ARM_COMPUTE_MEDIUM'
-        | 'ARM_COMPUTE_LARGE'
-        | 'ARM_COMPUTE_XLARGE'
-        | 'ARM_COMPUTE_2XLARGE'
+      readonly instance_type?: ActionViewInstance_type
       readonly integration?: components['schemas']['IntegrationView']
       /** @enum {string} */
-      readonly integration_from?: 'ACTION' | 'PROJECT'
+      readonly integration_from?: ActionViewIntegration_from
       /** Format: float */
       readonly interactive?: number
       readonly internal_links?: string
@@ -2382,19 +2287,7 @@ export interface components {
       readonly keystore_password?: string
       readonly kubectl_version?: string
       /** @enum {string} */
-      readonly last_execution_status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly last_execution_status?: ActionExecutionViewStatus
       readonly leave_after?: boolean
       readonly level?: string
       readonly link?: string
@@ -2402,6 +2295,7 @@ export interface components {
       readonly local_path?: string
       readonly log_type?: string
       readonly login?: string
+      readonly loop?: readonly string[]
       readonly main_service_name?: string
       readonly mapping_path?: string
       readonly mappings_password?: components['schemas']['JsonNullableString']
@@ -2426,7 +2320,7 @@ export interface components {
       readonly not_wait?: boolean
       readonly notification_url?: string
       /** @enum {string} */
-      readonly operation?: 'START' | 'STOP' | 'DELETE' | 'APP_START' | 'APP_STOP' | 'CREATE_SNAPSHOT' | 'APP_RESTART'
+      readonly operation?: ActionViewOperation
       readonly organization?: string
       readonly organization_slug?: string
       readonly output_dir?: string
@@ -2436,7 +2330,7 @@ export interface components {
       readonly package_identifier?: string
       readonly parameters?: readonly components['schemas']['Parameter'][]
       /** @enum {string} */
-      readonly parse_mode?: 'PLAIN_TEXT' | 'MARKDOWN' | 'HTML'
+      readonly parse_mode?: ActionViewParse_mode
       readonly passphrase?: string
       readonly password?: string
       readonly paths?: readonly string[]
@@ -2448,7 +2342,7 @@ export interface components {
       /** Format: double */
       readonly pixel_tolerance_level?: number
       /** @enum {string} */
-      readonly platform?: 'MANAGED' | 'GKE' | 'KUBERNETES'
+      readonly platform?: ActionViewPlatform
       readonly port?: string
       readonly post_data?: string
       readonly pre_start_simulators?: readonly string[]
@@ -2459,21 +2353,12 @@ export interface components {
       readonly promote_all_traffic?: boolean
       readonly property_list?: string
       /** @enum {string} */
-      readonly property_list_source?: 'GENERATED' | 'PIPELINE_VOLUME' | 'VARIABLE' | 'ACTION'
+      readonly property_list_source?: ActionViewProperty_list_source
       /** @enum {string} */
-      readonly provenance?: 'NONE' | 'MIN' | 'MAX'
+      readonly provenance?: ActionViewProvenance
       readonly provision_profiles?: readonly string[]
       /** @enum {string} */
-      readonly proxy_authentication_mode?:
-        | 'PASS'
-        | 'PRIVATE_KEY'
-        | 'PRIVATE_KEY_AND_PASS'
-        | 'PUBLIC_KEY'
-        | 'ENV_KEY'
-        | 'WORKSPACE_KEY'
-        | 'SAME_AS_PROXY'
-        | 'PROXY_KEY'
-        | 'CUSTOM_PROXY_KEY'
+      readonly proxy_authentication_mode?: ActionViewAuthentication_mode
       readonly proxy_env_key?: string
       readonly proxy_host?: string
       readonly proxy_login?: string
@@ -2495,7 +2380,7 @@ export interface components {
       readonly quiet?: boolean
       readonly recipients?: string
       /** @enum {string} */
-      readonly record_arg?: 'TRUE' | 'FALSE' | 'NOT_SET'
+      readonly record_arg?: ActionViewRecord_arg
       readonly recursive?: boolean
       readonly reduced_redundancy?: boolean
       /** Format: int32 */
@@ -2521,20 +2406,7 @@ export interface components {
       readonly resource_group_name?: string
       readonly resource_name?: string
       /** @enum {string} */
-      readonly resources?:
-        | '1x2'
-        | '2x4'
-        | '3x6'
-        | '4x8'
-        | '5x10'
-        | '6x12'
-        | '7x14'
-        | '8x16'
-        | '9x18'
-        | '10x20'
-        | '11x22'
-        | '12x24'
-        | 'CUSTOM'
+      readonly resources?: ActionViewResources
       readonly respect_robot_exclusions?: boolean
       readonly retry_count?: components['schemas']['JsonNullableInteger']
       /** Format: int32 */
@@ -2547,7 +2419,7 @@ export interface components {
       readonly run_as_script?: boolean
       readonly run_as_user?: string
       /** @enum {string} */
-      readonly run_next?: 'WAIT_ON_SUCCESS' | 'IN_SOFT_PARALLEL' | 'IN_HARD_PARALLEL'
+      readonly run_next?: ActionViewRun_next
       readonly run_next_parallel?: boolean
       readonly run_only_on_first_failure?: boolean
       readonly runtime?: string
@@ -2559,14 +2431,7 @@ export interface components {
       /** Format: int32 */
       readonly sandbox_project_id?: number
       readonly sandbox_project_name?: string
-      readonly sandbox_references?: readonly (
-        | 'BY_ID'
-        | 'BY_TAGS'
-        | 'BY_ACTION'
-        | 'BY_NAME'
-        | 'BY_PROJECT'
-        | 'BY_DAYS'
-      )[]
+      readonly sandbox_references?: readonly ActionViewSandbox_references[]
       readonly save_config_arg?: boolean
       readonly scan_url?: string
       readonly screenshots?: readonly components['schemas']['ScreenshotView'][]
@@ -2583,10 +2448,10 @@ export interface components {
       readonly services?: readonly components['schemas']['ServiceView'][]
       readonly setup_commands?: readonly string[]
       /** @enum {string} */
-      readonly shell?: 'SH' | 'BASH' | 'POWERSHELL'
+      readonly shell?: ActionViewShell
       readonly shell_type?: string
       /** @enum {string} */
-      readonly sign_mode?: 'MANUAL' | 'AUTOMATIC'
+      readonly sign_mode?: ActionViewSign_mode
       readonly site_id?: string
       readonly skip_app_version_update?: boolean
       readonly skip_content_type_setting?: boolean
@@ -2644,29 +2509,7 @@ export interface components {
       readonly track?: string
       readonly trigger_action_name?: string
       /** @enum {string} */
-      readonly trigger_condition?:
-        | 'ALWAYS'
-        | 'ON_CHANGE'
-        | 'ON_CHANGE_AT_PATH'
-        | 'VAR_IS'
-        | 'VAR_IS_NOT'
-        | 'VAR_CONTAINS'
-        | 'VAR_NOT_CONTAINS'
-        | 'DATETIME'
-        | 'SUCCESS_PIPELINE'
-        | 'DAY'
-        | 'HOUR'
-        | 'OR'
-        | 'VAR_LESS_THAN'
-        | 'VAR_LESS_THAN_OR_EQUAL'
-        | 'VAR_GREATER_THAN'
-        | 'VAR_GREATER_THAN_OR_EQUAL'
-        | 'ACTION_STATUS_IS'
-        | 'ACTION_STATUS_IS_NOT'
-        | 'TRIGGERING_USER_IS'
-        | 'TRIGGERING_USER_IS_NOT'
-        | 'TRIGGERING_USER_IS_IN_GROUP'
-        | 'TRIGGERING_USER_IS_NOT_IN_GROUP'
+      readonly trigger_condition?: ActionViewTrigger_condition
       readonly trigger_condition_paths?: readonly string[]
       readonly trigger_conditions?: readonly components['schemas']['TriggerConditionView'][]
       readonly trigger_days?: readonly number[]
@@ -2675,211 +2518,14 @@ export interface components {
       readonly trigger_pipeline_name?: string
       readonly trigger_project_name?: string
       /** @enum {string} */
-      readonly trigger_status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly trigger_status?: ActionExecutionViewStatus
       /** @enum {string} */
-      readonly trigger_time:
-        | 'ON_EVERY_EXECUTION'
-        | 'ON_SUCCESS'
-        | 'ON_FAILURE'
-        | 'ON_BACK_TO_SUCCESS'
-        | 'ON_WARNING'
-        | 'ON_WAIT_FOR_APPROVE'
-        | 'ON_TERMINATE'
+      readonly trigger_time: ActionViewTrigger_time
       readonly trigger_user?: string
       readonly trigger_variable_key?: string
       readonly trigger_variable_value?: string
       /** @enum {string} */
-      readonly type:
-        | 'TRANSFER'
-        | 'AMAZON_S3'
-        | 'WEB_DAV'
-        | 'SSH_COMMAND'
-        | 'HTTP'
-        | 'SLACK'
-        | 'EMAIL'
-        | 'SMS'
-        | 'PUSH'
-        | 'HEROKU'
-        | 'BUILD'
-        | 'MODULUS'
-        | 'PING'
-        | 'WEB'
-        | 'TCP'
-        | 'RUN_NEXT_PIPELINE'
-        | 'ELASTIC_BEANSTALK'
-        | 'GCS'
-        | 'SHOPIFY'
-        | 'PUSHOVER'
-        | 'PUSHBULLET'
-        | 'CODE_DEPLOY'
-        | 'AZURE'
-        | 'DOCKERFILE'
-        | 'GOOGLE_APP_ENGINE'
-        | 'LAMBDA'
-        | 'HEROKU_CLI'
-        | 'RACKSPACE'
-        | 'CLOUDFLARE'
-        | 'CLOUD_FRONT'
-        | 'MONITOR'
-        | 'SLEEP'
-        | 'AWS_CLI'
-        | 'GOOGLE_CDN'
-        | 'AWS_LAMBDA_DEPLOY'
-        | 'KUBERNETES_APPLY'
-        | 'KUBERNETES_SET_IMAGE'
-        | 'KUBERNETES_RUN_POD'
-        | 'WAIT_FOR_APPLY'
-        | 'NEW_RELIC'
-        | 'KUBERNETES_RUN_JOB'
-        | 'ZIP'
-        | 'ROLLBAR'
-        | 'SENTRY'
-        | 'DATADOG'
-        | 'DO_SPACES'
-        | 'HONEYBADGER'
-        | 'SENTRY_ENTERPRISE'
-        | 'LOGGLY'
-        | 'KUBERNETES_CLI'
-        | 'RUN_DOCKER_CONTAINER'
-        | 'ESLINT'
-        | 'DOCKER_PUSH'
-        | 'ANDROID_SIGN'
-        | 'ANDROID_PLAY'
-        | 'WAIT_FOR_VARIABLES'
-        | 'GCLOUD_CLI'
-        | 'HIP_CHAT'
-        | 'AWS_ECS'
-        | 'COPY_FILES'
-        | 'FIREBASE'
-        | 'TELEGRAM'
-        | 'REPLACE'
-        | 'GOOGLE_FUNCTIONS_DEPLOY'
-        | 'DOCKER_SAVE'
-        | 'GOOGLE_FUNCTIONS'
-        | 'BUGSNAG'
-        | 'SPLIT_TESTS'
-        | 'RAYGUN'
-        | 'DATADOG_STATUS_CHECK'
-        | 'GHOST_INSPECTOR'
-        | 'AWS_CLOUD_FORMATION'
-        | 'DIGITAL_OCEAN_CDN'
-        | 'DISCORD2'
-        | 'IMAGE_COMPRESSION'
-        | 'NETLIFY'
-        | 'GIT_CRYPT_UNLOCK'
-        | 'GIT_CRYPT_LOCK'
-        | 'HELM'
-        | 'DOCKERFILE_LINTER'
-        | 'DOWNLOAD'
-        | 'DOWNLOAD_S3'
-        | 'LIGHTHOUSE'
-        | 'ANDROID_SIGN_BUNDLE'
-        | 'ANDROID_PLAY_BUNDLE'
-        | 'VISUAL_TESTS'
-        | 'LINK_VALIDATOR'
-        | 'AZURE_CLI'
-        | 'SHOPIFY_THEMEKIT_CLI'
-        | 'SSL_VERIFY'
-        | 'AZURE_STORAGE'
-        | 'DEPLOY_TO_SANDBOX'
-        | 'SANDBOX_START'
-        | 'SANDBOX_STOP'
-        | 'SANDBOX_EXEC'
-        | 'GIT_HUB_RELEASE'
-        | 'GCLOUD_RUN_DEPLOY'
-        | 'SANDBOX_SNAPSHOT'
-        | 'AWS_CLI_2'
-        | 'MICROSOFT_TEAMS'
-        | 'NATIVE_BUILD_WINDOWS'
-        | 'NATIVE_BUILD_MAC'
-        | 'DOCTL'
-        | 'NATIVE_BUILD_MAC_REACT'
-        | 'NATIVE_BUILD_MAC_CORDOVA'
-        | 'NATIVE_BUILD_MAC_FASTLANE'
-        | 'NATIVE_BUILD_MAC_FLUTTER'
-        | 'GOOGLE_CLOUD_STORAGE'
-        | 'GOOGLE_FUNCTION_DEPLOY'
-        | 'GOOGLE_FUNCTION_INVOKE'
-        | 'GOOGLE_CDN_INVALIDATE'
-        | 'GOOGLE_CLOUD_CLI'
-        | 'GOOGLE_CLOUD_RUN_DEPLOY'
-        | 'GOOGLE_APP_DEPLOY'
-        | 'ANDROID_PUBLISH_APK'
-        | 'ANDROID_PUBLISH_APP_BUNDLE'
-        | 'SANDBOX_CREATE_NEW'
-        | 'SANDBOX_CREATE_FROM_SANDBOX'
-        | 'SANDBOX_CREATE_FROM_SNAPSHOT'
-        | 'SANDBOX_DELETE'
-        | 'NATIVE_BUILD_MAC_SIGN'
-        | 'NATIVE_BUILD_MAC_DEPLOY'
-        | 'NATIVE_BUILD_DOCKER_CLI'
-        | 'CLEAR_CACHE'
-        | 'FASTLANE_ANDROID'
-        | 'NATIVE_BUILD_LINUX'
-        | 'GIT_HUB_CLI'
-        | 'INTEGRATION_VARIABLES'
-        | 'DOCKER_BUILD_MULTI_ARCH'
-        | 'CODE_PIPELINE'
-        | 'GIT_LAB_CLI'
-        | 'AWS_APP_RUNNER_DEPLOY'
-        | 'AWS_APP_RUNNER_MONITOR'
-        | 'NATIVE_BUILD_MAC_VM'
-        | 'AWS_CDK_CLI'
-        | 'GHOST_INSPECTOR_CLI'
-        | 'TERRAFORM'
-        | 'ATOP'
-        | 'SNYK_CLI'
-        | 'STACK_HAWK_CLI'
-        | 'JMETER_CLI'
-        | 'CUSTOM'
-        | 'BLACKFIRE_PHP'
-        | 'BLACKFIRE_PYTHON'
-        | 'BLACKFIRE_GO'
-        | 'LINK_CHECKER'
-        | 'SHOPIFY_CLI'
-        | 'DOCKER'
-        | 'SET_VARIABLES'
-        | 'DOWNLOAD_FROM_SANDBOX'
-        | 'PIPELINE_SETTINGS'
-        | 'BACKBLAZE_B2'
-        | 'NEW_RELIC_CLI'
-        | 'DOWNLOAD_GCS'
-        | 'DOWNLOAD_BACKBLAZE_B2'
-        | 'WP_CLI'
-        | 'GOOGLE_CHAT'
-        | 'SANDBOX_APPLICATION_START'
-        | 'SANDBOX_APPLICATION_STOP'
-        | 'POWERSHELL'
-        | 'SANDBOX_MANAGE'
-        | 'SANDBOX_CREATE'
-        | 'CONTENTFUL_CLI'
-        | 'FTP'
-        | 'FTPS'
-        | 'SFTP'
-        | 'GCE'
-        | 'VULTR'
-        | 'UPCLOUD'
-        | 'DIGITAL_OCEAN'
-        | 'DOWNLOAD_FTP'
-        | 'DOWNLOAD_FTPS'
-        | 'DOWNLOAD_SSH'
-        | 'RSYNC'
-        | 'PROMOTE_IMAGE'
-        | 'PUBLISH_PACKAGE_VERSION'
-        | 'DOWNLOAD_PACKAGE_VERSION'
-        | 'STORYBOOK'
+      readonly type: ActionViewType
       readonly types?: string
       readonly unit_tests_path?: string
       readonly unit_tests_suite?: string
@@ -2948,48 +2594,7 @@ export interface components {
       /** @description The name/description of the access token */
       readonly name: string
       /** @description The array of OAuth scopes granted to the token */
-      readonly scopes?: readonly (
-        | 'WORKSPACE'
-        | 'WORKSPACES_MANAGE'
-        | 'PROJECT_DELETE'
-        | 'REPOSITORY_READ'
-        | 'REPOSITORY_WRITE'
-        | 'EXECUTION_INFO'
-        | 'EXECUTION_RUN'
-        | 'EXECUTION_MANAGE'
-        | 'USER_INFO'
-        | 'USER_KEY'
-        | 'MANAGE_EMAILS'
-        | 'USER_EMAIL'
-        | 'MEMBER_EMAIL'
-        | 'WEBHOOK_INFO'
-        | 'WEBHOOK_ADD'
-        | 'WEBHOOK_MANAGE'
-        | 'ENVIRONMENT_INFO'
-        | 'ENVIRONMENT_ADD'
-        | 'ENVIRONMENT_MANAGE'
-        | 'VARIABLE_INFO'
-        | 'VARIABLE_ADD'
-        | 'VARIABLE_MANAGE'
-        | 'TARGET_INFO'
-        | 'TARGET_ADD'
-        | 'TARGET_MANAGE'
-        | 'INTEGRATION_INFO'
-        | 'INTEGRATION_ADD'
-        | 'INTEGRATION_MANAGE'
-        | 'TOKEN_INFO'
-        | 'TOKEN_MANAGE'
-        | 'PACKAGE_READ'
-        | 'PACKAGE_WRITE'
-        | 'PACKAGE_MANAGE'
-        | 'ZONE_READ'
-        | 'ZONE_WRITE'
-        | 'ZONE_MANAGE'
-        | 'UNIT_TEST_INFO'
-        | 'UNIT_TEST_MANAGE'
-        | 'SANDBOX_INFO'
-        | 'SANDBOX_MANAGE'
-      )[]
+      readonly scopes?: readonly AccessTokenViewScopes[]
       /** @description The array of workspaces for which this token can be used */
       readonly workspace_restrictions?: readonly string[]
     }
@@ -3010,7 +2615,7 @@ export interface components {
        * @description The status of the group member (`MEMBER`, `MANAGER`)
        * @enum {string}
        */
-      readonly status?: 'MEMBER' | 'MANAGER'
+      readonly status?: AddGroupMemberRequestStatus
     }
     readonly AddGroupRequest: {
       /** @description Whether group members are allowed to buy new domains on behalf of the workspace owner */
@@ -3050,17 +2655,7 @@ export interface components {
        * @description The authentication method used by the integration
        * @enum {string}
        */
-      readonly auth_type?:
-        | 'OAUTH'
-        | 'TOKEN'
-        | 'API_KEY'
-        | 'APP'
-        | 'APP_SPRYKER'
-        | 'TOKEN_APP_EXTENSION'
-        | 'DEFAULT'
-        | 'OIDC'
-        | 'TRUSTED'
-        | 'APP_RW'
+      readonly auth_type?: AddIntegrationRequestAuth_type
       /** @description The chat ID for messaging integrations */
       readonly chat_id?: string
       /** @description The client ID for OAuth-based integrations */
@@ -3102,7 +2697,7 @@ export interface components {
        * @description The scope of the integration
        * @enum {string}
        */
-      readonly scope: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope: AddIntegrationRequestScope
       /** @description The secret access key for AWS or DigitalOcean Spaces */
       readonly secret_key?: string
       /** @description The server ID for Discord integrations */
@@ -3123,57 +2718,7 @@ export interface components {
        * @description The type of integration
        * @enum {string}
        */
-      readonly type:
-        | 'GIT_HUB'
-        | 'BITBUCKET'
-        | 'GOOGLE'
-        | 'DIGITAL_OCEAN'
-        | 'SLACK'
-        | 'MODULUS'
-        | 'HEROKU'
-        | 'AMAZON'
-        | 'GIT_LAB'
-        | 'SHOPIFY'
-        | 'GIT_HUB_ENTERPRISE'
-        | 'GIT_LAB_ENTERPRISE'
-        | 'PUSHOVER'
-        | 'PUSHBULLET'
-        | 'RACKSPACE'
-        | 'CUSTOM'
-        | 'CLOUDFLARE'
-        | 'NEW_RELIC'
-        | 'SENTRY'
-        | 'ROLLBAR'
-        | 'DATADOG'
-        | 'DO_SPACES'
-        | 'HONEYBADGER'
-        | 'VULTR'
-        | 'SENTRY_ENTERPRISE'
-        | 'LOGGLY'
-        | 'HIP_CHAT'
-        | 'FIREBASE'
-        | 'TELEGRAM'
-        | 'AZURE'
-        | 'UPCLOUD'
-        | 'GHOST_INSPECTOR'
-        | 'NETLIFY'
-        | 'AZURE_CLOUD'
-        | 'MICROSOFT_TEAMS'
-        | 'GOOGLE_SERVICE_ACCOUNT'
-        | 'GOOGLE_PLAY_STORE'
-        | 'DOCKER_HUB'
-        | 'APP_STORE'
-        | 'GIT_HUB_APP'
-        | 'GIT_HUB_APP_ENTERPRISE'
-        | 'GIT_HUB_API'
-        | 'ATOP'
-        | 'SNYK'
-        | 'STACK_HAWK'
-        | 'BLACKFIRE'
-        | 'BACKBLAZE'
-        | 'ONE_LOGIN'
-        | 'OKTA'
-        | 'CONTENTFUL'
+      readonly type: AddIntegrationRequestType
       /** @description The integration URL */
       readonly url?: string
       /** @description The username for authentication */
@@ -3212,7 +2757,7 @@ export interface components {
        * @description Defines the cache scope
        * @enum {string}
        */
-      readonly cache_scope?: 'PIPELINE' | 'PROJECT' | 'WORKSPACE'
+      readonly cache_scope?: AddPipelineRequestCache_scope
       /**
        * Format: int32
        * @description Defines the depth of the git clone operation for shallow clones
@@ -3224,12 +2769,12 @@ export interface components {
        * @description The CPU architecture for the pipeline run
        * @enum {string}
        */
-      readonly cpu?: 'X64' | 'ARM' | 'X86'
+      readonly cpu?: AddPipelineRequestCpu
       /**
        * @description The source of the pipeline definition
        * @enum {string}
        */
-      readonly definition_source?: 'LOCAL' | 'REMOTE'
+      readonly definition_source?: AddPipelineRequestDefinition_source
       /** @description If set to true, a description is required when executing the pipeline manually */
       readonly description_required?: boolean
       /** @description Indicates if the pipeline is disabled */
@@ -3252,20 +2797,20 @@ export interface components {
        * @description The base for filesystem changeset calculation. Determines which file changes trigger the pipeline
        * @enum {string}
        */
-      readonly filesystem_changeset_base?: 'DATE_MODIFIED' | 'CONTENTS'
+      readonly filesystem_changeset_base?: AddPipelineRequestFilesystem_changeset_base
       /** @description The folder name where the pipeline is organized */
       readonly folder?: string
       /**
        * @description The base for git changeset calculation. Determines which changes trigger the pipeline
        * @enum {string}
        */
-      readonly git_changeset_base?: 'LATEST_RUN' | 'LATEST_RUN_MATCHING_REF' | 'PULL_REQUEST'
+      readonly git_changeset_base?: AddPipelineRequestGit_changeset_base
       readonly git_config?: components['schemas']['YamlDefinitionView']
       /**
        * @description The git configuration reference type
        * @enum {string}
        */
-      readonly git_config_ref?: 'NONE' | 'DYNAMIC' | 'FIXED'
+      readonly git_config_ref?: AddPipelineRequestGit_config_ref
       /** @description A human-readable ID. Alphanumeric characters, underscores, and hyphens (hyphens cannot appear at the start or end) */
       readonly identifier?: string
       /** @description If set to true, the status of a given pipeline will not impact the project status on the dashboard */
@@ -3292,7 +2837,7 @@ export interface components {
        * @description The priority of the pipeline
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       /** @description Pipeline git context refs. If unset and events is empty, the pipeline counts as codeless */
       readonly refs?: readonly string[]
       /** @description The parameters passed to the remote pipeline definition */
@@ -3307,7 +2852,7 @@ export interface components {
        * @description The resource configuration for the pipeline run
        * @enum {string}
        */
-      readonly resources?: 'DEFAULT' | 'NANO' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE' | 'CUSTOM' | 'X2LARGE'
+      readonly resources?: AddPipelineRequestResources
       /** @description The list of tags associated with the pipeline for organization */
       readonly tags?: readonly string[]
       /** @description The URL to the target site after deployment */
@@ -3345,7 +2890,7 @@ export interface components {
        * @description CI provider that initiated the test session
        * @enum {string}
        */
-      readonly ci_provider?: 'NONE' | 'BUDDY' | 'GITHUB_ACTION' | 'CIRCLE_CI'
+      readonly ci_provider?: AddSessionRequestCi_provider
       /** @description URL to the external CI/CD run */
       readonly ci_run_url?: string
       readonly created_by?: components['schemas']['MemberIdRequest']
@@ -3357,7 +2902,7 @@ export interface components {
        * @description Type of Git reference
        * @enum {string}
        */
-      readonly ref_type?: 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+      readonly ref_type?: AddSessionRequestRef_type
       /** @description Ending revision/commit hash for the test range */
       readonly revision?: string
       /** @description External CI/CD run identifier (e.g., GitHub Actions run ID) */
@@ -3404,7 +2949,7 @@ export interface components {
        * @description Test execution status
        * @enum {string}
        */
-      readonly status: 'PASSED' | 'FAILED' | 'SKIPPED' | 'ERROR'
+      readonly status: PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
       /** @description Name of the test group this case belongs to (typically corresponds to a test suite in JUnit XML) */
       readonly test_group_name: string
       /**
@@ -3419,15 +2964,7 @@ export interface components {
     }
     readonly AddUpdateWebhookRequest: {
       /** @description Set of events that trigger the webhook */
-      readonly events: readonly (
-        | 'DAY_CHANGED'
-        | 'PUSH'
-        | 'EXECUTION_STARTED'
-        | 'EXECUTION_SUCCESSFUL'
-        | 'EXECUTION_FAILED'
-        | 'EXECUTION_FINISHED'
-        | 'EXECUTION_PAUSED'
-      )[]
+      readonly events: readonly AddUpdateWebhookRequestEvents[]
       /** @description The name of the webhook */
       readonly name?: string
       /** @description The array of project name IDs from which webhooks will be executed */
@@ -3453,7 +2990,7 @@ export interface components {
        * @description Set if `type` is `SSH_KEY`. If it's `NONE`, the variable can be used as a parameter in an action. For `CONTAINER`, the given key is additionally copied to an action container on each run
        * @enum {string}
        */
-      readonly file_place?: 'NONE' | 'CONTAINER'
+      readonly file_place?: AddVariableInObjectRequestFile_place
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /** @description Initial path for the variable */
@@ -3470,7 +3007,7 @@ export interface components {
        * @description The type of the added variable. Can be one of `VAR` or `SSH_KEY`
        * @enum {string}
        */
-      readonly type: 'VAR' | 'FILE' | 'SSH_KEY' | 'IOS_KEYCHAIN' | 'IOS_PROVISION_PROFILES' | 'SSH_PUBLIC_KEY'
+      readonly type: AddVariableInObjectRequestType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The value of the variable */
@@ -3492,7 +3029,7 @@ export interface components {
        * @description Set if `type` is `SSH_KEY`. If it's `NONE`, the variable can be used as a parameter in an action. For `CONTAINER`, the given key is additionally copied to an action container on each run
        * @enum {string}
        */
-      readonly file_place?: 'NONE' | 'CONTAINER'
+      readonly file_place?: AddVariableInObjectRequestFile_place
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /** @description Initial path for the variable */
@@ -3512,7 +3049,7 @@ export interface components {
        * @description The type of the added variable. Can be one of `VAR` or `SSH_KEY`
        * @enum {string}
        */
-      readonly type: 'VAR' | 'FILE' | 'SSH_KEY' | 'IOS_KEYCHAIN' | 'IOS_PROVISION_PROFILES' | 'SSH_PUBLIC_KEY'
+      readonly type: AddVariableInObjectRequestType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The value of the variable */
@@ -3539,22 +3076,29 @@ export interface components {
     }
     readonly AllowedPipelineFront: {
       /** @enum {string} */
-      readonly access_level?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'BLIND'
-        | 'RUN_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'ALLOWED'
-        | 'STAGE'
-        | 'COMMIT'
-        | 'USE_ONLY'
+      readonly access_level?: AllowedPipelineFrontAccess_level
       /** Format: int32 */
       readonly id?: number
       readonly pipeline?: string
       readonly project?: string
+    }
+    /** @description Allowed pipeline configuration for package access control */
+    readonly AllowedPipelineView: {
+      /**
+       * @description The access level: `USE` allows the pipeline to download packages, `PUBLISH` allows the pipeline to upload packages
+       * @enum {string}
+       */
+      readonly access_level: AllowedPipelineViewAccess_level
+      /**
+       * @description The pipeline identifier
+       * @example deploy-pipeline
+       */
+      readonly pipeline: string
+      /**
+       * @description The project name that contains the pipeline
+       * @example my-project
+       */
+      readonly project: string
     }
     readonly AmiView: {
       readonly id?: string
@@ -3589,10 +3133,9 @@ export interface components {
       /**
        * @description The type of authorization. BASIC can only be used with FILES type packages.
        * @default BUDDY
-       * @example BUDDY
        * @enum {string}
        */
-      readonly type: 'NONE' | 'BUDDY' | 'BASIC' | 'NONE' | 'BUDDY' | 'BASIC'
+      readonly type: AuthorizationViewType
       /**
        * @description Username for BASIC auth (required when type is BASIC)
        * @example myuser
@@ -3642,7 +3185,7 @@ export interface components {
        * @description The operation to perform on the execution
        * @enum {string}
        */
-      readonly operation: 'CANCEL' | 'RETRY' | 'APPLY' | 'APPLY_VARIABLES' | 'SET_VARIABLES' | 'RUN_DELAYED'
+      readonly operation: CancelRetryExecutionRequestOperation
       /** @description The list of variables to set as parameters for the pipeline */
       readonly variables?: readonly components['schemas']['PassVariableRequest'][]
     }
@@ -3815,7 +3358,7 @@ export interface components {
        * @description Indicates if this is a public project
        * @enum {string}
        */
-      readonly access?: 'PRIVATE' | 'PUBLIC'
+      readonly access?: CreateBuddyProjectRequestAccess
       /** @description If set to true, pull requests will be enabled for the project. Available only for projects synchronized with GitHub or GitHub Enterprise repository. */
       readonly allow_pull_requests?: boolean
       /** @description The Name of the project */
@@ -3834,7 +3377,7 @@ export interface components {
        * @description Indicates if this is a public project
        * @enum {string}
        */
-      readonly access?: 'PRIVATE' | 'PUBLIC'
+      readonly access?: CreateBuddyProjectRequestAccess
       /** @description Password used to authorize access to the git repository. Required when adding the project integrated with private git server by HTTPS url */
       readonly custom_repo_pass?: string
       /**
@@ -3862,7 +3405,7 @@ export interface components {
        * @description The application type of the sandbox (passed command or existent service eg. apache2)
        * @enum {string}
        */
-      readonly app_type?: 'CMD' | 'SERVICE'
+      readonly app_type?: CreateFromSnapshotRequestApp_type
       /** @description The tunnel endpoints of the sandbox */
       readonly endpoints?: readonly components['schemas']['TunnelView'][]
       /** @description A human-readable ID. Alphanumeric characters, underscores, and hyphens (hyphens cannot appear at the start or end) */
@@ -3877,20 +3420,7 @@ export interface components {
        * @description The resource configuration of the sandbox (CPU x RAM)
        * @enum {string}
        */
-      readonly resources?:
-        | '1x2'
-        | '2x4'
-        | '3x6'
-        | '4x8'
-        | '5x10'
-        | '6x12'
-        | '7x14'
-        | '8x16'
-        | '9x18'
-        | '10x20'
-        | '11x22'
-        | '12x24'
-        | 'CUSTOM'
+      readonly resources?: ActionViewResources
       /** @description The run command of the sandbox */
       readonly run_command?: string
       /** @description The ID of the snapshot to create from */
@@ -3905,7 +3435,7 @@ export interface components {
        * @description Indicates if this is a public project
        * @enum {string}
        */
-      readonly access?: 'PRIVATE' | 'PUBLIC'
+      readonly access?: CreateBuddyProjectRequestAccess
       /** @description If set to true, pull requests will be enabled for the project. Available only for projects synchronized with GitHub or GitHub Enterprise repository. */
       readonly allow_pull_requests?: boolean
       /** @description The Name of the project */
@@ -3934,7 +3464,7 @@ export interface components {
        * @description The application type of the sandbox (passed command or existent service eg. apache2)
        * @enum {string}
        */
-      readonly app_type?: 'CMD' | 'SERVICE'
+      readonly app_type?: CreateFromSnapshotRequestApp_type
       /** @description The tunnel endpoints of the sandbox */
       readonly endpoints?: readonly components['schemas']['TunnelView'][]
       /** @description A human-readable ID. Alphanumeric characters, underscores, and hyphens (hyphens cannot appear at the start or end) */
@@ -3949,20 +3479,7 @@ export interface components {
        * @description The resource configuration of the sandbox (CPU x RAM)
        * @enum {string}
        */
-      readonly resources?:
-        | '1x2'
-        | '2x4'
-        | '3x6'
-        | '4x8'
-        | '5x10'
-        | '6x12'
-        | '7x14'
-        | '8x16'
-        | '9x18'
-        | '10x20'
-        | '11x22'
-        | '12x24'
-        | 'CUSTOM'
+      readonly resources?: ActionViewResources
       /** @description The run command of the sandbox */
       readonly run_command?: string
       /** @description The list of tags associated with the sandbox */
@@ -3972,6 +3489,13 @@ export interface components {
     }
     /** @description Required fields: name, type, scope. BASIC authorization can only be used with FILES type packages. */
     readonly CreatePackageRequest: {
+      /**
+       * @description Set to `true` to allow all pipelines to use this package
+       * @example false
+       */
+      readonly all_pipelines_allowed?: boolean
+      /** @description List of pipelines allowed to access this package */
+      readonly allowed_pipelines?: readonly components['schemas']['AllowedPipelineView'][]
       readonly authorization: components['schemas']['AuthorizationView']
       readonly environment?: components['schemas']['EnvironmentReferenceView']
       /**
@@ -3991,13 +3515,13 @@ export interface components {
        * @example PROJECT
        * @enum {string}
        */
-      readonly scope: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope: AddIntegrationRequestScope
       /**
        * @description The type of package
        * @example CONTAINER
        * @enum {string}
        */
-      readonly type: 'CONTAINER' | 'FILE' | 'FILES' | 'CONTAINER'
+      readonly type: CreatePackageRequestType
     }
     /** @description Request to create a new package version */
     readonly CreatePackageVersionRequest: {
@@ -4039,7 +3563,7 @@ export interface components {
     readonly DockerSecretView: {
       readonly id?: string
       /** @enum {string} */
-      readonly type?: 'FILE' | 'ENV'
+      readonly type?: DockerSecretViewType
       readonly value?: string
     }
     readonly DomainsView: {
@@ -4071,14 +3595,14 @@ export interface components {
        * @example example.com
        */
       readonly name?: string
-      readonly pointed_via?: readonly ('NS' | 'CNAME' | 'DMARC')[]
+      readonly pointed_via?: readonly DomainViewPointed_via[]
       /** @description Whether the domain has transfer lock enabled */
       readonly transfer_lock?: boolean
       /**
        * @description The type of the domain
        * @enum {string}
        */
-      readonly type?: 'REGISTERED' | 'POINTED' | 'CLAIMED'
+      readonly type?: DomainViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -4109,11 +3633,11 @@ export interface components {
       /** Format: int32 */
       readonly author_id?: number
       /** @enum {string} */
-      readonly change_type?: 'MODIFIED' | 'ADDED' | 'DELETED' | 'REPLACED' | 'UNKNOWN'
+      readonly change_type?: EntryChange_type
       /** Format: date-time */
       readonly date?: string
       /** @enum {string} */
-      readonly entry_kind?: 'DIR' | 'FILE' | 'GITLINK' | 'SYMLINK'
+      readonly entry_kind?: EntryEntry_kind
       readonly external_module?: components['schemas']['ExternalModuleInfo']
       readonly from_external_module?: boolean
       readonly from_single_file_change_set?: boolean
@@ -4155,7 +3679,7 @@ export interface components {
        * @description Set if `type` is `SSH_KEY`. If it's `NONE`, the variable can be used as a parameter in an action. For `CONTAINER`, the given key is additionally copied to an action container on each run
        * @enum {string}
        */
-      readonly file_place?: 'NONE' | 'CONTAINER'
+      readonly file_place?: AddVariableInObjectRequestFile_place
       /**
        * Format: int32
        * @description The ID of the variable
@@ -4179,7 +3703,7 @@ export interface components {
        * @description The type of the added variable. Can be one of `VAR` or `SSH_KEY`
        * @enum {string}
        */
-      readonly type?: 'VAR' | 'FILE' | 'SSH_KEY' | 'IOS_KEYCHAIN' | 'IOS_PROVISION_PROFILES' | 'SSH_PUBLIC_KEY'
+      readonly type?: AddVariableInObjectRequestType
       /** @description The value of the variable */
       readonly value?: string
     }
@@ -4202,7 +3726,7 @@ export interface components {
       readonly project?: components['schemas']['ProjectView']
       readonly public_url?: string
       /** @enum {string} */
-      readonly scope?: 'PROJECT' | 'WORKSPACE' | 'ANY'
+      readonly scope?: EnvironmentViewScope
       readonly tags?: readonly string[]
       /** @description API endpoint to GET this object */
       readonly url?: string
@@ -4215,7 +3739,7 @@ export interface components {
     readonly EnvironmentYaml: {
       readonly identifier?: string
       /** @enum {string} */
-      readonly scope?: 'PROJECT' | 'WORKSPACE' | 'ANY'
+      readonly scope?: EnvironmentViewScope
       readonly tags?: readonly string[]
     }
     readonly ExcludedAreaView: {
@@ -4238,7 +3762,7 @@ export interface components {
        * @description Runtime environment for command execution (default: `BASH`)
        * @enum {string}
        */
-      readonly runtime?: 'BASH' | 'JAVASCRIPT' | 'TYPESCRIPT' | 'PYTHON'
+      readonly runtime?: ExecuteSandboxCommandRequestRuntime
     }
     readonly ExecutionsView: {
       /**
@@ -4306,7 +3830,7 @@ export interface components {
        * @description The priority of the execution. Default is NORMAL
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       readonly pull_request?: components['schemas']['PullRequestView']
       /** @description Deploy from scratch */
       readonly refresh?: boolean
@@ -4319,33 +3843,21 @@ export interface components {
        * @description The current status of the execution
        * @enum {string}
        */
-      readonly status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly status?: ActionExecutionViewStatus
       readonly tag?: components['schemas']['TagView']
       readonly to_revision?: components['schemas']['ShortCommitView']
       /**
        * @description The mode that triggered the execution
        * @enum {string}
        */
-      readonly triggered_on?: 'CLICK' | 'SCHEDULE' | 'EVENT' | 'PIPELINE' | 'WEBHOOK' | 'EMAIL'
+      readonly triggered_on?: ExecutionViewTriggered_on
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
     readonly ExternalModuleInfo: {
       readonly absolute_external_path?: string
       /** @enum {string} */
-      readonly change_type?: 'MODIFIED' | 'ADDED' | 'DELETED' | 'REPLACED' | 'UNKNOWN'
+      readonly change_type?: EntryChange_type
       /** Format: int32 */
       readonly project_id?: number
       readonly repo_path?: string
@@ -4360,16 +3872,18 @@ export interface components {
       readonly file_name?: string
       readonly patch?: string
       /** @enum {string} */
-      readonly status?: 'ADDED' | 'DELETED' | 'MODIFIED'
+      readonly status?: FileEntryViewStatus
       /** Format: int32 */
       readonly total?: number
     }
+    /** @description FTP authentication configuration - supports username/password authentication */
     readonly FTPAuthView: {
       /** @description Password for authentication */
       readonly password: string
       /** @description Username for FTP authentication */
       readonly username: string
     }
+    /** @description The Git authentication configuration. Supports username/password and SSH key authentication */
     readonly GitAuthView: {
       readonly asset?: string
       readonly key?: string
@@ -4377,9 +3891,9 @@ export interface components {
        * @description Git authentication method. Supported values: `HTTP` (username/password or token), `SSH_KEY` (SSH private key). Note: The value `CURRENT` is reserved for the default project repository target and cannot be used when adding new targets.
        * @enum {string}
        */
-      readonly method: 'HTTP' | 'SSH_KEY' | 'ASSETS_KEY' | 'CURRENT'
+      readonly method: GitAuthViewMethod
       /** @enum {string} */
-      readonly old_method?: 'HTTP' | 'PRIVATE_KEY' | 'PUBLIC_BUDDY_KEY' | 'ENV_KEY' | 'CURRENT'
+      readonly old_method?: ActionViewGit_auth_mode
       readonly password?: string
       readonly username?: string
     }
@@ -4414,7 +3928,7 @@ export interface components {
        * @description The status of the group member (`MEMBER`, `MANAGER`)
        * @enum {string}
        */
-      readonly status?: 'MEMBER' | 'MANAGER'
+      readonly status?: AddGroupMemberRequestStatus
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description Whether the user is workspace owner */
@@ -4425,18 +3939,7 @@ export interface components {
        * @description The access level for the group (DENIED, USE_ONLY, MANAGE)
        * @enum {string}
        */
-      readonly access_level?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'BLIND'
-        | 'RUN_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'ALLOWED'
-        | 'STAGE'
-        | 'COMMIT'
-        | 'USE_ONLY'
+      readonly access_level?: AllowedPipelineFrontAccess_level
       /**
        * Format: int32
        * @description The ID of the group
@@ -4486,7 +3989,7 @@ export interface components {
        * @description Type of authentication used
        * @enum {string}
        */
-      readonly auth_type?: 'NONE' | 'BASIC' | 'BUDDY'
+      readonly auth_type?: AuthorizationViewType
       /**
        * Format: int32
        * @description Circuit breaker threshold (number of failed requests)
@@ -4554,7 +4057,7 @@ export interface components {
        * @description CI provider that initiated the test session
        * @enum {string}
        */
-      readonly ci_provider?: 'NONE' | 'BUDDY' | 'GITHUB_ACTION' | 'CIRCLE_CI'
+      readonly ci_provider?: AddSessionRequestCi_provider
       /** @description URL to the external CI/CD run */
       readonly ci_run_url?: string
       /** @description Execution hash ID. Set when session is a result of BUDDY action execution */
@@ -4570,7 +4073,7 @@ export interface components {
        * @description Type of Git reference
        * @enum {string}
        */
-      readonly ref_type?: 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+      readonly ref_type?: AddSessionRequestRef_type
       /** @description Ending revision/commit hash for the test range */
       readonly revision?: string
     }
@@ -4596,17 +4099,7 @@ export interface components {
        * @description The authentication method used by the integration
        * @enum {string}
        */
-      readonly auth_type?:
-        | 'OAUTH'
-        | 'TOKEN'
-        | 'API_KEY'
-        | 'APP'
-        | 'APP_SPRYKER'
-        | 'TOKEN_APP_EXTENSION'
-        | 'DEFAULT'
-        | 'OIDC'
-        | 'TRUSTED'
-        | 'APP_RW'
+      readonly auth_type?: AddIntegrationRequestAuth_type
       /** @description The Google Cloud project ID */
       readonly google_project?: string
       /** @description The unique hash ID of the integration */
@@ -4623,57 +4116,7 @@ export interface components {
        * @description The type of integration
        * @enum {string}
        */
-      readonly type?:
-        | 'GIT_HUB'
-        | 'BITBUCKET'
-        | 'GOOGLE'
-        | 'DIGITAL_OCEAN'
-        | 'SLACK'
-        | 'MODULUS'
-        | 'HEROKU'
-        | 'AMAZON'
-        | 'GIT_LAB'
-        | 'SHOPIFY'
-        | 'GIT_HUB_ENTERPRISE'
-        | 'GIT_LAB_ENTERPRISE'
-        | 'PUSHOVER'
-        | 'PUSHBULLET'
-        | 'RACKSPACE'
-        | 'CUSTOM'
-        | 'CLOUDFLARE'
-        | 'NEW_RELIC'
-        | 'SENTRY'
-        | 'ROLLBAR'
-        | 'DATADOG'
-        | 'DO_SPACES'
-        | 'HONEYBADGER'
-        | 'VULTR'
-        | 'SENTRY_ENTERPRISE'
-        | 'LOGGLY'
-        | 'HIP_CHAT'
-        | 'FIREBASE'
-        | 'TELEGRAM'
-        | 'AZURE'
-        | 'UPCLOUD'
-        | 'GHOST_INSPECTOR'
-        | 'NETLIFY'
-        | 'AZURE_CLOUD'
-        | 'MICROSOFT_TEAMS'
-        | 'GOOGLE_SERVICE_ACCOUNT'
-        | 'GOOGLE_PLAY_STORE'
-        | 'DOCKER_HUB'
-        | 'APP_STORE'
-        | 'GIT_HUB_APP'
-        | 'GIT_HUB_APP_ENTERPRISE'
-        | 'GIT_HUB_API'
-        | 'ATOP'
-        | 'SNYK'
-        | 'STACK_HAWK'
-        | 'BLACKFIRE'
-        | 'BACKBLAZE'
-        | 'ONE_LOGIN'
-        | 'OKTA'
-        | 'CONTENTFUL'
+      readonly type?: AddIntegrationRequestType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The webhook URL for receiving notifications */
@@ -4685,36 +4128,14 @@ export interface components {
        * @description Access level for workspace administrators (`DENIED`, `USE_ONLY`, `MANAGE`)
        * @enum {string}
        */
-      readonly admins?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'BLIND'
-        | 'RUN_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'ALLOWED'
-        | 'STAGE'
-        | 'COMMIT'
-        | 'USE_ONLY'
+      readonly admins?: AllowedPipelineFrontAccess_level
       /** @description List of user groups with their access levels */
       readonly groups?: readonly components['schemas']['GroupPermissionView'][]
       /**
        * @description Access level for other workspace members (DENIED, USE_ONLY, MANAGE)
        * @enum {string}
        */
-      readonly others?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'BLIND'
-        | 'RUN_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'ALLOWED'
-        | 'STAGE'
-        | 'COMMIT'
-        | 'USE_ONLY'
+      readonly others?: AllowedPipelineFrontAccess_level
       /** @description List of specific users with their access levels */
       readonly users?: readonly components['schemas']['UserPermissionView'][]
     }
@@ -4747,17 +4168,7 @@ export interface components {
        * @description The authentication method used by the integration
        * @enum {string}
        */
-      readonly auth_type?:
-        | 'OAUTH'
-        | 'TOKEN'
-        | 'API_KEY'
-        | 'APP'
-        | 'APP_SPRYKER'
-        | 'TOKEN_APP_EXTENSION'
-        | 'DEFAULT'
-        | 'OIDC'
-        | 'TRUSTED'
-        | 'APP_RW'
+      readonly auth_type?: AddIntegrationRequestAuth_type
       /** @description The Google Cloud project ID */
       readonly google_project?: string
       /** @description The unique hash ID of the integration */
@@ -4777,62 +4188,12 @@ export interface components {
        * @description The scope of the integration
        * @enum {string}
        */
-      readonly scope?: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope?: AddIntegrationRequestScope
       /**
        * @description The type of integration
        * @enum {string}
        */
-      readonly type?:
-        | 'GIT_HUB'
-        | 'BITBUCKET'
-        | 'GOOGLE'
-        | 'DIGITAL_OCEAN'
-        | 'SLACK'
-        | 'MODULUS'
-        | 'HEROKU'
-        | 'AMAZON'
-        | 'GIT_LAB'
-        | 'SHOPIFY'
-        | 'GIT_HUB_ENTERPRISE'
-        | 'GIT_LAB_ENTERPRISE'
-        | 'PUSHOVER'
-        | 'PUSHBULLET'
-        | 'RACKSPACE'
-        | 'CUSTOM'
-        | 'CLOUDFLARE'
-        | 'NEW_RELIC'
-        | 'SENTRY'
-        | 'ROLLBAR'
-        | 'DATADOG'
-        | 'DO_SPACES'
-        | 'HONEYBADGER'
-        | 'VULTR'
-        | 'SENTRY_ENTERPRISE'
-        | 'LOGGLY'
-        | 'HIP_CHAT'
-        | 'FIREBASE'
-        | 'TELEGRAM'
-        | 'AZURE'
-        | 'UPCLOUD'
-        | 'GHOST_INSPECTOR'
-        | 'NETLIFY'
-        | 'AZURE_CLOUD'
-        | 'MICROSOFT_TEAMS'
-        | 'GOOGLE_SERVICE_ACCOUNT'
-        | 'GOOGLE_PLAY_STORE'
-        | 'DOCKER_HUB'
-        | 'APP_STORE'
-        | 'GIT_HUB_APP'
-        | 'GIT_HUB_APP_ENTERPRISE'
-        | 'GIT_HUB_API'
-        | 'ATOP'
-        | 'SNYK'
-        | 'STACK_HAWK'
-        | 'BLACKFIRE'
-        | 'BACKBLAZE'
-        | 'ONE_LOGIN'
-        | 'OKTA'
-        | 'CONTENTFUL'
+      readonly type?: AddIntegrationRequestType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The webhook URL for receiving notifications */
@@ -4850,6 +4211,7 @@ export interface components {
     readonly JsonNullableString: {
       readonly present?: boolean
     }
+    /** @description The Kubernetes cluster authentication configuration. Supports username/password, certificates, or token-based authentication */
     readonly K8sAuthView: {
       readonly certificate_authority?: string
       readonly client_certificate?: string
@@ -4858,7 +4220,7 @@ export interface components {
        * @description Kubernetes authentication method. Supported values: `PASS` (username/password), `CERT` (client certificates), `TOKEN` (bearer token)
        * @enum {string}
        */
-      readonly method: 'PASS' | 'CERT' | 'TOKEN'
+      readonly method: K8sAuthViewMethod
       readonly password?: string
       readonly token?: string
       readonly username?: string
@@ -4931,7 +4293,7 @@ export interface components {
       readonly name?: string
       readonly path?: string
       /** @enum {string} */
-      readonly same_site?: 'NONE' | 'LAX' | 'STRICT'
+      readonly same_site?: NewCookieSame_site
       readonly secure?: boolean
       readonly value?: string
       /** Format: int32 */
@@ -4970,7 +4332,7 @@ export interface components {
        * @example FILE
        * @enum {string}
        */
-      readonly type?: 'FILE' | 'DIR'
+      readonly type?: PackageVersionContentItemType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -5028,6 +4390,8 @@ export interface components {
     }
     /** @description Full package representation */
     readonly PackageView: {
+      /** @description List of pipelines allowed to access this package */
+      readonly allowed_pipelines?: readonly components['schemas']['AllowedPipelineView'][]
       readonly authorization?: components['schemas']['AuthorizationView']
       /**
        * Format: date-time
@@ -5056,7 +4420,7 @@ export interface components {
        * @example WORKSPACE
        * @enum {string}
        */
-      readonly scope?: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope?: AddIntegrationRequestScope
       /**
        * Format: int64
        * @description Total size of all package versions in bytes
@@ -5068,7 +4432,7 @@ export interface components {
        * @example CONTAINER
        * @enum {string}
        */
-      readonly type?: 'CONTAINER' | 'FILE' | 'FILES' | 'CONTAINER'
+      readonly type?: CreatePackageRequestType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -5100,7 +4464,7 @@ export interface components {
        * @description Routing strategy: 'simple' (uses only values field) or 'geolocation' (uses country/continent fields, values field is used as default/fallback)
        * @enum {string}
        */
-      readonly routing?: 'simple' | 'geolocation'
+      readonly routing?: PatchRecordCommandRouting
       /**
        * Format: int32
        * @description New TTL value for the DNS record in seconds
@@ -5164,18 +4528,7 @@ export interface components {
        * @description Access level for other workspace members (DENIED, USE_ONLY, MANAGE)
        * @enum {string}
        */
-      readonly others?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'BLIND'
-        | 'RUN_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'ALLOWED'
-        | 'STAGE'
-        | 'COMMIT'
-        | 'USE_ONLY'
+      readonly others?: AllowedPipelineFrontAccess_level
       /** @description List of specific users with their access levels */
       readonly users?: readonly components['schemas']['UserPermissionView'][]
     }
@@ -5210,16 +4563,7 @@ export interface components {
        * @description The type of event that triggers the pipeline. Examples: `PUSH`, `CREATE_REF`, `DELETE_REF`, `SCHEDULE`, `MANUAL`, `WEBHOOK`, `PULL_REQUEST`
        * @enum {string}
        */
-      readonly type?:
-        | 'PUSH'
-        | 'CREATE_REF'
-        | 'DELETE_REF'
-        | 'PULL_REQUEST'
-        | 'SCHEDULE'
-        | 'PUBLISH_PACKAGE'
-        | 'DELETE_PACKAGE'
-        | 'WEBHOOK'
-        | 'EMAIL'
+      readonly type?: PipelineEventViewType
       readonly whitelist?: readonly string[]
     }
     /** @description The pipeline to which the variable belongs */
@@ -5237,7 +4581,7 @@ export interface components {
        * @description The scope of the package
        * @enum {string}
        */
-      readonly scope?: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'ANY'
+      readonly scope?: PipelinePkgContextViewScope
     }
     /** @description The parameters passed to the remote pipeline definition */
     readonly PipelinePropertyView: {
@@ -5257,7 +4601,7 @@ export interface components {
        * @description Defines the cache scope
        * @enum {string}
        */
-      readonly cache_scope?: 'PIPELINE' | 'PROJECT' | 'WORKSPACE'
+      readonly cache_scope?: AddPipelineRequestCache_scope
       /**
        * Format: int32
        * @description Defines the depth of the git clone operation for shallow clones
@@ -5269,7 +4613,7 @@ export interface components {
        * @description The CPU architecture for the pipeline run
        * @enum {string}
        */
-      readonly cpu?: 'X64' | 'ARM' | 'X86'
+      readonly cpu?: AddPipelineRequestCpu
       /**
        * Format: date-time
        * @description The creation date of the pipeline
@@ -5280,7 +4624,7 @@ export interface components {
        * @description The source of the pipeline definition
        * @enum {string}
        */
-      readonly definition_source?: 'LOCAL' | 'REMOTE'
+      readonly definition_source?: AddPipelineRequestDefinition_source
       /** @description If set to true, a description is required when executing the pipeline manually */
       readonly description_required?: boolean
       /** @description Indicates if the pipeline is disabled */
@@ -5303,20 +4647,20 @@ export interface components {
        * @description The base for filesystem changeset calculation. Determines which file changes trigger the pipeline
        * @enum {string}
        */
-      readonly filesystem_changeset_base?: 'DATE_MODIFIED' | 'CONTENTS'
+      readonly filesystem_changeset_base?: AddPipelineRequestFilesystem_changeset_base
       /** @description The folder name where the pipeline is organized */
       readonly folder?: string
       /**
        * @description The base for git changeset calculation. Determines which changes trigger the pipeline
        * @enum {string}
        */
-      readonly git_changeset_base?: 'LATEST_RUN' | 'LATEST_RUN_MATCHING_REF' | 'PULL_REQUEST'
+      readonly git_changeset_base?: AddPipelineRequestGit_changeset_base
       readonly git_config?: components['schemas']['YamlDefinitionView']
       /**
        * @description The git configuration reference type
        * @enum {string}
        */
-      readonly git_config_ref?: 'NONE' | 'DYNAMIC' | 'FIXED'
+      readonly git_config_ref?: AddPipelineRequestGit_config_ref
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /**
@@ -5334,19 +4678,7 @@ export interface components {
        * @description The status of the last run
        * @enum {string}
        */
-      readonly last_execution_status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly last_execution_status?: ActionExecutionViewStatus
       /** @description If set to true, permissions are managed by YAML configuration */
       readonly manage_permissions_by_yaml?: boolean
       /** @description If set to true, variables are managed by YAML configuration */
@@ -5369,7 +4701,7 @@ export interface components {
        * @description The priority of the pipeline
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       readonly project?: components['schemas']['ShortProjectView']
       /** @description Pipeline git context refs. If unset and events is empty, the pipeline counts as codeless */
       readonly refs?: readonly string[]
@@ -5385,7 +4717,7 @@ export interface components {
        * @description The resource configuration for the pipeline run
        * @enum {string}
        */
-      readonly resources?: 'DEFAULT' | 'NANO' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE' | 'CUSTOM' | 'X2LARGE'
+      readonly resources?: AddPipelineRequestResources
       /** @description Indicates that pipeline definition was probably removed on particular Git ref and pipeline won't be run on events */
       readonly stale?: boolean
       /** @description The list of tags associated with the pipeline for organization */
@@ -5425,9 +4757,9 @@ export interface components {
       /** @description Defines whether to automatically clear cache before running the pipeline */
       readonly auto_clear_cache?: boolean
       /** @enum {string} */
-      readonly cache_scope?: 'PIPELINE' | 'PROJECT' | 'WORKSPACE'
+      readonly cache_scope?: AddPipelineRequestCache_scope
       /** @enum {string} */
-      readonly change_set_base?: 'LATEST_RUN' | 'LATEST_RUN_MATCHING_REF' | 'PULL_REQUEST'
+      readonly change_set_base?: AddPipelineRequestGit_changeset_base
       readonly clear_cache?: boolean
       /**
        * Format: int32
@@ -5440,7 +4772,7 @@ export interface components {
        * @description The CPU architecture for the pipeline run
        * @enum {string}
        */
-      readonly cpu?: 'X64' | 'ARM' | 'X86'
+      readonly cpu?: AddPipelineRequestCpu
       /**
        * Format: date-time
        * @description The creation date of the pipeline
@@ -5451,7 +4783,7 @@ export interface components {
        * @description The source of the pipeline definition
        * @enum {string}
        */
-      readonly definition_source?: 'LOCAL' | 'REMOTE'
+      readonly definition_source?: AddPipelineRequestDefinition_source
       /** @description If set to true, a description is required when executing the pipeline manually */
       readonly description_required?: boolean
       /** @description Indicates if the pipeline is disabled */
@@ -5473,20 +4805,20 @@ export interface components {
        * @description The base for filesystem changeset calculation. Determines which file changes trigger the pipeline
        * @enum {string}
        */
-      readonly filesystem_changeset_base?: 'DATE_MODIFIED' | 'CONTENTS'
+      readonly filesystem_changeset_base?: AddPipelineRequestFilesystem_changeset_base
       /** @description The folder name where the pipeline is organized */
       readonly folder?: string
       /**
        * @description The base for git changeset calculation. Determines which changes trigger the pipeline
        * @enum {string}
        */
-      readonly git_changeset_base?: 'LATEST_RUN' | 'LATEST_RUN_MATCHING_REF' | 'PULL_REQUEST'
+      readonly git_changeset_base?: AddPipelineRequestGit_changeset_base
       readonly git_config?: components['schemas']['YamlDefinitionView']
       /**
        * @description The git configuration reference type
        * @enum {string}
        */
-      readonly git_config_ref?: 'NONE' | 'DYNAMIC' | 'FIXED'
+      readonly git_config_ref?: AddPipelineRequestGit_config_ref
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /**
@@ -5504,19 +4836,7 @@ export interface components {
        * @description The status of the last run
        * @enum {string}
        */
-      readonly last_execution_status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly last_execution_status?: ActionExecutionViewStatus
       readonly manage_permissions_by_yaml?: boolean
       readonly manage_variables_by_yaml?: boolean
       /** @description The name of the pipeline */
@@ -5536,7 +4856,7 @@ export interface components {
        * @description The priority of the pipeline
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       readonly project?: components['schemas']['ProjectView']
       /** @description Pipeline git context refs. If unset and events is empty, the pipeline counts as codeless */
       readonly refs?: readonly string[]
@@ -5552,7 +4872,7 @@ export interface components {
        * @description The resource configuration for the pipeline run
        * @enum {string}
        */
-      readonly resources?: 'DEFAULT' | 'NANO' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE' | 'CUSTOM' | 'X2LARGE'
+      readonly resources?: AddPipelineRequestResources
       /** Format: int32 */
       readonly source_pipeline_id?: number
       /** @description Indicates that pipeline definition was probably removed on particular Git ref and pipeline won't be run on events */
@@ -5565,29 +4885,7 @@ export interface components {
       /** @description If set to true, stale runs will be automatically terminated */
       readonly terminate_stale_runs?: boolean
       /** @enum {string} */
-      readonly trigger_condition?:
-        | 'ALWAYS'
-        | 'ON_CHANGE'
-        | 'ON_CHANGE_AT_PATH'
-        | 'VAR_IS'
-        | 'VAR_IS_NOT'
-        | 'VAR_CONTAINS'
-        | 'VAR_NOT_CONTAINS'
-        | 'DATETIME'
-        | 'SUCCESS_PIPELINE'
-        | 'DAY'
-        | 'HOUR'
-        | 'OR'
-        | 'VAR_LESS_THAN'
-        | 'VAR_LESS_THAN_OR_EQUAL'
-        | 'VAR_GREATER_THAN'
-        | 'VAR_GREATER_THAN_OR_EQUAL'
-        | 'ACTION_STATUS_IS'
-        | 'ACTION_STATUS_IS_NOT'
-        | 'TRIGGERING_USER_IS'
-        | 'TRIGGERING_USER_IS_NOT'
-        | 'TRIGGERING_USER_IS_IN_GROUP'
-        | 'TRIGGERING_USER_IS_NOT_IN_GROUP'
+      readonly trigger_condition?: ActionViewTrigger_condition
       readonly trigger_condition_paths?: readonly string[]
       readonly trigger_conditions?: readonly components['schemas']['TriggerConditionView'][]
       readonly trigger_days?: readonly number[]
@@ -5625,17 +4923,7 @@ export interface components {
        * @example READ_ONLY
        * @enum {string}
        */
-      readonly access_level:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
+      readonly access_level: PkgGroupPermissionViewAccess_level
       /**
        * Format: int32
        * @description Group ID
@@ -5651,17 +4939,7 @@ export interface components {
        * @example READ_ONLY
        * @enum {string}
        */
-      readonly others?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
+      readonly others?: PkgGroupPermissionViewAccess_level
       readonly users?: readonly components['schemas']['PkgUserPermissionView'][]
     }
     /** @description User-specific permissions */
@@ -5671,17 +4949,7 @@ export interface components {
        * @example MANAGE
        * @enum {string}
        */
-      readonly access_level:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
+      readonly access_level: PkgGroupPermissionViewAccess_level
       /**
        * Format: int32
        * @description User ID
@@ -5760,7 +5028,7 @@ export interface components {
        * @description Indicates if this is a public project
        * @enum {string}
        */
-      readonly access?: 'PRIVATE' | 'PUBLIC'
+      readonly access?: CreateBuddyProjectRequestAccess
       /** @description If set to true, pull requests will be enabled for the project. Available only for projects synchronized with GitHub or GitHub Enterprise repository. */
       readonly allow_pull_requests?: boolean
       /**
@@ -5825,16 +5093,7 @@ export interface components {
     }
     readonly PromoteImageView: {
       /** @enum {string} */
-      readonly docker_registry?:
-        | 'NONE'
-        | 'DOCKER_HUB'
-        | 'AMAZON_ECR'
-        | 'GOOGLE_GCR'
-        | 'GOOGLE_ARTIFACT_REGISTRY'
-        | 'OTHER'
-        | 'GIT_HUB_CONTAINER_REGISTRY'
-        | 'PACKAGE_REGISTRY'
-        | 'DIGITAL_OCEAN_CONTAINER_REGISTRY'
+      readonly docker_registry?: ActionViewDocker_registry
       readonly image?: string
       readonly integration?: string
       readonly password?: string
@@ -5942,7 +5201,7 @@ export interface components {
        * @example A
        * @enum {string}
        */
-      readonly type?: 'SOA' | 'NS' | 'A' | 'AAAA' | 'CNAME' | 'CAA' | 'SPF' | 'MX' | 'TXT' | 'SRV' | 'NAPTR'
+      readonly type?: PathsWorkspacesWorkspace_domainDomainsDomain_idRecordsRecord_nameTypeGetParametersPathType
       /** @description API endpoint to GET this object */
       readonly url?: string
       readonly values?: readonly string[]
@@ -5961,7 +5220,7 @@ export interface components {
        * @example A
        * @enum {string}
        */
-      readonly type?: 'SOA' | 'NS' | 'A' | 'AAAA' | 'CNAME' | 'CAA' | 'SPF' | 'MX' | 'TXT' | 'SRV' | 'NAPTR'
+      readonly type?: PathsWorkspacesWorkspace_domainDomainsDomain_idRecordsRecord_nameTypeGetParametersPathType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -5983,7 +5242,7 @@ export interface components {
        * @description The type of the content
        * @enum {string}
        */
-      readonly content_type?: 'FILE' | 'DIR' | 'SYMLINK' | 'SUB_MODULE' | 'EXTERNAL'
+      readonly content_type?: RepositoryContentViewContent_type
       /** @description The encoding of the content. Possible values: `base64` */
       readonly encoding?: string
       /** @description Web URL to view this object in Buddy.works */
@@ -6084,7 +5343,7 @@ export interface components {
        * @description The priority of the execution. Default is NORMAL
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       readonly pull_request?: components['schemas']['PullRequestRequest']
       /** @description Deploy from scratch */
       readonly refresh?: boolean
@@ -6110,7 +5369,7 @@ export interface components {
        * @description The type of command output stream. `STDOUT` for standard output, `STDERR` for error output.
        * @enum {string}
        */
-      readonly type?: 'STDOUT' | 'STDERR'
+      readonly type?: SandboxCommandLogType
     }
     readonly SandboxCommandsView: {
       readonly commands?: readonly components['schemas']['SandboxCommandView'][]
@@ -6137,12 +5396,12 @@ export interface components {
        * @description Runtime environment for command execution (default: `BASH`)
        * @enum {string}
        */
-      readonly runtime?: 'BASH' | 'JAVASCRIPT' | 'TYPESCRIPT' | 'PYTHON'
+      readonly runtime?: ExecuteSandboxCommandRequestRuntime
       /**
        * @description Command execution status
        * @enum {string}
        */
-      readonly status?: 'INPROGRESS' | 'SUCCESSFUL' | 'FAILED'
+      readonly status?: SandboxCommandViewStatus
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -6167,7 +5426,7 @@ export interface components {
        * @description The current status of the sandbox
        * @enum {string}
        */
-      readonly status?: 'STARTING' | 'STOPPING' | 'FAILED' | 'RUNNING' | 'STOPPED' | 'RESTORING'
+      readonly status?: SandboxIdViewStatus
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -6178,12 +5437,12 @@ export interface components {
        * @description The current application status of the sandbox
        * @enum {string}
        */
-      readonly app_status?: 'NONE' | 'RUNNING' | 'ENDED' | 'FAILED'
+      readonly app_status?: SandboxResponseApp_status
       /**
        * @description The application type of the sandbox (passed command or existent service eg. apache2)
        * @enum {string}
        */
-      readonly app_type?: 'CMD' | 'SERVICE'
+      readonly app_type?: CreateFromSnapshotRequestApp_type
       /** @description The boot logs of the sandbox */
       readonly boot_logs?: readonly string[]
       /** @description The tunnel endpoints of the sandbox */
@@ -6205,32 +5464,19 @@ export interface components {
        * @description The resource configuration of the sandbox (CPU x RAM)
        * @enum {string}
        */
-      readonly resources?:
-        | '1x2'
-        | '2x4'
-        | '3x6'
-        | '4x8'
-        | '5x10'
-        | '6x12'
-        | '7x14'
-        | '8x16'
-        | '9x18'
-        | '10x20'
-        | '11x22'
-        | '12x24'
-        | 'CUSTOM'
+      readonly resources?: ActionViewResources
       /** @description The run command of the sandbox */
       readonly run_command?: string
       /**
        * @description The current setup status of the sandbox
        * @enum {string}
        */
-      readonly setup_status?: 'INPROGRESS' | 'SUCCESS' | 'FAILED'
+      readonly setup_status?: SandboxResponseSetup_status
       /**
        * @description The current status of the sandbox
        * @enum {string}
        */
-      readonly status?: 'STARTING' | 'STOPPING' | 'FAILED' | 'RUNNING' | 'STOPPED' | 'RESTORING'
+      readonly status?: SandboxIdViewStatus
       /** @description The list of tags associated with the sandbox */
       readonly tags?: readonly string[]
       /** @description API endpoint to GET this object */
@@ -6245,12 +5491,12 @@ export interface components {
        * @description The current application status of the sandbox
        * @enum {string}
        */
-      readonly app_status?: 'NONE' | 'RUNNING' | 'ENDED' | 'FAILED'
+      readonly app_status?: SandboxResponseApp_status
       /**
        * @description The application type of the sandbox (passed command or existent service eg. apache2)
        * @enum {string}
        */
-      readonly app_type?: 'CMD' | 'SERVICE'
+      readonly app_type?: CreateFromSnapshotRequestApp_type
       /** @description The boot logs of the sandbox */
       readonly boot_logs?: readonly string[]
       /** @description The tunnel endpoints of the sandbox */
@@ -6272,32 +5518,19 @@ export interface components {
        * @description The resource configuration of the sandbox (CPU x RAM)
        * @enum {string}
        */
-      readonly resources?:
-        | '1x2'
-        | '2x4'
-        | '3x6'
-        | '4x8'
-        | '5x10'
-        | '6x12'
-        | '7x14'
-        | '8x16'
-        | '9x18'
-        | '10x20'
-        | '11x22'
-        | '12x24'
-        | 'CUSTOM'
+      readonly resources?: ActionViewResources
       /** @description The run command of the sandbox */
       readonly run_command?: string
       /**
        * @description The current setup status of the sandbox
        * @enum {string}
        */
-      readonly setup_status?: 'INPROGRESS' | 'SUCCESS' | 'FAILED'
+      readonly setup_status?: SandboxResponseSetup_status
       /**
        * @description The current status of the sandbox
        * @enum {string}
        */
-      readonly status?: 'STARTING' | 'STOPPING' | 'FAILED' | 'RUNNING' | 'STOPPED' | 'RESTORING'
+      readonly status?: SandboxIdViewStatus
       /** @description The list of tags associated with the sandbox */
       readonly tags?: readonly string[]
       /** @description API endpoint to GET this object */
@@ -6339,16 +5572,7 @@ export interface components {
       readonly docker_image_name?: string
       readonly docker_image_tag?: string
       /** @enum {string} */
-      readonly docker_registry?:
-        | 'NONE'
-        | 'DOCKER_HUB'
-        | 'AMAZON_ECR'
-        | 'GOOGLE_GCR'
-        | 'GOOGLE_ARTIFACT_REGISTRY'
-        | 'OTHER'
-        | 'GIT_HUB_CONTAINER_REGISTRY'
-        | 'PACKAGE_REGISTRY'
-        | 'DIGITAL_OCEAN_CONTAINER_REGISTRY'
+      readonly docker_registry?: ActionViewDocker_registry
       readonly dump_path?: string
       readonly entrypoint?: string
       /** Format: int64 */
@@ -6357,7 +5581,7 @@ export interface components {
       readonly gas_price?: number
       readonly ignore_image_pull_failures?: boolean
       /** @enum {string} */
-      readonly image_location?: 'PUBLIC_REGISTRY' | 'PRIVATE_REGISTRY' | 'ACTION' | 'PACKAGE_REGISTRY'
+      readonly image_location?: ActionViewImage_location
       readonly inline_commands?: string
       readonly integration?: components['schemas']['IntegrationView']
       readonly login?: string
@@ -6438,19 +5662,7 @@ export interface components {
        * @description The current status of the action execution
        * @enum {string}
        */
-      readonly status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly status?: ActionExecutionViewStatus
       /**
        * Format: date-time
        * @description The date and time when the action execution was terminated
@@ -6486,19 +5698,7 @@ export interface components {
        * @description The status of the last run of the action
        * @enum {string}
        */
-      readonly last_execution_status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly last_execution_status?: ActionExecutionViewStatus
       /** @description The name of the action */
       readonly name?: string
       /**
@@ -6515,7 +5715,7 @@ export interface components {
        * @description Defines whether to run the next action in parallel
        * @enum {string}
        */
-      readonly run_next?: 'WAIT_ON_SUCCESS' | 'IN_SOFT_PARALLEL' | 'IN_HARD_PARALLEL'
+      readonly run_next?: ActionViewRun_next
       /** @description If set to true, the action runs only on the first failure */
       readonly run_only_on_first_failure?: boolean
       /**
@@ -6529,197 +5729,12 @@ export interface components {
        * @description Defines when the action should be executed
        * @enum {string}
        */
-      readonly trigger_time?:
-        | 'ON_EVERY_EXECUTION'
-        | 'ON_SUCCESS'
-        | 'ON_FAILURE'
-        | 'ON_BACK_TO_SUCCESS'
-        | 'ON_WARNING'
-        | 'ON_WAIT_FOR_APPROVE'
-        | 'ON_TERMINATE'
+      readonly trigger_time?: ActionViewTrigger_time
       /**
        * @description The type of the action
        * @enum {string}
        */
-      readonly type?:
-        | 'TRANSFER'
-        | 'AMAZON_S3'
-        | 'WEB_DAV'
-        | 'SSH_COMMAND'
-        | 'HTTP'
-        | 'SLACK'
-        | 'EMAIL'
-        | 'SMS'
-        | 'PUSH'
-        | 'HEROKU'
-        | 'BUILD'
-        | 'MODULUS'
-        | 'PING'
-        | 'WEB'
-        | 'TCP'
-        | 'RUN_NEXT_PIPELINE'
-        | 'ELASTIC_BEANSTALK'
-        | 'GCS'
-        | 'SHOPIFY'
-        | 'PUSHOVER'
-        | 'PUSHBULLET'
-        | 'CODE_DEPLOY'
-        | 'AZURE'
-        | 'DOCKERFILE'
-        | 'GOOGLE_APP_ENGINE'
-        | 'LAMBDA'
-        | 'HEROKU_CLI'
-        | 'RACKSPACE'
-        | 'CLOUDFLARE'
-        | 'CLOUD_FRONT'
-        | 'MONITOR'
-        | 'SLEEP'
-        | 'AWS_CLI'
-        | 'GOOGLE_CDN'
-        | 'AWS_LAMBDA_DEPLOY'
-        | 'KUBERNETES_APPLY'
-        | 'KUBERNETES_SET_IMAGE'
-        | 'KUBERNETES_RUN_POD'
-        | 'WAIT_FOR_APPLY'
-        | 'NEW_RELIC'
-        | 'KUBERNETES_RUN_JOB'
-        | 'ZIP'
-        | 'ROLLBAR'
-        | 'SENTRY'
-        | 'DATADOG'
-        | 'DO_SPACES'
-        | 'HONEYBADGER'
-        | 'SENTRY_ENTERPRISE'
-        | 'LOGGLY'
-        | 'KUBERNETES_CLI'
-        | 'RUN_DOCKER_CONTAINER'
-        | 'ESLINT'
-        | 'DOCKER_PUSH'
-        | 'ANDROID_SIGN'
-        | 'ANDROID_PLAY'
-        | 'WAIT_FOR_VARIABLES'
-        | 'GCLOUD_CLI'
-        | 'HIP_CHAT'
-        | 'AWS_ECS'
-        | 'COPY_FILES'
-        | 'FIREBASE'
-        | 'TELEGRAM'
-        | 'REPLACE'
-        | 'GOOGLE_FUNCTIONS_DEPLOY'
-        | 'DOCKER_SAVE'
-        | 'GOOGLE_FUNCTIONS'
-        | 'BUGSNAG'
-        | 'SPLIT_TESTS'
-        | 'RAYGUN'
-        | 'DATADOG_STATUS_CHECK'
-        | 'GHOST_INSPECTOR'
-        | 'AWS_CLOUD_FORMATION'
-        | 'DIGITAL_OCEAN_CDN'
-        | 'DISCORD2'
-        | 'IMAGE_COMPRESSION'
-        | 'NETLIFY'
-        | 'GIT_CRYPT_UNLOCK'
-        | 'GIT_CRYPT_LOCK'
-        | 'HELM'
-        | 'DOCKERFILE_LINTER'
-        | 'DOWNLOAD'
-        | 'DOWNLOAD_S3'
-        | 'LIGHTHOUSE'
-        | 'ANDROID_SIGN_BUNDLE'
-        | 'ANDROID_PLAY_BUNDLE'
-        | 'VISUAL_TESTS'
-        | 'LINK_VALIDATOR'
-        | 'AZURE_CLI'
-        | 'SHOPIFY_THEMEKIT_CLI'
-        | 'SSL_VERIFY'
-        | 'AZURE_STORAGE'
-        | 'DEPLOY_TO_SANDBOX'
-        | 'SANDBOX_START'
-        | 'SANDBOX_STOP'
-        | 'SANDBOX_EXEC'
-        | 'GIT_HUB_RELEASE'
-        | 'GCLOUD_RUN_DEPLOY'
-        | 'SANDBOX_SNAPSHOT'
-        | 'AWS_CLI_2'
-        | 'MICROSOFT_TEAMS'
-        | 'NATIVE_BUILD_WINDOWS'
-        | 'NATIVE_BUILD_MAC'
-        | 'DOCTL'
-        | 'NATIVE_BUILD_MAC_REACT'
-        | 'NATIVE_BUILD_MAC_CORDOVA'
-        | 'NATIVE_BUILD_MAC_FASTLANE'
-        | 'NATIVE_BUILD_MAC_FLUTTER'
-        | 'GOOGLE_CLOUD_STORAGE'
-        | 'GOOGLE_FUNCTION_DEPLOY'
-        | 'GOOGLE_FUNCTION_INVOKE'
-        | 'GOOGLE_CDN_INVALIDATE'
-        | 'GOOGLE_CLOUD_CLI'
-        | 'GOOGLE_CLOUD_RUN_DEPLOY'
-        | 'GOOGLE_APP_DEPLOY'
-        | 'ANDROID_PUBLISH_APK'
-        | 'ANDROID_PUBLISH_APP_BUNDLE'
-        | 'SANDBOX_CREATE_NEW'
-        | 'SANDBOX_CREATE_FROM_SANDBOX'
-        | 'SANDBOX_CREATE_FROM_SNAPSHOT'
-        | 'SANDBOX_DELETE'
-        | 'NATIVE_BUILD_MAC_SIGN'
-        | 'NATIVE_BUILD_MAC_DEPLOY'
-        | 'NATIVE_BUILD_DOCKER_CLI'
-        | 'CLEAR_CACHE'
-        | 'FASTLANE_ANDROID'
-        | 'NATIVE_BUILD_LINUX'
-        | 'GIT_HUB_CLI'
-        | 'INTEGRATION_VARIABLES'
-        | 'DOCKER_BUILD_MULTI_ARCH'
-        | 'CODE_PIPELINE'
-        | 'GIT_LAB_CLI'
-        | 'AWS_APP_RUNNER_DEPLOY'
-        | 'AWS_APP_RUNNER_MONITOR'
-        | 'NATIVE_BUILD_MAC_VM'
-        | 'AWS_CDK_CLI'
-        | 'GHOST_INSPECTOR_CLI'
-        | 'TERRAFORM'
-        | 'ATOP'
-        | 'SNYK_CLI'
-        | 'STACK_HAWK_CLI'
-        | 'JMETER_CLI'
-        | 'CUSTOM'
-        | 'BLACKFIRE_PHP'
-        | 'BLACKFIRE_PYTHON'
-        | 'BLACKFIRE_GO'
-        | 'LINK_CHECKER'
-        | 'SHOPIFY_CLI'
-        | 'DOCKER'
-        | 'SET_VARIABLES'
-        | 'DOWNLOAD_FROM_SANDBOX'
-        | 'PIPELINE_SETTINGS'
-        | 'BACKBLAZE_B2'
-        | 'NEW_RELIC_CLI'
-        | 'DOWNLOAD_GCS'
-        | 'DOWNLOAD_BACKBLAZE_B2'
-        | 'WP_CLI'
-        | 'GOOGLE_CHAT'
-        | 'SANDBOX_APPLICATION_START'
-        | 'SANDBOX_APPLICATION_STOP'
-        | 'POWERSHELL'
-        | 'SANDBOX_MANAGE'
-        | 'SANDBOX_CREATE'
-        | 'CONTENTFUL_CLI'
-        | 'FTP'
-        | 'FTPS'
-        | 'SFTP'
-        | 'GCE'
-        | 'VULTR'
-        | 'UPCLOUD'
-        | 'DIGITAL_OCEAN'
-        | 'DOWNLOAD_FTP'
-        | 'DOWNLOAD_FTPS'
-        | 'DOWNLOAD_SSH'
-        | 'RSYNC'
-        | 'PROMOTE_IMAGE'
-        | 'PUBLISH_PACKAGE_VERSION'
-        | 'DOWNLOAD_PACKAGE_VERSION'
-        | 'STORYBOOK'
+      readonly type?: ActionViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The list of environment variables defined for the action */
@@ -6785,7 +5800,7 @@ export interface components {
        * @example PROJECT
        * @enum {string}
        */
-      readonly scope?: 'PROJECT' | 'WORKSPACE' | 'ANY' | 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope?: EnvironmentViewScope
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -6818,7 +5833,7 @@ export interface components {
        * @description The priority of the execution. Default is NORMAL
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       readonly pull_request?: components['schemas']['PullRequestView']
       /** @description Deploy from scratch */
       readonly refresh?: boolean
@@ -6831,26 +5846,14 @@ export interface components {
        * @description The current status of the execution
        * @enum {string}
        */
-      readonly status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly status?: ActionExecutionViewStatus
       readonly tag?: components['schemas']['TagView']
       readonly to_revision?: components['schemas']['ShortCommitView']
       /**
        * @description The mode that triggered the execution
        * @enum {string}
        */
-      readonly triggered_on?: 'CLICK' | 'SCHEDULE' | 'EVENT' | 'PIPELINE' | 'WEBHOOK' | 'EMAIL'
+      readonly triggered_on?: ExecutionViewTriggered_on
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -6922,7 +5925,7 @@ export interface components {
        * @example WORKSPACE
        * @enum {string}
        */
-      readonly scope?: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope?: AddIntegrationRequestScope
       /**
        * Format: int64
        * @description Total size of all package versions in bytes
@@ -6949,7 +5952,7 @@ export interface components {
        * @description The CPU architecture for the pipeline run
        * @enum {string}
        */
-      readonly cpu?: 'X64' | 'ARM' | 'X86'
+      readonly cpu?: AddPipelineRequestCpu
       /**
        * Format: date-time
        * @description The creation date of the pipeline
@@ -6959,7 +5962,7 @@ export interface components {
        * @description The source of the pipeline definition
        * @enum {string}
        */
-      readonly definition_source?: 'LOCAL' | 'REMOTE'
+      readonly definition_source?: AddPipelineRequestDefinition_source
       /** @description If set to true, a description is required when executing the pipeline manually */
       readonly description_required?: boolean
       /** @description Indicates if the pipeline is disabled */
@@ -6980,20 +5983,20 @@ export interface components {
        * @description The base for filesystem changeset calculation. Determines which file changes trigger the pipeline
        * @enum {string}
        */
-      readonly filesystem_changeset_base?: 'DATE_MODIFIED' | 'CONTENTS'
+      readonly filesystem_changeset_base?: AddPipelineRequestFilesystem_changeset_base
       /** @description The folder name where the pipeline is organized */
       readonly folder?: string
       /**
        * @description The base for git changeset calculation. Determines which changes trigger the pipeline
        * @enum {string}
        */
-      readonly git_changeset_base?: 'LATEST_RUN' | 'LATEST_RUN_MATCHING_REF' | 'PULL_REQUEST'
+      readonly git_changeset_base?: AddPipelineRequestGit_changeset_base
       readonly git_config?: components['schemas']['YamlDefinitionView']
       /**
        * @description The git configuration reference type
        * @enum {string}
        */
-      readonly git_config_ref?: 'NONE' | 'DYNAMIC' | 'FIXED'
+      readonly git_config_ref?: AddPipelineRequestGit_config_ref
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /**
@@ -7011,19 +6014,7 @@ export interface components {
        * @description The status of the last run
        * @enum {string}
        */
-      readonly last_execution_status?:
-        | 'INPROGRESS'
-        | 'ENQUEUED'
-        | 'TERMINATED'
-        | 'SUCCESSFUL'
-        | 'FAILED'
-        | 'INITIAL'
-        | 'NOT_EXECUTED'
-        | 'SKIPPED'
-        | 'TERMINATING'
-        | 'WAITING_FOR_APPLY'
-        | 'WAITING_FOR_VARIABLES'
-        | 'WAITING_FOR_SETTABLE_VARIABLES'
+      readonly last_execution_status?: ActionExecutionViewStatus
       /** @description The name of the pipeline */
       readonly name?: string
       /** @description If set to true, the pipeline will not skip queued runs to execute the most recent one */
@@ -7039,7 +6030,7 @@ export interface components {
        * @description The priority of the pipeline
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       /** @description Pipeline git context refs. If unset and events is empty, the pipeline counts as codeless */
       readonly refs?: readonly string[]
       /** @description The parameters passed to the remote pipeline definition */
@@ -7054,7 +6045,7 @@ export interface components {
        * @description The resource configuration for the pipeline run
        * @enum {string}
        */
-      readonly resources?: 'DEFAULT' | 'NANO' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE' | 'CUSTOM' | 'X2LARGE'
+      readonly resources?: AddPipelineRequestResources
       /** @description Indicates that pipeline definition was probably removed on particular Git ref and pipeline won't be run on events */
       readonly stale?: boolean
       /** @description The list of tags associated with the pipeline for organization */
@@ -7073,7 +6064,7 @@ export interface components {
        * @description Indicates if this is a public project
        * @enum {string}
        */
-      readonly access?: 'PRIVATE' | 'PUBLIC'
+      readonly access?: CreateBuddyProjectRequestAccess
       /**
        * Format: date-time
        * @description The creation date of the project
@@ -7117,7 +6108,7 @@ export interface components {
        * @description Snapshot status
        * @enum {string}
        */
-      readonly status?: 'CREATING' | 'CREATED' | 'DELETING' | 'FAILED'
+      readonly status?: ShortSnapshotViewStatus
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7142,7 +6133,7 @@ export interface components {
        * @description Test execution status
        * @enum {string}
        */
-      readonly status?: 'PASSED' | 'FAILED' | 'SKIPPED' | 'ERROR'
+      readonly status?: PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
       /** @description ID of the test group this case belongs to */
       readonly test_group_id?: string
       /** @description Name of the test group this case belongs to (typically corresponds to a test suite in JUnit XML) */
@@ -7236,7 +6227,7 @@ export interface components {
        * @description Snapshot status
        * @enum {string}
        */
-      readonly status?: 'CREATING' | 'CREATED' | 'DELETING' | 'FAILED'
+      readonly status?: ShortSnapshotViewStatus
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7248,18 +6239,9 @@ export interface components {
        * @description SSH authentication method. Supported values: `PASSWORD` (username/password), `SSH_KEY` (SSH private key), `BUDDY_KEY` (Buddy-managed key)
        * @enum {string}
        */
-      readonly method: 'PASSWORD' | 'SSH_KEY' | 'ASSETS_KEY' | 'PROXY_CREDENTIALS' | 'PROXY_KEY'
+      readonly method: SSHAuthViewMethod
       /** @enum {string} */
-      readonly old_method?:
-        | 'PASS'
-        | 'PRIVATE_KEY'
-        | 'PRIVATE_KEY_AND_PASS'
-        | 'PUBLIC_KEY'
-        | 'ENV_KEY'
-        | 'WORKSPACE_KEY'
-        | 'SAME_AS_PROXY'
-        | 'PROXY_KEY'
-        | 'CUSTOM_PROXY_KEY'
+      readonly old_method?: ActionViewAuthentication_mode
       readonly passphrase?: string
       readonly password?: string
       /** @description Username for SSH authentication */
@@ -7282,27 +6264,27 @@ export interface components {
        * @description The provider type for SSO configuration
        * @enum {string}
        */
-      readonly sso_provider_type?: 'OKTA' | 'ONE_LOGIN' | 'GOOGLE' | 'AZURE' | 'AWS' | 'CUSTOM'
+      readonly sso_provider_type?: SSOViewSso_provider_type
       /** @description The SSO URL / SAML endpoint / Identity provider Single sign-on URL. Set when type is `SAML`. */
       readonly sso_url?: string
       /**
        * @description The type of the SSO to be set
        * @enum {string}
        */
-      readonly type?: 'SAML' | 'OIDC'
+      readonly type?: SSOViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
     readonly StatusType: {
       /** @enum {string} */
-      readonly family?: 'INFORMATIONAL' | 'SUCCESSFUL' | 'REDIRECTION' | 'CLIENT_ERROR' | 'SERVER_ERROR' | 'OTHER'
+      readonly family?: StatusTypeFamily
       readonly reason_phrase?: string
       /** Format: int32 */
       readonly status_code?: number
     }
     readonly SyncPathView: {
       /** @enum {string} */
-      readonly direction?: 'PIPELINE_TO_VM' | 'VM_TO_PIPELINE'
+      readonly direction?: SyncPathViewDirection
       readonly excludes?: string
       readonly includes?: string
       readonly pipeline_path?: string
@@ -7366,7 +6348,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'AKS'
+      readonly type: TargetAKSViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7401,7 +6383,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'DIGITAL_OCEAN'
+      readonly type: TargetDigitalOceanViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7432,7 +6414,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'DOKS'
+      readonly type: TargetDOKSViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7469,7 +6451,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'EC2'
+      readonly type: TargetEC2ViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7502,7 +6484,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'EKS'
+      readonly type: TargetEKSViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7520,14 +6502,14 @@ export interface components {
       readonly pipeline?: components['schemas']['PipelineViewId']
       readonly project?: components['schemas']['ProjectViewId']
       /** @enum {string} */
-      readonly scope?: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'PIPELINE' | 'ACTION' | 'ANY'
+      readonly scope?: TargetFilterViewScope
       /** @description The list of tags associated with the target */
       readonly tags?: readonly string[]
       /**
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'MATCH'
+      readonly type: TargetFilterViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7561,7 +6543,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'FTP'
+      readonly type: TargetFtpViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7589,7 +6571,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'GIT'
+      readonly type: TargetGitViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7622,7 +6604,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'GKE'
+      readonly type: TargetGKEViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The region where the Kubernetes cluster is located. Required when adding GKE */
@@ -7656,7 +6638,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'K8S_CLUSTER'
+      readonly type: TargetK8SClusterViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7696,7 +6678,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'SSH'
+      readonly type: TargetSSHViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7738,7 +6720,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'UPCLOUD'
+      readonly type: TargetUpcloudViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7807,7 +6789,7 @@ export interface components {
        * @description The type of the target. Allowed values: `SSH`, `FTP`, `GIT`, `MATCH`, `EC2`, `DIGITAL_OCEAN`, `VULTR`, `UPCLOUD`, `GKE`, `EKS`, `AKS`, `DOKS`, `K8S_CLUSTER` (enum property replaced by openapi-typescript)
        * @enum {string}
        */
-      readonly type: 'VULTR'
+      readonly type: TargetVultrViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -7833,7 +6815,7 @@ export interface components {
        * @description Test execution status
        * @enum {string}
        */
-      readonly status?: 'PASSED' | 'FAILED' | 'SKIPPED' | 'ERROR'
+      readonly status?: PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
       /** @description ID of the test group this case belongs to */
       readonly test_group_id?: string
       /** @description Name of the test group this case belongs to (typically corresponds to a test suite in JUnit XML) */
@@ -7879,7 +6861,7 @@ export interface components {
        * @description Overall status of the test group
        * @enum {string}
        */
-      readonly status?: 'PASSED' | 'FAILED' | 'SKIPPED' | 'ERROR'
+      readonly status?: PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
       /**
        * Format: int32
        * @description Total number of tests in the group
@@ -7907,7 +6889,7 @@ export interface components {
        * @description CI provider that initiated the test session
        * @enum {string}
        */
-      readonly ci_provider?: 'NONE' | 'BUDDY' | 'GITHUB_ACTION' | 'CIRCLE_CI'
+      readonly ci_provider?: AddSessionRequestCi_provider
       /** @description URL to the external CI/CD run */
       readonly ci_run_url?: string
       /**
@@ -7953,7 +6935,7 @@ export interface components {
        * @description Type of Git reference
        * @enum {string}
        */
-      readonly ref_type?: 'BRANCH' | 'TAG' | 'PULL_REQUEST'
+      readonly ref_type?: AddSessionRequestRef_type
       /**
        * Format: int32
        * @description Sequential ID within the suite
@@ -7975,7 +6957,7 @@ export interface components {
        * @description Current status of the session
        * @enum {string}
        */
-      readonly status?: 'IN_PROGRESS' | 'SUCCESSFUL' | 'ERROR' | 'SKIPPED'
+      readonly status?: TestSessionViewStatus
       /**
        * Format: int32
        * @description Total number of tests
@@ -7998,7 +6980,7 @@ export interface components {
        * @description Where to terminate TLS connection
        * @enum {string}
        */
-      readonly terminate_at?: 'REGION' | 'AGENT' | 'TARGET'
+      readonly terminate_at?: TlsSettingsViewTerminate_at
       /** @description API endpoint to GET this object */
       readonly url?: string
     }
@@ -8015,29 +6997,7 @@ export interface components {
        * @description The type of trigger condition
        * @enum {string}
        */
-      readonly trigger_condition?:
-        | 'ALWAYS'
-        | 'ON_CHANGE'
-        | 'ON_CHANGE_AT_PATH'
-        | 'VAR_IS'
-        | 'VAR_IS_NOT'
-        | 'VAR_CONTAINS'
-        | 'VAR_NOT_CONTAINS'
-        | 'DATETIME'
-        | 'SUCCESS_PIPELINE'
-        | 'DAY'
-        | 'HOUR'
-        | 'OR'
-        | 'VAR_LESS_THAN'
-        | 'VAR_LESS_THAN_OR_EQUAL'
-        | 'VAR_GREATER_THAN'
-        | 'VAR_GREATER_THAN_OR_EQUAL'
-        | 'ACTION_STATUS_IS'
-        | 'ACTION_STATUS_IS_NOT'
-        | 'TRIGGERING_USER_IS'
-        | 'TRIGGERING_USER_IS_NOT'
-        | 'TRIGGERING_USER_IS_IN_GROUP'
-        | 'TRIGGERING_USER_IS_NOT_IN_GROUP'
+      readonly trigger_condition?: ActionViewTrigger_condition
       /** @description The file paths that must change to trigger the pipeline */
       readonly trigger_condition_paths?: readonly string[]
       /** @description The days when the datetime trigger should activate (1-7, where 1 is Monday) */
@@ -8056,7 +7016,7 @@ export interface components {
        * @description The action status to check for action status triggers
        * @enum {string}
        */
-      readonly trigger_status?: 'SUCCESSFUL' | 'FAILED' | 'SKIPPED' | 'SUPPRESSED'
+      readonly trigger_status?: TriggerConditionViewTrigger_status
       /** @description The email of the user who can trigger the pipeline */
       readonly trigger_user?: string
       /** @description The name of the variable to check in the trigger condition */
@@ -8078,7 +7038,7 @@ export interface components {
        * @description The region where the tunnel is deployed
        * @enum {string}
        */
-      readonly region: 'US' | 'EU'
+      readonly region: TunnelViewRegion
       /**
        * Format: int32
        * @description The connection timeout of the tunnel in seconds
@@ -8089,7 +7049,7 @@ export interface components {
        * @description The type of the tunnel
        * @enum {string}
        */
-      readonly type: 'TCP' | 'TLS' | 'HTTP' | 'SSH'
+      readonly type: TunnelViewType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The IP addresses or domains allowed to access the tunnel */
@@ -8138,7 +7098,7 @@ export interface components {
        * @description The status of the group member (`MEMBER`, `MANAGER`)
        * @enum {string}
        */
-      readonly status?: 'MEMBER' | 'MANAGER'
+      readonly status?: AddGroupMemberRequestStatus
     }
     readonly UpdateGroupRequest: {
       /** @description Whether group members are allowed to buy new domains on behalf of the workspace owner */
@@ -8178,17 +7138,7 @@ export interface components {
        * @description The authentication method used by the integration
        * @enum {string}
        */
-      readonly auth_type?:
-        | 'OAUTH'
-        | 'TOKEN'
-        | 'API_KEY'
-        | 'APP'
-        | 'APP_SPRYKER'
-        | 'TOKEN_APP_EXTENSION'
-        | 'DEFAULT'
-        | 'OIDC'
-        | 'TRUSTED'
-        | 'APP_RW'
+      readonly auth_type?: AddIntegrationRequestAuth_type
       /** @description The chat ID for messaging integrations */
       readonly chat_id?: string
       /** @description The client ID for OAuth-based integrations */
@@ -8249,6 +7199,13 @@ export interface components {
     }
     /** @description Update package fields. Restrictions: name can only be changed if package type is FILES, scope can only be changed to higher levels (ENVIRONMENT→PROJECT/WORKSPACE, PROJECT→WORKSPACE), type cannot be changed, BASIC authorization can only be used with FILES type packages. */
     readonly UpdatePackageRequest: {
+      /**
+       * @description Set to `true` to allow all pipelines to use this package
+       * @example false
+       */
+      readonly all_pipelines_allowed?: boolean
+      /** @description List of pipelines allowed to access this package */
+      readonly allowed_pipelines?: readonly components['schemas']['AllowedPipelineView'][]
       readonly authorization?: components['schemas']['AuthorizationView']
       readonly environment?: components['schemas']['EnvironmentReferenceView']
       /**
@@ -8266,9 +7223,8 @@ export interface components {
       /**
        * @description The scope level of the package. Can only be changed to a higher level: ENVIRONMENT→PROJECT or WORKSPACE, PROJECT→WORKSPACE
        * @example WORKSPACE
-       * @enum {string}
        */
-      readonly scope?: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT'
+      readonly scope?: string
     }
     readonly UpdatePermissionSetRequest: {
       /** @description The description of the permission set */
@@ -8301,7 +7257,7 @@ export interface components {
        * @description Defines the cache scope
        * @enum {string}
        */
-      readonly cache_scope?: 'PIPELINE' | 'PROJECT' | 'WORKSPACE'
+      readonly cache_scope?: AddPipelineRequestCache_scope
       /**
        * Format: int32
        * @description Defines the depth of the git clone operation for shallow clones
@@ -8313,12 +7269,12 @@ export interface components {
        * @description The CPU architecture for the pipeline run
        * @enum {string}
        */
-      readonly cpu?: 'X64' | 'ARM' | 'X86'
+      readonly cpu?: AddPipelineRequestCpu
       /**
        * @description The source of the pipeline definition
        * @enum {string}
        */
-      readonly definition_source?: 'LOCAL' | 'REMOTE'
+      readonly definition_source?: AddPipelineRequestDefinition_source
       /** @description If set to true, a description is required when executing the pipeline manually */
       readonly description_required?: boolean
       /** @description Indicates if the pipeline is disabled */
@@ -8341,20 +7297,20 @@ export interface components {
        * @description The base for filesystem changeset calculation. Determines which file changes trigger the pipeline
        * @enum {string}
        */
-      readonly filesystem_changeset_base?: 'DATE_MODIFIED' | 'CONTENTS'
+      readonly filesystem_changeset_base?: AddPipelineRequestFilesystem_changeset_base
       /** @description The folder name where the pipeline is organized */
       readonly folder?: string
       /**
        * @description The base for git changeset calculation. Determines which changes trigger the pipeline
        * @enum {string}
        */
-      readonly git_changeset_base?: 'LATEST_RUN' | 'LATEST_RUN_MATCHING_REF' | 'PULL_REQUEST'
+      readonly git_changeset_base?: AddPipelineRequestGit_changeset_base
       readonly git_config?: components['schemas']['YamlDefinitionView']
       /**
        * @description The git configuration reference type
        * @enum {string}
        */
-      readonly git_config_ref?: 'NONE' | 'DYNAMIC' | 'FIXED'
+      readonly git_config_ref?: AddPipelineRequestGit_config_ref
       /** @description A human-readable ID. Alphanumeric characters, underscores, and hyphens (hyphens cannot appear at the start or end) */
       readonly identifier?: string
       /** @description If set to true, the status of a given pipeline will not impact the project status on the dashboard */
@@ -8381,7 +7337,7 @@ export interface components {
        * @description The priority of the pipeline
        * @enum {string}
        */
-      readonly priority?: 'LOW' | 'NORMAL' | 'HIGH'
+      readonly priority?: AddPipelineRequestPriority
       /** @description Pipeline git context refs. If unset and events is empty, the pipeline counts as codeless */
       readonly refs?: readonly string[]
       /** @description The parameters passed to the remote pipeline definition */
@@ -8396,7 +7352,7 @@ export interface components {
        * @description The resource configuration for the pipeline run
        * @enum {string}
        */
-      readonly resources?: 'DEFAULT' | 'NANO' | 'SMALL' | 'MEDIUM' | 'LARGE' | 'XLARGE' | 'CUSTOM' | 'X2LARGE'
+      readonly resources?: AddPipelineRequestResources
       /** @description The list of tags associated with the pipeline for organization */
       readonly tags?: readonly string[]
       /** @description The URL to the target site after deployment */
@@ -8422,7 +7378,7 @@ export interface components {
        * @description Indicates if this is a public project
        * @enum {string}
        */
-      readonly access?: 'PRIVATE' | 'PUBLIC'
+      readonly access?: CreateBuddyProjectRequestAccess
       /** @description If set to true, pull requests will be enabled for the project. Available only for projects synchronized with GitHub or GitHub Enterprise repository. */
       readonly allow_pull_requests?: boolean
       /** @description The Name of the project */
@@ -8437,7 +7393,7 @@ export interface components {
        * @description The status of the project
        * @enum {string}
        */
-      readonly status?: 'ACTIVE' | 'CLOSED'
+      readonly status?: UpdateProjectRequestStatus
       /** @description If set to true, the default branch will be updated from GitHub/GitLab/Bitbucket. */
       readonly update_default_branch_from_external?: boolean
     }
@@ -8448,7 +7404,7 @@ export interface components {
        * @description The application type of the sandbox (passed command or existent service eg. apache2)
        * @enum {string}
        */
-      readonly app_type?: 'CMD' | 'SERVICE'
+      readonly app_type?: CreateFromSnapshotRequestApp_type
       /** @description The tunnel endpoints of the sandbox */
       readonly endpoints?: readonly components['schemas']['TunnelView'][]
       /** @description A human-readable ID. Alphanumeric characters, underscores, and hyphens (hyphens cannot appear at the start or end) */
@@ -8461,20 +7417,7 @@ export interface components {
        * @description The resource configuration of the sandbox (CPU x RAM)
        * @enum {string}
        */
-      readonly resources?:
-        | '1x2'
-        | '2x4'
-        | '3x6'
-        | '4x8'
-        | '5x10'
-        | '6x12'
-        | '7x14'
-        | '8x16'
-        | '9x18'
-        | '10x20'
-        | '11x22'
-        | '12x24'
-        | 'CUSTOM'
+      readonly resources?: ActionViewResources
       /** @description The run command of the sandbox */
       readonly run_command?: string
       /** @description The list of tags associated with the sandbox */
@@ -8501,14 +7444,14 @@ export interface components {
        * @description The provider type for SSO configuration
        * @enum {string}
        */
-      readonly sso_provider_type?: 'OKTA' | 'ONE_LOGIN' | 'GOOGLE' | 'AZURE' | 'AWS' | 'CUSTOM'
+      readonly sso_provider_type?: SSOViewSso_provider_type
       /** @description The SSO URL / SAML endpoint / Identity provider Single sign-on URL. Set when type is `SAML`. */
       readonly sso_url?: string
       /**
        * @description The type of the SSO to be set
        * @enum {string}
        */
-      readonly type?: 'SAML' | 'OIDC'
+      readonly type?: SSOViewType
     }
     readonly UpdateUserRequest: {
       /** @description The name of the user */
@@ -8529,7 +7472,7 @@ export interface components {
        * @description Set if `type` is `SSH_KEY`. If it's `NONE`, the variable can be used as a parameter in an action. For `CONTAINER`, the given key is additionally copied to an action container on each run
        * @enum {string}
        */
-      readonly file_place?: 'NONE' | 'CONTAINER'
+      readonly file_place?: AddVariableInObjectRequestFile_place
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /** @description Initial path for the variable */
@@ -8581,18 +7524,7 @@ export interface components {
        * @description The access level for the user (DENIED, USE_ONLY, MANAGE)
        * @enum {string}
        */
-      readonly access_level?:
-        | 'DENIED'
-        | 'READ_ONLY'
-        | 'BLIND'
-        | 'RUN_ONLY'
-        | 'READ_WRITE'
-        | 'MANAGE'
-        | 'DEFAULT'
-        | 'ALLOWED'
-        | 'STAGE'
-        | 'COMMIT'
-        | 'USE_ONLY'
+      readonly access_level?: AllowedPipelineFrontAccess_level
       /**
        * Format: int32
        * @description The ID of the user
@@ -8645,7 +7577,7 @@ export interface components {
        * @description Set if `type` is `SSH_KEY`. If it's `NONE`, the variable can be used as a parameter in an action. For `CONTAINER`, the given key is additionally copied to an action container on each run
        * @enum {string}
        */
-      readonly file_place?: 'NONE' | 'CONTAINER'
+      readonly file_place?: AddVariableInObjectRequestFile_place
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /**
@@ -8674,7 +7606,7 @@ export interface components {
        * @description The type of the added variable. Can be one of `VAR` or `SSH_KEY`
        * @enum {string}
        */
-      readonly type?: 'VAR' | 'FILE' | 'SSH_KEY' | 'IOS_KEYCHAIN' | 'IOS_PROVISION_PROFILES' | 'SSH_PUBLIC_KEY'
+      readonly type?: AddVariableInObjectRequestType
       /** @description API endpoint to GET this object */
       readonly url?: string
       /** @description The value of the variable */
@@ -8687,7 +7619,7 @@ export interface components {
        * @description The status of the visual tests execution
        * @enum {string}
        */
-      readonly status?: 'MATCH' | 'MISMATCH' | 'ERROR' | 'NEW' | 'SIZE_MISMATCH'
+      readonly status?: VisualTestsOutputViewStatus
       /** @description The URL to the visual tests results */
       readonly url?: string
     }
@@ -8718,15 +7650,7 @@ export interface components {
     }
     readonly WebhookView: {
       /** @description Set of events that trigger the webhook */
-      readonly events?: readonly (
-        | 'DAY_CHANGED'
-        | 'PUSH'
-        | 'EXECUTION_STARTED'
-        | 'EXECUTION_SUCCESSFUL'
-        | 'EXECUTION_FAILED'
-        | 'EXECUTION_FINISHED'
-        | 'EXECUTION_PAUSED'
-      )[]
+      readonly events?: readonly AddUpdateWebhookRequestEvents[]
       /** @description Web URL to view this object in Buddy.works */
       readonly html_url?: string
       /**
@@ -8799,15 +7723,7 @@ export interface components {
        * @description Default pipeline resource allocation for the workspace
        * @enum {string}
        */
-      readonly default_pipeline_resource?:
-        | 'DEFAULT'
-        | 'NANO'
-        | 'SMALL'
-        | 'MEDIUM'
-        | 'LARGE'
-        | 'XLARGE'
-        | 'CUSTOM'
-        | 'X2LARGE'
+      readonly default_pipeline_resource?: AddPipelineRequestResources
       /** @description The human-readable ID of the workspace. Alphanumeric characters, underscores, and hyphens (hyphens cannot appear at the start or end) */
       readonly domain?: string
       /** @description Whether the workspace is frozen */
@@ -10361,7 +9277,17 @@ export interface operations {
           readonly [name: string]: unknown
         }
         content: {
-          readonly 'application/json': components['schemas']['Response']
+          /**
+           * @example {
+           *       "url": "https://api.buddy.works/workspaces/ttests/packages/x5169jL2/versions/a9f84k2L/content/src/app.js",
+           *       "html_url": "https://app.buddy.works/ttests/-/packages/x5169jL2/versions/a9f84k2L/content/src/app.js",
+           *       "type": "FILE",
+           *       "name": "app.js",
+           *       "path": "src/app.js",
+           *       "size": 2048576
+           *     }
+           */
+          readonly 'application/json': components['schemas']['PackageVersionContentItem']
         }
       }
     }
@@ -10415,12 +9341,20 @@ export interface operations {
     }
     readonly responses: {
       /** @description Package version uploaded and extracted successfully */
-      readonly 200: {
+      readonly 201: {
         headers: {
           readonly [name: string]: unknown
         }
         content: {
-          readonly 'application/json': components['schemas']['Response']
+          /**
+           * @example {
+           *       "url": "https://api.buddy.works/workspaces/ttests/packages/x5169jL2/versions/a9f84k2L",
+           *       "html_url": "https://app.buddy.works/ttests/-/packages/x5169jL2/versions/a9f84k2L",
+           *       "extracted_files": 25,
+           *       "total_size": 10485760
+           *     }
+           */
+          readonly 'application/json': components['schemas']['PackageVersionView']
         }
       }
       /** @description Package version is not empty - can only upload to empty package versions */
@@ -10605,7 +9539,7 @@ export interface operations {
         /** @description The full record name with domain */
         readonly record_name: string
         /** @description The record type */
-        readonly type: 'SOA' | 'NS' | 'A' | 'AAAA' | 'CNAME' | 'CAA' | 'SPF' | 'MX' | 'TXT' | 'SRV' | 'NAPTR'
+        readonly type: PathsWorkspacesWorkspace_domainDomainsDomain_idRecordsRecord_nameTypeGetParametersPathType
         /** @description The human-readable ID of the workspace */
         readonly workspace_domain: string
       }
@@ -10633,7 +9567,7 @@ export interface operations {
         /** @description The full record name with domain */
         readonly record_name: string
         /** @description The record type */
-        readonly type: 'SOA' | 'NS' | 'A' | 'AAAA' | 'CNAME' | 'CAA' | 'SPF' | 'MX' | 'TXT' | 'SRV' | 'NAPTR'
+        readonly type: PathsWorkspacesWorkspace_domainDomainsDomain_idRecordsRecord_nameTypeGetParametersPathType
         /** @description The human-readable ID of the workspace */
         readonly workspace_domain: string
       }
@@ -10660,7 +9594,7 @@ export interface operations {
         /** @description The full record name with domain */
         readonly record_name: string
         /** @description The record type */
-        readonly type: 'SOA' | 'NS' | 'A' | 'AAAA' | 'CNAME' | 'CAA' | 'SPF' | 'MX' | 'TXT' | 'SRV' | 'NAPTR'
+        readonly type: PathsWorkspacesWorkspace_domainDomainsDomain_idRecordsRecord_nameTypeGetParametersPathType
         /** @description The human-readable ID of the workspace */
         readonly workspace_domain: string
       }
@@ -15951,7 +14885,7 @@ export interface operations {
         /** @description Specifies the number of returned elements on the page. The default value is 20. */
         readonly per_page?: number
         /** @description Filter test cases by status */
-        readonly status?: 'PASSED' | 'FAILED' | 'SKIPPED' | 'ERROR'
+        readonly status?: PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
       }
       readonly header?: never
       readonly path: {
@@ -18776,4 +17710,1115 @@ export interface operations {
       }
     }
   }
+}
+export enum PathsWorkspacesWorkspace_domainDomainsDomain_idRecordsRecord_nameTypeGetParametersPathType {
+  SOA = 'SOA',
+  NS = 'NS',
+  A = 'A',
+  AAAA = 'AAAA',
+  CNAME = 'CNAME',
+  CAA = 'CAA',
+  SPF = 'SPF',
+  MX = 'MX',
+  TXT = 'TXT',
+  SRV = 'SRV',
+  NAPTR = 'NAPTR',
+}
+export enum PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus {
+  PASSED = 'PASSED',
+  FAILED = 'FAILED',
+  SKIPPED = 'SKIPPED',
+  ERROR = 'ERROR',
+}
+export enum AccessTokenViewScopes {
+  WORKSPACE = 'WORKSPACE',
+  WORKSPACES_MANAGE = 'WORKSPACES_MANAGE',
+  PROJECT_DELETE = 'PROJECT_DELETE',
+  REPOSITORY_READ = 'REPOSITORY_READ',
+  REPOSITORY_WRITE = 'REPOSITORY_WRITE',
+  EXECUTION_INFO = 'EXECUTION_INFO',
+  EXECUTION_RUN = 'EXECUTION_RUN',
+  EXECUTION_MANAGE = 'EXECUTION_MANAGE',
+  USER_INFO = 'USER_INFO',
+  USER_KEY = 'USER_KEY',
+  MANAGE_EMAILS = 'MANAGE_EMAILS',
+  USER_EMAIL = 'USER_EMAIL',
+  MEMBER_EMAIL = 'MEMBER_EMAIL',
+  WEBHOOK_INFO = 'WEBHOOK_INFO',
+  WEBHOOK_ADD = 'WEBHOOK_ADD',
+  WEBHOOK_MANAGE = 'WEBHOOK_MANAGE',
+  ENVIRONMENT_INFO = 'ENVIRONMENT_INFO',
+  ENVIRONMENT_ADD = 'ENVIRONMENT_ADD',
+  ENVIRONMENT_MANAGE = 'ENVIRONMENT_MANAGE',
+  VARIABLE_INFO = 'VARIABLE_INFO',
+  VARIABLE_ADD = 'VARIABLE_ADD',
+  VARIABLE_MANAGE = 'VARIABLE_MANAGE',
+  TARGET_INFO = 'TARGET_INFO',
+  TARGET_ADD = 'TARGET_ADD',
+  TARGET_MANAGE = 'TARGET_MANAGE',
+  INTEGRATION_INFO = 'INTEGRATION_INFO',
+  INTEGRATION_ADD = 'INTEGRATION_ADD',
+  INTEGRATION_MANAGE = 'INTEGRATION_MANAGE',
+  TOKEN_INFO = 'TOKEN_INFO',
+  TOKEN_MANAGE = 'TOKEN_MANAGE',
+  PACKAGE_READ = 'PACKAGE_READ',
+  PACKAGE_WRITE = 'PACKAGE_WRITE',
+  PACKAGE_MANAGE = 'PACKAGE_MANAGE',
+  ZONE_READ = 'ZONE_READ',
+  ZONE_WRITE = 'ZONE_WRITE',
+  ZONE_MANAGE = 'ZONE_MANAGE',
+  UNIT_TEST_INFO = 'UNIT_TEST_INFO',
+  UNIT_TEST_MANAGE = 'UNIT_TEST_MANAGE',
+  SANDBOX_INFO = 'SANDBOX_INFO',
+  SANDBOX_MANAGE = 'SANDBOX_MANAGE',
+}
+export enum ActionExecutionViewStatus {
+  INPROGRESS = 'INPROGRESS',
+  ENQUEUED = 'ENQUEUED',
+  TERMINATED = 'TERMINATED',
+  SUCCESSFUL = 'SUCCESSFUL',
+  FAILED = 'FAILED',
+  INITIAL = 'INITIAL',
+  NOT_EXECUTED = 'NOT_EXECUTED',
+  SKIPPED = 'SKIPPED',
+  TERMINATING = 'TERMINATING',
+  WAITING_FOR_APPLY = 'WAITING_FOR_APPLY',
+  WAITING_FOR_VARIABLES = 'WAITING_FOR_VARIABLES',
+  WAITING_FOR_SETTABLE_VARIABLES = 'WAITING_FOR_SETTABLE_VARIABLES',
+}
+export enum ActionViewAcl {
+  PRIVATE = 'PRIVATE',
+  PUBLIC_READ = 'PUBLIC_READ',
+  PUBLIC_READ_WRITE = 'PUBLIC_READ_WRITE',
+  AWS_EXEC_READ = 'AWS_EXEC_READ',
+  AUTHENTICATED_READ = 'AUTHENTICATED_READ',
+  BUCKET_OWNER_READ = 'BUCKET_OWNER_READ',
+  BUCKET_OWNER_FULL_CONTROL = 'BUCKET_OWNER_FULL_CONTROL',
+  LOG_DELIVERY_WRITE = 'LOG_DELIVERY_WRITE',
+}
+export enum ActionViewAuth_type {
+  TOKEN = 'TOKEN',
+  BASIC = 'BASIC',
+  CERTS = 'CERTS',
+  SERVICE_ACCOUNT = 'SERVICE_ACCOUNT',
+}
+export enum ActionViewAuthentication_mode {
+  PASS = 'PASS',
+  PRIVATE_KEY = 'PRIVATE_KEY',
+  PRIVATE_KEY_AND_PASS = 'PRIVATE_KEY_AND_PASS',
+  PUBLIC_KEY = 'PUBLIC_KEY',
+  ENV_KEY = 'ENV_KEY',
+  WORKSPACE_KEY = 'WORKSPACE_KEY',
+  SAME_AS_PROXY = 'SAME_AS_PROXY',
+  PROXY_KEY = 'PROXY_KEY',
+  CUSTOM_PROXY_KEY = 'CUSTOM_PROXY_KEY',
+}
+export enum ActionViewBackend {
+  CUSTOM = 'CUSTOM',
+  AMAZON = 'AMAZON',
+  GOOGLE = 'GOOGLE',
+}
+export enum ActionViewCache_mode {
+  MIN = 'MIN',
+  MAX = 'MAX',
+}
+export enum ActionViewCascade {
+  BACKGROUND = 'BACKGROUND',
+  ORPHAN = 'ORPHAN',
+  FOREGROUND = 'FOREGROUND',
+}
+export enum ActionViewDistribution {
+  UBUNTU_20_04 = 'UBUNTU_20_04',
+  AMI = 'AMI',
+  WINDOWS_SERVER_2019 = 'WINDOWS_SERVER_2019',
+  PREVIOUS_ACTION = 'PREVIOUS_ACTION',
+}
+export enum ActionViewDistribution_method {
+  APP_STORE = 'APP_STORE',
+  AD_HOC = 'AD_HOC',
+  DEVELOPMENT = 'DEVELOPMENT',
+  ENTERPRISE = 'ENTERPRISE',
+}
+export enum ActionViewDocker_registry {
+  NONE = 'NONE',
+  DOCKER_HUB = 'DOCKER_HUB',
+  AMAZON_ECR = 'AMAZON_ECR',
+  GOOGLE_GCR = 'GOOGLE_GCR',
+  GOOGLE_ARTIFACT_REGISTRY = 'GOOGLE_ARTIFACT_REGISTRY',
+  OTHER = 'OTHER',
+  GIT_HUB_CONTAINER_REGISTRY = 'GIT_HUB_CONTAINER_REGISTRY',
+  PACKAGE_REGISTRY = 'PACKAGE_REGISTRY',
+  DIGITAL_OCEAN_CONTAINER_REGISTRY = 'DIGITAL_OCEAN_CONTAINER_REGISTRY',
+}
+export enum ActionViewFiles_order {
+  alphabetically = 'alphabetically',
+  size = 'size',
+}
+export enum ActionViewFrom {
+  SCRATCH = 'SCRATCH',
+  SANDBOX = 'SANDBOX',
+  SNAPSHOT = 'SNAPSHOT',
+}
+export enum ActionViewGit_auth_mode {
+  HTTP = 'HTTP',
+  PRIVATE_KEY = 'PRIVATE_KEY',
+  PUBLIC_BUDDY_KEY = 'PUBLIC_BUDDY_KEY',
+  ENV_KEY = 'ENV_KEY',
+  CURRENT = 'CURRENT',
+}
+export enum ActionViewGke_auth_type {
+  BASIC = 'BASIC',
+  CERTS = 'CERTS',
+  SERVICE_ACCOUNT = 'SERVICE_ACCOUNT',
+}
+export enum ActionViewImage_location {
+  PUBLIC_REGISTRY = 'PUBLIC_REGISTRY',
+  PRIVATE_REGISTRY = 'PRIVATE_REGISTRY',
+  ACTION = 'ACTION',
+  PACKAGE_REGISTRY = 'PACKAGE_REGISTRY',
+}
+export enum ActionViewInput_type {
+  SCM_REPOSITORY = 'SCM_REPOSITORY',
+  BUILD_ARTIFACTS = 'BUILD_ARTIFACTS',
+}
+export enum ActionViewInstance_type {
+  GENERAL_MEDIUM = 'GENERAL_MEDIUM',
+  GENERAL_LARGE = 'GENERAL_LARGE',
+  GENERAL_XLARGE = 'GENERAL_XLARGE',
+  GENERAL_2XLARGE = 'GENERAL_2XLARGE',
+  COMPUTE_MEDIUM = 'COMPUTE_MEDIUM',
+  COMPUTE_LARGE = 'COMPUTE_LARGE',
+  COMPUTE_XLARGE = 'COMPUTE_XLARGE',
+  COMPUTE_2XLARGE = 'COMPUTE_2XLARGE',
+  ARM_GENERAL_MEDIUM = 'ARM_GENERAL_MEDIUM',
+  ARM_GENERAL_LARGE = 'ARM_GENERAL_LARGE',
+  ARM_GENERAL_XLARGE = 'ARM_GENERAL_XLARGE',
+  ARM_GENERAL_2XLARGE = 'ARM_GENERAL_2XLARGE',
+  ARM_COMPUTE_MEDIUM = 'ARM_COMPUTE_MEDIUM',
+  ARM_COMPUTE_LARGE = 'ARM_COMPUTE_LARGE',
+  ARM_COMPUTE_XLARGE = 'ARM_COMPUTE_XLARGE',
+  ARM_COMPUTE_2XLARGE = 'ARM_COMPUTE_2XLARGE',
+}
+export enum ActionViewIntegration_from {
+  ACTION = 'ACTION',
+  PROJECT = 'PROJECT',
+}
+export enum ActionViewOperation {
+  START = 'START',
+  STOP = 'STOP',
+  DELETE = 'DELETE',
+  APP_START = 'APP_START',
+  APP_STOP = 'APP_STOP',
+  CREATE_SNAPSHOT = 'CREATE_SNAPSHOT',
+  APP_RESTART = 'APP_RESTART',
+}
+export enum ActionViewParse_mode {
+  PLAIN_TEXT = 'PLAIN_TEXT',
+  MARKDOWN = 'MARKDOWN',
+  HTML = 'HTML',
+}
+export enum ActionViewPlatform {
+  MANAGED = 'MANAGED',
+  GKE = 'GKE',
+  KUBERNETES = 'KUBERNETES',
+}
+export enum ActionViewProperty_list_source {
+  GENERATED = 'GENERATED',
+  PIPELINE_VOLUME = 'PIPELINE_VOLUME',
+  VARIABLE = 'VARIABLE',
+  ACTION = 'ACTION',
+}
+export enum ActionViewProvenance {
+  NONE = 'NONE',
+  MIN = 'MIN',
+  MAX = 'MAX',
+}
+export enum ActionViewRecord_arg {
+  TRUE = 'TRUE',
+  FALSE = 'FALSE',
+  NOT_SET = 'NOT_SET',
+}
+export enum ActionViewResources {
+  Value1x2 = '1x2',
+  Value2x4 = '2x4',
+  Value3x6 = '3x6',
+  Value4x8 = '4x8',
+  Value5x10 = '5x10',
+  Value6x12 = '6x12',
+  Value7x14 = '7x14',
+  Value8x16 = '8x16',
+  Value9x18 = '9x18',
+  Value10x20 = '10x20',
+  Value11x22 = '11x22',
+  Value12x24 = '12x24',
+  CUSTOM = 'CUSTOM',
+}
+export enum ActionViewRun_next {
+  WAIT_ON_SUCCESS = 'WAIT_ON_SUCCESS',
+  IN_SOFT_PARALLEL = 'IN_SOFT_PARALLEL',
+  IN_HARD_PARALLEL = 'IN_HARD_PARALLEL',
+}
+export enum ActionViewSandbox_references {
+  BY_ID = 'BY_ID',
+  BY_TAGS = 'BY_TAGS',
+  BY_ACTION = 'BY_ACTION',
+  BY_NAME = 'BY_NAME',
+  BY_PROJECT = 'BY_PROJECT',
+  BY_DAYS = 'BY_DAYS',
+}
+export enum ActionViewShell {
+  SH = 'SH',
+  BASH = 'BASH',
+  POWERSHELL = 'POWERSHELL',
+}
+export enum ActionViewSign_mode {
+  MANUAL = 'MANUAL',
+  AUTOMATIC = 'AUTOMATIC',
+}
+export enum ActionViewTrigger_condition {
+  ALWAYS = 'ALWAYS',
+  ON_CHANGE = 'ON_CHANGE',
+  ON_CHANGE_AT_PATH = 'ON_CHANGE_AT_PATH',
+  VAR_IS = 'VAR_IS',
+  VAR_IS_NOT = 'VAR_IS_NOT',
+  VAR_CONTAINS = 'VAR_CONTAINS',
+  VAR_NOT_CONTAINS = 'VAR_NOT_CONTAINS',
+  DATETIME = 'DATETIME',
+  SUCCESS_PIPELINE = 'SUCCESS_PIPELINE',
+  DAY = 'DAY',
+  HOUR = 'HOUR',
+  OR = 'OR',
+  VAR_LESS_THAN = 'VAR_LESS_THAN',
+  VAR_LESS_THAN_OR_EQUAL = 'VAR_LESS_THAN_OR_EQUAL',
+  VAR_GREATER_THAN = 'VAR_GREATER_THAN',
+  VAR_GREATER_THAN_OR_EQUAL = 'VAR_GREATER_THAN_OR_EQUAL',
+  ACTION_STATUS_IS = 'ACTION_STATUS_IS',
+  ACTION_STATUS_IS_NOT = 'ACTION_STATUS_IS_NOT',
+  TRIGGERING_USER_IS = 'TRIGGERING_USER_IS',
+  TRIGGERING_USER_IS_NOT = 'TRIGGERING_USER_IS_NOT',
+  TRIGGERING_USER_IS_IN_GROUP = 'TRIGGERING_USER_IS_IN_GROUP',
+  TRIGGERING_USER_IS_NOT_IN_GROUP = 'TRIGGERING_USER_IS_NOT_IN_GROUP',
+}
+export enum ActionViewTrigger_time {
+  ON_EVERY_EXECUTION = 'ON_EVERY_EXECUTION',
+  ON_SUCCESS = 'ON_SUCCESS',
+  ON_FAILURE = 'ON_FAILURE',
+  ON_BACK_TO_SUCCESS = 'ON_BACK_TO_SUCCESS',
+  ON_WARNING = 'ON_WARNING',
+  ON_WAIT_FOR_APPROVE = 'ON_WAIT_FOR_APPROVE',
+  ON_TERMINATE = 'ON_TERMINATE',
+}
+export enum ActionViewType {
+  TRANSFER = 'TRANSFER',
+  AMAZON_S3 = 'AMAZON_S3',
+  WEB_DAV = 'WEB_DAV',
+  SSH_COMMAND = 'SSH_COMMAND',
+  HTTP = 'HTTP',
+  SLACK = 'SLACK',
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+  PUSH = 'PUSH',
+  HEROKU = 'HEROKU',
+  BUILD = 'BUILD',
+  MODULUS = 'MODULUS',
+  PING = 'PING',
+  WEB = 'WEB',
+  TCP = 'TCP',
+  RUN_NEXT_PIPELINE = 'RUN_NEXT_PIPELINE',
+  ELASTIC_BEANSTALK = 'ELASTIC_BEANSTALK',
+  GCS = 'GCS',
+  SHOPIFY = 'SHOPIFY',
+  PUSHOVER = 'PUSHOVER',
+  PUSHBULLET = 'PUSHBULLET',
+  CODE_DEPLOY = 'CODE_DEPLOY',
+  AZURE = 'AZURE',
+  DOCKERFILE = 'DOCKERFILE',
+  GOOGLE_APP_ENGINE = 'GOOGLE_APP_ENGINE',
+  LAMBDA = 'LAMBDA',
+  HEROKU_CLI = 'HEROKU_CLI',
+  RACKSPACE = 'RACKSPACE',
+  CLOUDFLARE = 'CLOUDFLARE',
+  CLOUD_FRONT = 'CLOUD_FRONT',
+  MONITOR = 'MONITOR',
+  SLEEP = 'SLEEP',
+  AWS_CLI = 'AWS_CLI',
+  GOOGLE_CDN = 'GOOGLE_CDN',
+  AWS_LAMBDA_DEPLOY = 'AWS_LAMBDA_DEPLOY',
+  KUBERNETES_APPLY = 'KUBERNETES_APPLY',
+  KUBERNETES_SET_IMAGE = 'KUBERNETES_SET_IMAGE',
+  KUBERNETES_RUN_POD = 'KUBERNETES_RUN_POD',
+  WAIT_FOR_APPLY = 'WAIT_FOR_APPLY',
+  NEW_RELIC = 'NEW_RELIC',
+  KUBERNETES_RUN_JOB = 'KUBERNETES_RUN_JOB',
+  ZIP = 'ZIP',
+  ROLLBAR = 'ROLLBAR',
+  SENTRY = 'SENTRY',
+  DATADOG = 'DATADOG',
+  DO_SPACES = 'DO_SPACES',
+  HONEYBADGER = 'HONEYBADGER',
+  SENTRY_ENTERPRISE = 'SENTRY_ENTERPRISE',
+  LOGGLY = 'LOGGLY',
+  KUBERNETES_CLI = 'KUBERNETES_CLI',
+  RUN_DOCKER_CONTAINER = 'RUN_DOCKER_CONTAINER',
+  ESLINT = 'ESLINT',
+  DOCKER_PUSH = 'DOCKER_PUSH',
+  ANDROID_SIGN = 'ANDROID_SIGN',
+  ANDROID_PLAY = 'ANDROID_PLAY',
+  WAIT_FOR_VARIABLES = 'WAIT_FOR_VARIABLES',
+  GCLOUD_CLI = 'GCLOUD_CLI',
+  HIP_CHAT = 'HIP_CHAT',
+  AWS_ECS = 'AWS_ECS',
+  COPY_FILES = 'COPY_FILES',
+  FIREBASE = 'FIREBASE',
+  TELEGRAM = 'TELEGRAM',
+  REPLACE = 'REPLACE',
+  GOOGLE_FUNCTIONS_DEPLOY = 'GOOGLE_FUNCTIONS_DEPLOY',
+  DOCKER_SAVE = 'DOCKER_SAVE',
+  GOOGLE_FUNCTIONS = 'GOOGLE_FUNCTIONS',
+  BUGSNAG = 'BUGSNAG',
+  SPLIT_TESTS = 'SPLIT_TESTS',
+  RAYGUN = 'RAYGUN',
+  DATADOG_STATUS_CHECK = 'DATADOG_STATUS_CHECK',
+  GHOST_INSPECTOR = 'GHOST_INSPECTOR',
+  AWS_CLOUD_FORMATION = 'AWS_CLOUD_FORMATION',
+  DIGITAL_OCEAN_CDN = 'DIGITAL_OCEAN_CDN',
+  DISCORD2 = 'DISCORD2',
+  IMAGE_COMPRESSION = 'IMAGE_COMPRESSION',
+  NETLIFY = 'NETLIFY',
+  GIT_CRYPT_UNLOCK = 'GIT_CRYPT_UNLOCK',
+  GIT_CRYPT_LOCK = 'GIT_CRYPT_LOCK',
+  HELM = 'HELM',
+  DOCKERFILE_LINTER = 'DOCKERFILE_LINTER',
+  DOWNLOAD = 'DOWNLOAD',
+  DOWNLOAD_S3 = 'DOWNLOAD_S3',
+  LIGHTHOUSE = 'LIGHTHOUSE',
+  ANDROID_SIGN_BUNDLE = 'ANDROID_SIGN_BUNDLE',
+  ANDROID_PLAY_BUNDLE = 'ANDROID_PLAY_BUNDLE',
+  VISUAL_TESTS = 'VISUAL_TESTS',
+  LINK_VALIDATOR = 'LINK_VALIDATOR',
+  AZURE_CLI = 'AZURE_CLI',
+  SHOPIFY_THEMEKIT_CLI = 'SHOPIFY_THEMEKIT_CLI',
+  SSL_VERIFY = 'SSL_VERIFY',
+  AZURE_STORAGE = 'AZURE_STORAGE',
+  DEPLOY_TO_SANDBOX = 'DEPLOY_TO_SANDBOX',
+  SANDBOX_START = 'SANDBOX_START',
+  SANDBOX_STOP = 'SANDBOX_STOP',
+  SANDBOX_EXEC = 'SANDBOX_EXEC',
+  GIT_HUB_RELEASE = 'GIT_HUB_RELEASE',
+  GCLOUD_RUN_DEPLOY = 'GCLOUD_RUN_DEPLOY',
+  SANDBOX_SNAPSHOT = 'SANDBOX_SNAPSHOT',
+  AWS_CLI_2 = 'AWS_CLI_2',
+  MICROSOFT_TEAMS = 'MICROSOFT_TEAMS',
+  NATIVE_BUILD_WINDOWS = 'NATIVE_BUILD_WINDOWS',
+  NATIVE_BUILD_MAC = 'NATIVE_BUILD_MAC',
+  DOCTL = 'DOCTL',
+  NATIVE_BUILD_MAC_REACT = 'NATIVE_BUILD_MAC_REACT',
+  NATIVE_BUILD_MAC_CORDOVA = 'NATIVE_BUILD_MAC_CORDOVA',
+  NATIVE_BUILD_MAC_FASTLANE = 'NATIVE_BUILD_MAC_FASTLANE',
+  NATIVE_BUILD_MAC_FLUTTER = 'NATIVE_BUILD_MAC_FLUTTER',
+  GOOGLE_CLOUD_STORAGE = 'GOOGLE_CLOUD_STORAGE',
+  GOOGLE_FUNCTION_DEPLOY = 'GOOGLE_FUNCTION_DEPLOY',
+  GOOGLE_FUNCTION_INVOKE = 'GOOGLE_FUNCTION_INVOKE',
+  GOOGLE_CDN_INVALIDATE = 'GOOGLE_CDN_INVALIDATE',
+  GOOGLE_CLOUD_CLI = 'GOOGLE_CLOUD_CLI',
+  GOOGLE_CLOUD_RUN_DEPLOY = 'GOOGLE_CLOUD_RUN_DEPLOY',
+  GOOGLE_APP_DEPLOY = 'GOOGLE_APP_DEPLOY',
+  ANDROID_PUBLISH_APK = 'ANDROID_PUBLISH_APK',
+  ANDROID_PUBLISH_APP_BUNDLE = 'ANDROID_PUBLISH_APP_BUNDLE',
+  SANDBOX_CREATE_NEW = 'SANDBOX_CREATE_NEW',
+  SANDBOX_CREATE_FROM_SANDBOX = 'SANDBOX_CREATE_FROM_SANDBOX',
+  SANDBOX_CREATE_FROM_SNAPSHOT = 'SANDBOX_CREATE_FROM_SNAPSHOT',
+  SANDBOX_DELETE = 'SANDBOX_DELETE',
+  NATIVE_BUILD_MAC_SIGN = 'NATIVE_BUILD_MAC_SIGN',
+  NATIVE_BUILD_MAC_DEPLOY = 'NATIVE_BUILD_MAC_DEPLOY',
+  NATIVE_BUILD_DOCKER_CLI = 'NATIVE_BUILD_DOCKER_CLI',
+  CLEAR_CACHE = 'CLEAR_CACHE',
+  FASTLANE_ANDROID = 'FASTLANE_ANDROID',
+  NATIVE_BUILD_LINUX = 'NATIVE_BUILD_LINUX',
+  GIT_HUB_CLI = 'GIT_HUB_CLI',
+  INTEGRATION_VARIABLES = 'INTEGRATION_VARIABLES',
+  DOCKER_BUILD_MULTI_ARCH = 'DOCKER_BUILD_MULTI_ARCH',
+  CODE_PIPELINE = 'CODE_PIPELINE',
+  GIT_LAB_CLI = 'GIT_LAB_CLI',
+  AWS_APP_RUNNER_DEPLOY = 'AWS_APP_RUNNER_DEPLOY',
+  AWS_APP_RUNNER_MONITOR = 'AWS_APP_RUNNER_MONITOR',
+  NATIVE_BUILD_MAC_VM = 'NATIVE_BUILD_MAC_VM',
+  AWS_CDK_CLI = 'AWS_CDK_CLI',
+  GHOST_INSPECTOR_CLI = 'GHOST_INSPECTOR_CLI',
+  TERRAFORM = 'TERRAFORM',
+  ATOP = 'ATOP',
+  SNYK_CLI = 'SNYK_CLI',
+  STACK_HAWK_CLI = 'STACK_HAWK_CLI',
+  JMETER_CLI = 'JMETER_CLI',
+  CUSTOM = 'CUSTOM',
+  BLACKFIRE_PHP = 'BLACKFIRE_PHP',
+  BLACKFIRE_PYTHON = 'BLACKFIRE_PYTHON',
+  BLACKFIRE_GO = 'BLACKFIRE_GO',
+  LINK_CHECKER = 'LINK_CHECKER',
+  SHOPIFY_CLI = 'SHOPIFY_CLI',
+  DOCKER = 'DOCKER',
+  SET_VARIABLES = 'SET_VARIABLES',
+  DOWNLOAD_FROM_SANDBOX = 'DOWNLOAD_FROM_SANDBOX',
+  PIPELINE_SETTINGS = 'PIPELINE_SETTINGS',
+  BACKBLAZE_B2 = 'BACKBLAZE_B2',
+  NEW_RELIC_CLI = 'NEW_RELIC_CLI',
+  DOWNLOAD_GCS = 'DOWNLOAD_GCS',
+  DOWNLOAD_BACKBLAZE_B2 = 'DOWNLOAD_BACKBLAZE_B2',
+  WP_CLI = 'WP_CLI',
+  GOOGLE_CHAT = 'GOOGLE_CHAT',
+  SANDBOX_APPLICATION_START = 'SANDBOX_APPLICATION_START',
+  SANDBOX_APPLICATION_STOP = 'SANDBOX_APPLICATION_STOP',
+  POWERSHELL = 'POWERSHELL',
+  SANDBOX_MANAGE = 'SANDBOX_MANAGE',
+  SANDBOX_CREATE = 'SANDBOX_CREATE',
+  CONTENTFUL_CLI = 'CONTENTFUL_CLI',
+  FTP = 'FTP',
+  FTPS = 'FTPS',
+  SFTP = 'SFTP',
+  GCE = 'GCE',
+  VULTR = 'VULTR',
+  UPCLOUD = 'UPCLOUD',
+  DIGITAL_OCEAN = 'DIGITAL_OCEAN',
+  DOWNLOAD_FTP = 'DOWNLOAD_FTP',
+  DOWNLOAD_FTPS = 'DOWNLOAD_FTPS',
+  DOWNLOAD_SSH = 'DOWNLOAD_SSH',
+  RSYNC = 'RSYNC',
+  PROMOTE_IMAGE = 'PROMOTE_IMAGE',
+  PUBLISH_PACKAGE_VERSION = 'PUBLISH_PACKAGE_VERSION',
+  DOWNLOAD_PACKAGE_VERSION = 'DOWNLOAD_PACKAGE_VERSION',
+  STORYBOOK = 'STORYBOOK',
+}
+export enum AddGroupMemberRequestStatus {
+  MEMBER = 'MEMBER',
+  MANAGER = 'MANAGER',
+}
+export enum AddIntegrationRequestAuth_type {
+  OAUTH = 'OAUTH',
+  TOKEN = 'TOKEN',
+  API_KEY = 'API_KEY',
+  APP = 'APP',
+  APP_SPRYKER = 'APP_SPRYKER',
+  TOKEN_APP_EXTENSION = 'TOKEN_APP_EXTENSION',
+  DEFAULT = 'DEFAULT',
+  OIDC = 'OIDC',
+  TRUSTED = 'TRUSTED',
+  APP_RW = 'APP_RW',
+}
+export enum AddIntegrationRequestScope {
+  WORKSPACE = 'WORKSPACE',
+  PROJECT = 'PROJECT',
+  ENVIRONMENT = 'ENVIRONMENT',
+}
+export enum AddIntegrationRequestType {
+  GIT_HUB = 'GIT_HUB',
+  BITBUCKET = 'BITBUCKET',
+  GOOGLE = 'GOOGLE',
+  DIGITAL_OCEAN = 'DIGITAL_OCEAN',
+  SLACK = 'SLACK',
+  MODULUS = 'MODULUS',
+  HEROKU = 'HEROKU',
+  AMAZON = 'AMAZON',
+  GIT_LAB = 'GIT_LAB',
+  SHOPIFY = 'SHOPIFY',
+  GIT_HUB_ENTERPRISE = 'GIT_HUB_ENTERPRISE',
+  GIT_LAB_ENTERPRISE = 'GIT_LAB_ENTERPRISE',
+  PUSHOVER = 'PUSHOVER',
+  PUSHBULLET = 'PUSHBULLET',
+  RACKSPACE = 'RACKSPACE',
+  CUSTOM = 'CUSTOM',
+  CLOUDFLARE = 'CLOUDFLARE',
+  NEW_RELIC = 'NEW_RELIC',
+  SENTRY = 'SENTRY',
+  ROLLBAR = 'ROLLBAR',
+  DATADOG = 'DATADOG',
+  DO_SPACES = 'DO_SPACES',
+  HONEYBADGER = 'HONEYBADGER',
+  VULTR = 'VULTR',
+  SENTRY_ENTERPRISE = 'SENTRY_ENTERPRISE',
+  LOGGLY = 'LOGGLY',
+  HIP_CHAT = 'HIP_CHAT',
+  FIREBASE = 'FIREBASE',
+  TELEGRAM = 'TELEGRAM',
+  AZURE = 'AZURE',
+  UPCLOUD = 'UPCLOUD',
+  GHOST_INSPECTOR = 'GHOST_INSPECTOR',
+  NETLIFY = 'NETLIFY',
+  AZURE_CLOUD = 'AZURE_CLOUD',
+  MICROSOFT_TEAMS = 'MICROSOFT_TEAMS',
+  GOOGLE_SERVICE_ACCOUNT = 'GOOGLE_SERVICE_ACCOUNT',
+  GOOGLE_PLAY_STORE = 'GOOGLE_PLAY_STORE',
+  DOCKER_HUB = 'DOCKER_HUB',
+  APP_STORE = 'APP_STORE',
+  GIT_HUB_APP = 'GIT_HUB_APP',
+  GIT_HUB_APP_ENTERPRISE = 'GIT_HUB_APP_ENTERPRISE',
+  GIT_HUB_API = 'GIT_HUB_API',
+  ATOP = 'ATOP',
+  SNYK = 'SNYK',
+  STACK_HAWK = 'STACK_HAWK',
+  BLACKFIRE = 'BLACKFIRE',
+  BACKBLAZE = 'BACKBLAZE',
+  ONE_LOGIN = 'ONE_LOGIN',
+  OKTA = 'OKTA',
+  CONTENTFUL = 'CONTENTFUL',
+}
+export enum AddPipelineRequestCache_scope {
+  PIPELINE = 'PIPELINE',
+  PROJECT = 'PROJECT',
+  WORKSPACE = 'WORKSPACE',
+}
+export enum AddPipelineRequestCpu {
+  X64 = 'X64',
+  ARM = 'ARM',
+  X86 = 'X86',
+}
+export enum AddPipelineRequestDefinition_source {
+  LOCAL = 'LOCAL',
+  REMOTE = 'REMOTE',
+}
+export enum AddPipelineRequestFilesystem_changeset_base {
+  DATE_MODIFIED = 'DATE_MODIFIED',
+  CONTENTS = 'CONTENTS',
+}
+export enum AddPipelineRequestGit_changeset_base {
+  LATEST_RUN = 'LATEST_RUN',
+  LATEST_RUN_MATCHING_REF = 'LATEST_RUN_MATCHING_REF',
+  PULL_REQUEST = 'PULL_REQUEST',
+}
+export enum AddPipelineRequestGit_config_ref {
+  NONE = 'NONE',
+  DYNAMIC = 'DYNAMIC',
+  FIXED = 'FIXED',
+}
+export enum AddPipelineRequestPriority {
+  LOW = 'LOW',
+  NORMAL = 'NORMAL',
+  HIGH = 'HIGH',
+}
+export enum AddPipelineRequestResources {
+  DEFAULT = 'DEFAULT',
+  NANO = 'NANO',
+  SMALL = 'SMALL',
+  MEDIUM = 'MEDIUM',
+  LARGE = 'LARGE',
+  XLARGE = 'XLARGE',
+  CUSTOM = 'CUSTOM',
+  X2LARGE = 'X2LARGE',
+}
+export enum AddSessionRequestCi_provider {
+  NONE = 'NONE',
+  BUDDY = 'BUDDY',
+  GITHUB_ACTION = 'GITHUB_ACTION',
+  CIRCLE_CI = 'CIRCLE_CI',
+}
+export enum AddSessionRequestRef_type {
+  BRANCH = 'BRANCH',
+  TAG = 'TAG',
+  PULL_REQUEST = 'PULL_REQUEST',
+}
+export enum AddUpdateWebhookRequestEvents {
+  DAY_CHANGED = 'DAY_CHANGED',
+  PUSH = 'PUSH',
+  EXECUTION_STARTED = 'EXECUTION_STARTED',
+  EXECUTION_SUCCESSFUL = 'EXECUTION_SUCCESSFUL',
+  EXECUTION_FAILED = 'EXECUTION_FAILED',
+  EXECUTION_FINISHED = 'EXECUTION_FINISHED',
+  EXECUTION_PAUSED = 'EXECUTION_PAUSED',
+}
+export enum AddVariableInObjectRequestFile_place {
+  NONE = 'NONE',
+  CONTAINER = 'CONTAINER',
+}
+export enum AddVariableInObjectRequestType {
+  VAR = 'VAR',
+  FILE = 'FILE',
+  SSH_KEY = 'SSH_KEY',
+  IOS_KEYCHAIN = 'IOS_KEYCHAIN',
+  IOS_PROVISION_PROFILES = 'IOS_PROVISION_PROFILES',
+  SSH_PUBLIC_KEY = 'SSH_PUBLIC_KEY',
+}
+export enum AllowedPipelineFrontAccess_level {
+  DENIED = 'DENIED',
+  READ_ONLY = 'READ_ONLY',
+  BLIND = 'BLIND',
+  RUN_ONLY = 'RUN_ONLY',
+  READ_WRITE = 'READ_WRITE',
+  MANAGE = 'MANAGE',
+  DEFAULT = 'DEFAULT',
+  ALLOWED = 'ALLOWED',
+  STAGE = 'STAGE',
+  COMMIT = 'COMMIT',
+  USE_ONLY = 'USE_ONLY',
+}
+export enum AllowedPipelineViewAccess_level {
+  READ_ONLY = 'READ_ONLY',
+  READ_WRITE = 'READ_WRITE',
+}
+export enum AuthorizationViewType {
+  NONE = 'NONE',
+  BUDDY = 'BUDDY',
+  BASIC = 'BASIC',
+}
+export enum CancelRetryExecutionRequestOperation {
+  CANCEL = 'CANCEL',
+  RETRY = 'RETRY',
+  APPLY = 'APPLY',
+  APPLY_VARIABLES = 'APPLY_VARIABLES',
+  SET_VARIABLES = 'SET_VARIABLES',
+  RUN_DELAYED = 'RUN_DELAYED',
+}
+export enum CreateBuddyProjectRequestAccess {
+  PRIVATE = 'PRIVATE',
+  PUBLIC = 'PUBLIC',
+}
+export enum CreateFromSnapshotRequestApp_type {
+  CMD = 'CMD',
+  SERVICE = 'SERVICE',
+}
+export enum CreatePackageRequestType {
+  CONTAINER = 'CONTAINER',
+  FILE = 'FILE',
+}
+export enum DockerSecretViewType {
+  FILE = 'FILE',
+  ENV = 'ENV',
+}
+export enum DomainViewPointed_via {
+  NS = 'NS',
+  CNAME = 'CNAME',
+  DMARC = 'DMARC',
+}
+export enum DomainViewType {
+  REGISTERED = 'REGISTERED',
+  POINTED = 'POINTED',
+  CLAIMED = 'CLAIMED',
+}
+export enum EntryChange_type {
+  MODIFIED = 'MODIFIED',
+  ADDED = 'ADDED',
+  DELETED = 'DELETED',
+  REPLACED = 'REPLACED',
+  UNKNOWN = 'UNKNOWN',
+}
+export enum EntryEntry_kind {
+  DIR = 'DIR',
+  FILE = 'FILE',
+  GITLINK = 'GITLINK',
+  SYMLINK = 'SYMLINK',
+}
+export enum EnvironmentViewScope {
+  PROJECT = 'PROJECT',
+  WORKSPACE = 'WORKSPACE',
+  ANY = 'ANY',
+}
+export enum ExecuteSandboxCommandRequestRuntime {
+  BASH = 'BASH',
+  JAVASCRIPT = 'JAVASCRIPT',
+  TYPESCRIPT = 'TYPESCRIPT',
+  PYTHON = 'PYTHON',
+}
+export enum ExecutionViewTriggered_on {
+  CLICK = 'CLICK',
+  SCHEDULE = 'SCHEDULE',
+  EVENT = 'EVENT',
+  PIPELINE = 'PIPELINE',
+  WEBHOOK = 'WEBHOOK',
+  EMAIL = 'EMAIL',
+}
+export enum FileEntryViewStatus {
+  ADDED = 'ADDED',
+  DELETED = 'DELETED',
+  MODIFIED = 'MODIFIED',
+}
+export enum GitAuthViewMethod {
+  HTTP = 'HTTP',
+  SSH_KEY = 'SSH_KEY',
+  ASSETS_KEY = 'ASSETS_KEY',
+  CURRENT = 'CURRENT',
+}
+export enum K8sAuthViewMethod {
+  PASS = 'PASS',
+  CERT = 'CERT',
+  TOKEN = 'TOKEN',
+}
+export enum NewCookieSame_site {
+  NONE = 'NONE',
+  LAX = 'LAX',
+  STRICT = 'STRICT',
+}
+export enum PackageVersionContentItemType {
+  FILE = 'FILE',
+  DIR = 'DIR',
+}
+export enum PatchRecordCommandRouting {
+  simple = 'simple',
+  geolocation = 'geolocation',
+}
+export enum PipelineEventViewType {
+  PUSH = 'PUSH',
+  CREATE_REF = 'CREATE_REF',
+  DELETE_REF = 'DELETE_REF',
+  PULL_REQUEST = 'PULL_REQUEST',
+  SCHEDULE = 'SCHEDULE',
+  PUBLISH_PACKAGE = 'PUBLISH_PACKAGE',
+  DELETE_PACKAGE = 'DELETE_PACKAGE',
+  WEBHOOK = 'WEBHOOK',
+  EMAIL = 'EMAIL',
+}
+export enum PipelinePkgContextViewScope {
+  WORKSPACE = 'WORKSPACE',
+  PROJECT = 'PROJECT',
+  ENVIRONMENT = 'ENVIRONMENT',
+  ANY = 'ANY',
+}
+export enum PkgGroupPermissionViewAccess_level {
+  DENIED = 'DENIED',
+  READ_ONLY = 'READ_ONLY',
+  READ_WRITE = 'READ_WRITE',
+  MANAGE = 'MANAGE',
+  DEFAULT = 'DEFAULT',
+}
+export enum RepositoryContentViewContent_type {
+  FILE = 'FILE',
+  DIR = 'DIR',
+  SYMLINK = 'SYMLINK',
+  SUB_MODULE = 'SUB_MODULE',
+  EXTERNAL = 'EXTERNAL',
+}
+export enum SandboxCommandLogType {
+  STDOUT = 'STDOUT',
+  STDERR = 'STDERR',
+}
+export enum SandboxCommandViewStatus {
+  INPROGRESS = 'INPROGRESS',
+  SUCCESSFUL = 'SUCCESSFUL',
+  FAILED = 'FAILED',
+}
+export enum SandboxIdViewStatus {
+  STARTING = 'STARTING',
+  STOPPING = 'STOPPING',
+  FAILED = 'FAILED',
+  RUNNING = 'RUNNING',
+  STOPPED = 'STOPPED',
+  RESTORING = 'RESTORING',
+}
+export enum SandboxResponseApp_status {
+  NONE = 'NONE',
+  RUNNING = 'RUNNING',
+  ENDED = 'ENDED',
+  FAILED = 'FAILED',
+}
+export enum SandboxResponseSetup_status {
+  INPROGRESS = 'INPROGRESS',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+}
+export enum ShortSnapshotViewStatus {
+  CREATING = 'CREATING',
+  CREATED = 'CREATED',
+  DELETING = 'DELETING',
+  FAILED = 'FAILED',
+}
+export enum SSHAuthViewMethod {
+  PASSWORD = 'PASSWORD',
+  SSH_KEY = 'SSH_KEY',
+  ASSETS_KEY = 'ASSETS_KEY',
+  PROXY_CREDENTIALS = 'PROXY_CREDENTIALS',
+  PROXY_KEY = 'PROXY_KEY',
+}
+export enum SSOViewSso_provider_type {
+  OKTA = 'OKTA',
+  ONE_LOGIN = 'ONE_LOGIN',
+  GOOGLE = 'GOOGLE',
+  AZURE = 'AZURE',
+  AWS = 'AWS',
+  CUSTOM = 'CUSTOM',
+}
+export enum SSOViewType {
+  SAML = 'SAML',
+  OIDC = 'OIDC',
+}
+export enum StatusTypeFamily {
+  INFORMATIONAL = 'INFORMATIONAL',
+  SUCCESSFUL = 'SUCCESSFUL',
+  REDIRECTION = 'REDIRECTION',
+  CLIENT_ERROR = 'CLIENT_ERROR',
+  SERVER_ERROR = 'SERVER_ERROR',
+  OTHER = 'OTHER',
+}
+export enum SyncPathViewDirection {
+  PIPELINE_TO_VM = 'PIPELINE_TO_VM',
+  VM_TO_PIPELINE = 'VM_TO_PIPELINE',
+}
+export enum TargetAKSViewType {
+  AKS = 'AKS',
+}
+export enum TargetDigitalOceanViewType {
+  DIGITAL_OCEAN = 'DIGITAL_OCEAN',
+}
+export enum TargetDOKSViewType {
+  DOKS = 'DOKS',
+}
+export enum TargetEC2ViewType {
+  EC2 = 'EC2',
+}
+export enum TargetEKSViewType {
+  EKS = 'EKS',
+}
+export enum TargetFilterViewScope {
+  WORKSPACE = 'WORKSPACE',
+  PROJECT = 'PROJECT',
+  ENVIRONMENT = 'ENVIRONMENT',
+  PIPELINE = 'PIPELINE',
+  ACTION = 'ACTION',
+  ANY = 'ANY',
+}
+export enum TargetFilterViewType {
+  MATCH = 'MATCH',
+}
+export enum TargetFtpViewType {
+  FTP = 'FTP',
+}
+export enum TargetGitViewType {
+  GIT = 'GIT',
+}
+export enum TargetGKEViewType {
+  GKE = 'GKE',
+}
+export enum TargetK8SClusterViewType {
+  K8S_CLUSTER = 'K8S_CLUSTER',
+}
+export enum TargetSSHViewType {
+  SSH = 'SSH',
+}
+export enum TargetUpcloudViewType {
+  UPCLOUD = 'UPCLOUD',
+}
+export enum TargetVultrViewType {
+  VULTR = 'VULTR',
+}
+export enum TestSessionViewStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  SUCCESSFUL = 'SUCCESSFUL',
+  ERROR = 'ERROR',
+  SKIPPED = 'SKIPPED',
+}
+export enum TlsSettingsViewTerminate_at {
+  REGION = 'REGION',
+  AGENT = 'AGENT',
+  TARGET = 'TARGET',
+}
+export enum TriggerConditionViewTrigger_status {
+  SUCCESSFUL = 'SUCCESSFUL',
+  FAILED = 'FAILED',
+  SKIPPED = 'SKIPPED',
+  SUPPRESSED = 'SUPPRESSED',
+}
+export enum TunnelViewRegion {
+  US = 'US',
+  EU = 'EU',
+}
+export enum TunnelViewType {
+  TCP = 'TCP',
+  TLS = 'TLS',
+  HTTP = 'HTTP',
+  SSH = 'SSH',
+}
+export enum UpdateProjectRequestStatus {
+  ACTIVE = 'ACTIVE',
+  CLOSED = 'CLOSED',
+}
+export enum VisualTestsOutputViewStatus {
+  MATCH = 'MATCH',
+  MISMATCH = 'MISMATCH',
+  ERROR = 'ERROR',
+  NEW = 'NEW',
+  SIZE_MISMATCH = 'SIZE_MISMATCH',
+}
+export enum ApiPaths {
+  importSession = '/unit-tests/import',
+  addSessionByToken = '/unit-tests/sessions',
+  upsertCaseByToken = '/unit-tests/sessions/{session_id}/cases',
+  addCasesByToken = '/unit-tests/sessions/{sessionId}/cases/batch',
+  closeSessionByToken = '/unit-tests/sessions/{session_id}/close',
+  reopenSessionByToken = '/unit-tests/sessions/{session_id}/reopen',
+  getUser = '/user',
+  updateUser = '/user',
+  getEmails = '/user/emails',
+  addEmail = '/user/emails',
+  deleteEmail = '/user/emails/{email}',
+  getKeys = '/user/keys',
+  addKey = '/user/keys',
+  getKey = '/user/keys/{id}',
+  deleteKey = '/user/keys/{id}',
+  issueCredentialsWithOIDCProvider = '/user/oidc/tokens',
+  getToken = '/user/token',
+  getTokens = '/user/tokens',
+  addToken = '/user/tokens',
+  getToken_1 = '/user/tokens/{id}',
+  deleteToken = '/user/tokens/{id}',
+  getWorkspaces = '/workspaces',
+  getWorkspace = '/workspaces/{workspace_domain}',
+  disableSSO = '/workspaces/{workspace_domain}/disable-sso',
+  getDomains = '/workspaces/{workspace_domain}/domains',
+  getDomain = '/workspaces/{workspace_domain}/domains/{id}',
+  getAllDomainRecords = '/workspaces/{workspace_domain}/domains/{domain_id}/records',
+  getSubdomainRecords = '/workspaces/{workspace_domain}/domains/{domain_id}/records/{record_name}',
+  getDomainRecord = '/workspaces/{workspace_domain}/domains/{domain_id}/records/{record_name}/{type}',
+  deleteDomainRecord = '/workspaces/{workspace_domain}/domains/{domain_id}/records/{record_name}/{type}',
+  upsertDomainRecord = '/workspaces/{workspace_domain}/domains/{domain_id}/records/{record_name}/{type}',
+  enableSSO = '/workspaces/{workspace_domain}/enable-sso',
+  getGroups = '/workspaces/{workspace_domain}/groups',
+  addGroup = '/workspaces/{workspace_domain}/groups',
+  getGroup = '/workspaces/{workspace_domain}/groups/{id}',
+  deleteGroup = '/workspaces/{workspace_domain}/groups/{id}',
+  updateGroup = '/workspaces/{workspace_domain}/groups/{id}',
+  getGroupMembers = '/workspaces/{workspace_domain}/groups/{group_id}/members',
+  addGroupMember = '/workspaces/{workspace_domain}/groups/{group_id}/members',
+  getGroupMember = '/workspaces/{workspace_domain}/groups/{group_id}/members/{id}',
+  deleteGroupMember = '/workspaces/{workspace_domain}/groups/{group_id}/members/{id}',
+  updateGroupMember = '/workspaces/{workspace_domain}/groups/{group_id}/members/{id}',
+  getIdentifiers = '/workspaces/{workspace_domain}/identifiers',
+  getIntegrations = '/workspaces/{workspace_domain}/integrations',
+  addIntegration = '/workspaces/{workspace_domain}/integrations',
+  getIntegration = '/workspaces/{workspace_domain}/integrations/{hash_id}',
+  deleteIntegration = '/workspaces/{workspace_domain}/integrations/{hash_id}',
+  updateIntegration = '/workspaces/{workspace_domain}/integrations/{hash_id}',
+  getWorkspaceMembers = '/workspaces/{workspace_domain}/members',
+  addWorkspaceMember = '/workspaces/{workspace_domain}/members',
+  getWorkspaceMember = '/workspaces/{workspace_domain}/members/{id}',
+  deleteWorkspaceMember = '/workspaces/{workspace_domain}/members/{id}',
+  updateWorkspaceMember = '/workspaces/{workspace_domain}/members/{id}',
+  getWorkspaceMemberProjects = '/workspaces/{workspace_domain}/members/{user_id}/projects',
+  getPackages = '/workspaces/{domain}/packages',
+  createPackage = '/workspaces/{domain}/packages',
+  getPackage = '/workspaces/{domain}/packages/{packageId}',
+  deletePackage = '/workspaces/{domain}/packages/{packageId}',
+  updatePackage = '/workspaces/{domain}/packages/{packageId}',
+  getPackageVersions = '/workspaces/{domain}/packages/{packageId}/versions',
+  createPackageVersion = '/workspaces/{domain}/packages/{packageId}/versions',
+  getPackageVersion = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}',
+  deletePackageVersion = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}',
+  getPackageVersionRootContent = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/content',
+  getPackageVersionContentByPath = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/content/{path}',
+  createPackageVersionDirectory = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/content/{path}',
+  deletePackageVersionContent = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/content/{path}',
+  downloadPackageVersionFile = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/content/download/{path}',
+  uploadPackageVersionFile = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/content/upload/{path}',
+  downloadPackageVersion = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/download',
+  uploadPackageVersionFromZip = '/workspaces/{domain}/packages/{packageId}/versions/{versionId}/upload',
+  getPermissionSets = '/workspaces/{workspace_domain}/permissions',
+  addPermissionSet = '/workspaces/{workspace_domain}/permissions',
+  getPermissionSet = '/workspaces/{workspace_domain}/permissions/{id}',
+  deletePermissionSet = '/workspaces/{workspace_domain}/permissions/{id}',
+  updatePermissionSet = '/workspaces/{workspace_domain}/permissions/{id}',
+  getProjects = '/workspaces/{workspace_domain}/projects',
+  addProject = '/workspaces/{workspace_domain}/projects',
+  getProject = '/workspaces/{workspace_domain}/projects/{project_name}',
+  deleteProject = '/workspaces/{workspace_domain}/projects/{project_name}',
+  updateProject = '/workspaces/{workspace_domain}/projects/{project_name}',
+  getEnvironments = '/workspaces/{workspace_domain}/projects/{project_name}/environments',
+  addEnvironment = '/workspaces/{workspace_domain}/projects/{project_name}/environments',
+  getEnvironment = '/workspaces/{workspace_domain}/projects/{project_name}/environments/{id}',
+  deleteEnvironment = '/workspaces/{workspace_domain}/projects/{project_name}/environments/{id}',
+  updateEnvironment = '/workspaces/{workspace_domain}/projects/{project_name}/environments/{id}',
+  getProjectGroups = '/workspaces/{workspace_domain}/projects/{project_name}/groups',
+  addProjectGroup = '/workspaces/{workspace_domain}/projects/{project_name}/groups',
+  getProjectGroup = '/workspaces/{workspace_domain}/projects/{project_name}/groups/{id}',
+  deleteProjectGroup = '/workspaces/{workspace_domain}/projects/{project_name}/groups/{id}',
+  updateProjectGroup = '/workspaces/{workspace_domain}/projects/{project_name}/groups/{id}',
+  getProjectMembers = '/workspaces/{workspace_domain}/projects/{project_name}/members',
+  addProjectMember = '/workspaces/{workspace_domain}/projects/{project_name}/members',
+  getProjectMember = '/workspaces/{workspace_domain}/projects/{project_name}/members/{id}',
+  deleteProjectMember = '/workspaces/{workspace_domain}/projects/{project_name}/members/{id}',
+  updateProjectMember = '/workspaces/{workspace_domain}/projects/{project_name}/members/{id}',
+  getPipelines = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines',
+  addPipeline = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines',
+  getPipeline = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{id}',
+  deletePipeline = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{id}',
+  updatePipeline = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{id}',
+  getActions = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/actions',
+  addAction = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/actions',
+  getAction = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/actions/{id}',
+  deleteAction = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/actions/{id}',
+  updateAction = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/actions/{id}',
+  getExecutions = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/executions',
+  runPipeline = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/executions',
+  getExecution = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/executions/{id}',
+  cancelOrRetryPipeline = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/executions/{id}',
+  getActionExecution = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/executions/{execution_id}/action_executions/{id}',
+  getPipelineByYaml = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/yaml',
+  updatePipelineByYaml = '/workspaces/{workspace_domain}/projects/{project_name}/pipelines/{pipeline_id}/yaml',
+  getBranches = '/workspaces/{workspace_domain}/projects/{project_name}/repository/branches',
+  addBranch = '/workspaces/{workspace_domain}/projects/{project_name}/repository/branches',
+  getBranch = '/workspaces/{workspace_domain}/projects/{project_name}/repository/branches/{name}',
+  deleteBranch = '/workspaces/{workspace_domain}/projects/{project_name}/repository/branches/{name}',
+  getCommits = '/workspaces/{workspace_domain}/projects/{project_name}/repository/commits',
+  getCommit = '/workspaces/{workspace_domain}/projects/{project_name}/repository/commits/{revision}',
+  getComparison = '/workspaces/{workspace_domain}/projects/{project_name}/repository/comparison/{base}...{head}',
+  getRepositoryContents = '/workspaces/{workspace_domain}/projects/{project_name}/repository/contents',
+  commitNewFile = '/workspaces/{workspace_domain}/projects/{project_name}/repository/contents',
+  getRepositoryContents_1 = '/workspaces/{workspace_domain}/projects/{project_name}/repository/contents/{path}',
+  commitFileChanges = '/workspaces/{workspace_domain}/projects/{project_name}/repository/contents/{path}',
+  deleteFile = '/workspaces/{workspace_domain}/projects/{project_name}/repository/contents/{path}',
+  getPullRequests = '/workspaces/{workspace_domain}/projects/{project_name}/repository/pulls',
+  getPullRequest = '/workspaces/{workspace_domain}/projects/{project_name}/repository/pulls/{number}',
+  getTags = '/workspaces/{workspace_domain}/projects/{project_name}/repository/tags',
+  addTag = '/workspaces/{workspace_domain}/projects/{project_name}/repository/tags',
+  getTag = '/workspaces/{workspace_domain}/projects/{project_name}/repository/tags/{name}',
+  deleteTag = '/workspaces/{workspace_domain}/projects/{project_name}/repository/tags/{name}',
+  getUnitTestSuites = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites',
+  addUnitTestSuite = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites',
+  getUnitTestSuite = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{id}',
+  deleteUnitTestSuite = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{id}',
+  getUnitTestSessions = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions',
+  addUnitTestSession = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions',
+  getUnitTestSession = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{id}',
+  deleteUnitTestSession = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{id}',
+  getSessionCases = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/cases',
+  upsertUnitTestCase = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/cases',
+  closeUnitTestSession = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/close',
+  reopenUnitTestSession = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/reopen',
+  getUnitTestGroups = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/test-groups',
+  addUnitTestGroup = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/test-groups',
+  getUnitTestGroup = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/test-groups/{id}',
+  getUnitTestCases = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/test-groups/{test_group_id}/cases',
+  getUnitTestCase = '/workspaces/{workspace_domain}/projects/{project_name}/unit-tests/suites/{suite_id}/sessions/{session_id}/test-groups/{test_group_id}/cases/{id}',
+  getSandboxes = '/workspaces/{workspace_domain}/sandboxes',
+  addSandbox = '/workspaces/{workspace_domain}/sandboxes',
+  getSandbox = '/workspaces/{workspace_domain}/sandboxes/{id}',
+  deleteSandbox = '/workspaces/{workspace_domain}/sandboxes/{id}',
+  updateSandbox = '/workspaces/{workspace_domain}/sandboxes/{id}',
+  getSandboxAppLogs = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/app-logs',
+  getSandboxCommands = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/commands',
+  executeSandboxCommand = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/commands',
+  getSandboxCommand = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/commands/{id}',
+  getSandboxCommandLogs = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/commands/{command_id}/logs',
+  terminateSandboxCommand = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/commands/{command_id}/terminate',
+  restartSandbox = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/restart',
+  getSandboxSnapshots = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/snapshots',
+  addSandboxSnapshot = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/snapshots',
+  getSandboxSnapshot = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/snapshots/{id}',
+  deleteSandboxSnapshot = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/snapshots/{id}',
+  startSandbox = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/start',
+  stopSandbox = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/stop',
+  getSandboxYaml = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/yaml',
+  updateSandboxByYaml = '/workspaces/{workspace_domain}/sandboxes/{sandbox_id}/yaml',
+  addSandboxByYaml = '/workspaces/{workspace_domain}/sandboxes/yaml',
+  getSSO = '/workspaces/{workspace_domain}/sso',
+  updateSSO = '/workspaces/{workspace_domain}/sso',
+  getTargets = '/workspaces/{workspace_domain}/targets',
+  addTarget = '/workspaces/{workspace_domain}/targets',
+  getTarget = '/workspaces/{workspace_domain}/targets/{id}',
+  deleteTarget = '/workspaces/{workspace_domain}/targets/{id}',
+  updateTarget = '/workspaces/{workspace_domain}/targets/{id}',
+  getVariables = '/workspaces/{workspace_domain}/variables',
+  addVariable = '/workspaces/{workspace_domain}/variables',
+  getVariable = '/workspaces/{workspace_domain}/variables/{id}',
+  deleteVariable = '/workspaces/{workspace_domain}/variables/{id}',
+  updateVariable = '/workspaces/{workspace_domain}/variables/{id}',
+  getWebhooks = '/workspaces/{workspace_domain}/webhooks',
+  addWebhook = '/workspaces/{workspace_domain}/webhooks',
+  getWebhook = '/workspaces/{workspace_domain}/webhooks/{id}',
+  deleteWebhook = '/workspaces/{workspace_domain}/webhooks/{id}',
+  updateWebhook = '/workspaces/{workspace_domain}/webhooks/{id}',
 }
