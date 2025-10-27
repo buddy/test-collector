@@ -9,7 +9,6 @@ export class BuddyUnitTestCollectorConfig {
   static libraryName = '@buddy-works/unit-tests'
 
   utToken: string
-  debugEnabled: boolean
   apiBaseUrl: string
   runRefType?: IBuddyUTSessionsPayload['ref_type']
   sessionId?: IBuddyUTSession['id']
@@ -49,7 +48,6 @@ export class BuddyUnitTestCollectorConfig {
     this.#logEnvironmentVariables()
 
     this.utToken = environment.BUDDY_UT_TOKEN
-    this.debugEnabled = environment.BUDDY_LOGGER_LEVEL === 'debug'
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
     this.sessionId = BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
 
@@ -205,7 +203,6 @@ export class BuddyUnitTestCollectorConfig {
     const config = {
       ciProvider: this.ciProvider,
       utToken: this.utToken ? '***' : 'not set',
-      debugEnabled: this.debugEnabled,
       apiBaseUrl: this.apiBaseUrl,
       sessionId: this.sessionId,
       triggeringActorId: this.triggeringActorId,

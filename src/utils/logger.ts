@@ -1,13 +1,24 @@
 import { PACKAGE_NAME, PACKAGE_VERSION } from '@/core/const'
 import environment from '@/utils/environment'
 
+const LOG_LEVELS = {
+  debug: 5,
+  info: 4,
+  warn: 3,
+  error: 2,
+  silent: 0,
+} as const
+
+type LogLevelName = keyof typeof LOG_LEVELS
+
 class Logger {
   #prefix: string
-  #level?: string
+  level: number
 
   constructor() {
     this.#prefix = `${PACKAGE_NAME}@${PACKAGE_VERSION}`
-    this.#level = environment.BUDDY_LOGGER_LEVEL || 'info'
+    const levelName = environment.BUDDY_LOGGER_LEVEL || 'info'
+    this.level = LOG_LEVELS[levelName as LogLevelName] || LOG_LEVELS.info
   }
 
   #safeStringify(object: unknown): string {
@@ -31,19 +42,19 @@ class Logger {
   }
 
   debug(message: string, data?: unknown) {
-    if (this.#level === 'debug') {
+    if (this.level >= LOG_LEVELS.debug) {
       console.log(`[${this.#prefix}] DEBUG: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
 
   info(message: string, data?: unknown) {
-    if (this.#level && ['info', 'debug'].includes(this.#level)) {
+    if (this.level >= LOG_LEVELS.info) {
       console.log(`[${this.#prefix}] INFO: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
 
   warn(message: string, data?: unknown) {
-    if (this.#level && ['info', 'debug'].includes(this.#level)) {
+    if (this.level >= LOG_LEVELS.warn) {
       console.warn(`[${this.#prefix}] WARN: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
