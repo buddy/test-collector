@@ -1,4 +1,3 @@
-import { BuddyUnitTestCollectorConfig } from '@/core/config'
 import sessionManager from '@/core/session-manager'
 import BuddyMochaReporter from '@/reporters/mocha/reporter'
 import environment from '@/utils/environment'
@@ -13,6 +12,18 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
   static displayName = 'BuddyCypressReporter'
 
   static async closeSession() {
+    logger.debug('Draining queue before closing Cypress session')
+
+    try {
+      // Drain the queue to ensure all pending test cases are submitted
+      await sessionManager.apiClient.drainQueue()
+      logger.debug('Queue drained successfully')
+    } catch (error) {
+      logger.error('Error draining queue before session close', error)
+      sessionManager.markFrameworkError()
+    }
+
+    // Close the session
     await sessionManager.closeSession()
   }
 
@@ -21,8 +32,7 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
 
     try {
       // Check if session already exists (from previous spec files or environment)
-      const existingSessionId =
-        sessionManager.sessionId ?? BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
+      const existingSessionId = sessionManager.sessionId ?? environment.BUDDY_SESSION_ID
 
       if (existingSessionId) {
         logger.debug(`Reusing existing session: ${existingSessionId}`)
@@ -59,13 +69,6 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       } else {
         logger.debug('All test submissions completed')
       }
-    }
-
-    try {
-      await sessionManager.apiClient.drainQueue()
-    } catch (error) {
-      logger.error('Error draining queue at spec end', error)
-      sessionManager.markFrameworkError()
     }
 
     // Keep session open - it will be closed by the after:run hook in setupNodeEvents

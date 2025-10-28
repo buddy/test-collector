@@ -92,7 +92,6 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     try {
       const testResult = resultMapperFunction()
       await sessionManager.submitTestCase(testResult)
-      logger.debug(`Successfully submitted: ${testResult.name}`)
     } catch (error) {
       logger.error('Error processing Mocha test result', error)
       sessionManager.markFrameworkError()

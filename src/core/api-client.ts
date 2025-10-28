@@ -133,11 +133,6 @@ export default class BuddyUnitTestApiClient {
       })
 
       const sessionId = response.id
-
-      if (!sessionId) {
-        throw new Error('Session ID not returned from API')
-      }
-
       logger.info(`Created Buddy unit tests session with ID`, sessionId)
 
       // Initialize and start the queue for this session

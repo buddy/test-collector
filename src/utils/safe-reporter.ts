@@ -20,7 +20,7 @@ function makeNoopReporterInstance() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getSafeReporter<R extends object | (new (...arguments_: any[]) => object)>(
   Reporter: R,
-  reporterName: string,
+  uniqueInstanceName?: string,
 ): R {
   if (environmentError) {
     logger.error('Environment configuration error - collector disabled', environmentError)
@@ -45,15 +45,22 @@ export function getSafeReporter<R extends object | (new (...arguments_: any[]) =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new Proxy(Reporter as new (...arguments_: any[]) => object, {
     construct(target, arguments_) {
-      if (reporterInstances.has(reporterName)) {
-        logger.debug(`Returning no-op ${reporterName} reporter (prevented duplicate registration)`)
+      // Only enforce singleton if uniqueInstanceName is provided
+      if (uniqueInstanceName && reporterInstances.has(uniqueInstanceName)) {
+        logger.debug(`Returning no-op ${uniqueInstanceName} reporter (prevented duplicate registration)`)
         return makeNoopReporterInstance()
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const instance = new target(...arguments_)
-      reporterInstances.set(reporterName, instance)
-      logger.debug(`Created singleton instance for ${reporterName} reporter`)
+
+      if (uniqueInstanceName) {
+        reporterInstances.set(uniqueInstanceName, instance)
+        logger.debug(`Created singleton instance for ${uniqueInstanceName} reporter`)
+      } else {
+        logger.debug('Created reporter instance (singleton not enforced)')
+      }
+
       return instance
     },
   }) as R

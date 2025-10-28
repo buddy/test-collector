@@ -10,7 +10,7 @@ import logger from '@/utils/logger'
 class BuddyUnitTestSessionManager {
   static displayName = 'BuddyUnitTestSessionManager'
 
-  sessionId: number | undefined
+  sessionId: IBuddyUTSession['id'] | undefined
   createSession: Promise<IBuddyUTSession['id'] | undefined> | undefined
   initialized: boolean
   hasFrameworkErrors: boolean
@@ -53,11 +53,9 @@ class BuddyUnitTestSessionManager {
         ? this.apiClient.useExistingSession(this.config.sessionId)
         : await this.apiClient.createSession()
 
-      setEnvironmentVariable('BUDDY_SESSION_ID', String(this.sessionId))
-      if (BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID) === this.sessionId) {
-        logger.debug(
-          `Session ID stored in environment variable BUDDY_SESSION_ID: ${BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)}`,
-        )
+      setEnvironmentVariable('BUDDY_SESSION_ID', this.sessionId)
+      if (environment.BUDDY_SESSION_ID === this.sessionId) {
+        logger.debug(`Session ID stored in environment variable BUDDY_SESSION_ID: ${environment.BUDDY_SESSION_ID}`)
       } else {
         logger.debug('BUDDY_SESSION_ID environment variable could not be updated to match current session ID')
       }
@@ -78,8 +76,8 @@ class BuddyUnitTestSessionManager {
 
   #writeSessionToFile(sessionId: IBuddyUTSession['id']) {
     try {
-      fs.writeFileSync(this.#getSessionFilePath(), String(sessionId), 'utf8')
-      logger.debug(`Session ID written to file: ${sessionId}`)
+      fs.writeFileSync(this.#getSessionFilePath(), sessionId, 'utf8')
+      logger.debug(`Session ID ${sessionId} written to file ${this.#getSessionFilePath()}`)
     } catch (error) {
       logger.error('Failed to write session ID to file', error)
     }
@@ -89,7 +87,7 @@ class BuddyUnitTestSessionManager {
     try {
       const filePath = this.#getSessionFilePath()
       if (fs.existsSync(filePath)) {
-        const sessionId = BuddyUnitTestCollectorConfig.getSessionId(fs.readFileSync(filePath, 'utf8').trim())
+        const sessionId = fs.readFileSync(filePath, 'utf8').trim()
         logger.debug(`Session ID read from file: ${sessionId}`)
         return sessionId
       }
@@ -195,7 +193,7 @@ class BuddyUnitTestSessionManager {
     }
 
     if (!this.sessionId && environment.BUDDY_SESSION_ID) {
-      this.sessionId = BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
+      this.sessionId = environment.BUDDY_SESSION_ID
       logger.debug(`Retrieved session ID from BUDDY_SESSION_ID environment variable: ${this.sessionId}`)
     }
 

@@ -23,11 +23,6 @@ export class BuddyUnitTestCollectorConfig {
   runUrl?: IBuddyUTSessionsPayload['ci_run_url']
   runBranch?: string
 
-  static getSessionId(sessionIdEnvironment?: string): IBuddyUTSession['id'] | undefined {
-    if (!sessionIdEnvironment) return
-    return Number(sessionIdEnvironment)
-  }
-
   static getRunRefType(runRefTypeEnvironment?: string): IBuddyUTSession['ref_type'] | undefined {
     const validTypes = Object.values(SESSION_REF_TYPE)
 
@@ -48,8 +43,8 @@ export class BuddyUnitTestCollectorConfig {
     this.#logEnvironmentVariables()
 
     this.utToken = environment.BUDDY_UT_TOKEN
+    this.sessionId = environment.BUDDY_SESSION_ID
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
-    this.sessionId = BuddyUnitTestCollectorConfig.getSessionId(environment.BUDDY_SESSION_ID)
 
     switch (this.ciProvider) {
       case CI_PROVIDER.BUDDY: {
