@@ -195,7 +195,6 @@ export default class BuddyUnitTestApiClient {
 
       logger.info(`Successfully closed session: ${sessionId} with status: ${status}`)
 
-      // Clean up the queue after session is closed
       this.#cleanupQueue()
     } catch (error) {
       logger.error(`Failed to close session: ${sessionId}`, error)
@@ -204,16 +203,13 @@ export default class BuddyUnitTestApiClient {
     }
   }
 
-  // Queue management methods
-
   #initializeQueue(sessionId: IBuddyUTSession['id']) {
-    // Clean up existing queue if any
     this.#cleanupQueue()
 
     this.#sessionId = sessionId
     this.#queue = new TestCaseQueue({
-      batchIntervalMs: 3000, // Flush every 3 seconds
-      maxBatchSize: 100, // Max 100 test cases per batch
+      batchIntervalMs: 3000,
+      maxBatchSize: 100,
       retryCount: 2,
       retryDelayMs: 500,
       onBatchSubmit: async (batch) => {

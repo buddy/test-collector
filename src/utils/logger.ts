@@ -41,7 +41,7 @@ class Logger {
 
   debug(message: string, data?: unknown) {
     if (this.level >= LOG_LEVELS.debug) {
-      console.log(`[${this.#prefix}] DEBUG: ${message}`, data ? this.#safeStringify(data) : '')
+      console.debug(`[${this.#prefix}] DEBUG: ${message}`, data ? this.#safeStringify(data) : '')
     }
   }
 

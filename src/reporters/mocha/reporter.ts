@@ -23,16 +23,25 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
 
     this.pendingSubmissions = new Set()
 
-    this.runner.on(EVENT_RUN_BEGIN, () => {
-      void this.onStart()
-    })
-    this.runner.on(EVENT_RUN_END, () => {
-      void this.onEnd()
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.runner.on(EVENT_RUN_BEGIN, async () => {
+      await this.onStart()
     })
 
-    this.runner.on(EVENT_TEST_PENDING, this.onTestPending.bind(this))
-    this.runner.on(EVENT_TEST_PASS, this.onTestPass.bind(this))
-    this.runner.on(EVENT_TEST_FAIL, this.onTestFail.bind(this))
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.runner.on(EVENT_RUN_END, async () => {
+      await this.onEnd()
+    })
+
+    this.runner.on(EVENT_TEST_PENDING, (test) => {
+      this.onTestPending(test)
+    })
+    this.runner.on(EVENT_TEST_PASS, (test) => {
+      this.onTestPass(test)
+    })
+    this.runner.on(EVENT_TEST_FAIL, (test, error: Error) => {
+      this.onTestFail(test, error)
+    })
   }
 
   async onStart() {

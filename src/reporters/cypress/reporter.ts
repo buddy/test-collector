@@ -12,18 +12,9 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
   static displayName = 'BuddyCypressReporter'
 
   static async closeSession() {
-    logger.debug('Draining queue before closing Cypress session')
-
-    try {
-      // Drain the queue to ensure all pending test cases are submitted
-      await sessionManager.apiClient.drainQueue()
-      logger.debug('Queue drained successfully')
-    } catch (error) {
-      logger.error('Error draining queue before session close', error)
-      sessionManager.markFrameworkError()
-    }
-
-    // Close the session
+    // Note: Queue draining happens in onEnd() for each spec file
+    // This method runs in the after:run hook (Node.js process), while the queue
+    // exists in the browser process where reporters run, so we can't drain here
     await sessionManager.closeSession()
   }
 
@@ -54,6 +45,11 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
   async onEnd() {
     logger.debug('Cypress spec file completed')
 
+    // CRITICAL: Yield to event loop to allow queue's batch timer to fire
+    // Without this, onEnd() runs synchronously and drain() is called before
+    // the queue's automatic batch interval (3s) has had a chance to flush queued tests
+    await Promise.resolve()
+
     if (this.pendingSubmissions.size > 0) {
       logger.debug(`Waiting for ${this.pendingSubmissions.size} pending test submissions to complete`)
       const maxWaitTime = 10_000
@@ -68,6 +64,21 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
         sessionManager.markFrameworkError()
       } else {
         logger.debug('All test submissions completed')
+      }
+    }
+
+    // Drain the queue to ensure all queued tests are submitted before spec ends
+    // This must happen in onEnd() because after:run runs in a different process
+    const queueSize = sessionManager.apiClient.getQueueSize()
+    if (queueSize > 0) {
+      logger.debug(`Draining queue at spec end (${queueSize} tests queued)`)
+
+      try {
+        await sessionManager.apiClient.drainQueue()
+        logger.debug('Queue drained successfully')
+      } catch (error) {
+        logger.error('Error draining queue at spec end', error)
+        sessionManager.markFrameworkError()
       }
     }
 
