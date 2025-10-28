@@ -9,16 +9,14 @@ const LOG_LEVELS = {
   silent: 0,
 } as const
 
-type LogLevelName = keyof typeof LOG_LEVELS
-
 class Logger {
   #prefix: string
   level: number
 
   constructor() {
     this.#prefix = `${PACKAGE_NAME}@${PACKAGE_VERSION}`
-    const levelName = environment.BUDDY_LOGGER_LEVEL || 'info'
-    this.level = LOG_LEVELS[levelName as LogLevelName] || LOG_LEVELS.info
+    const levelName = environment.BUDDY_LOGGER_LEVEL
+    this.level = (LOG_LEVELS as Record<string, number>)[levelName ?? ''] ?? LOG_LEVELS.warn
   }
 
   #safeStringify(object: unknown): string {
@@ -60,8 +58,10 @@ class Logger {
   }
 
   error(message: string, error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : this.#safeStringify(error)
-    console.error(`[${this.#prefix}] ERROR: ${message}${errorMessage ? ` - ${errorMessage}` : ''}`)
+    if (this.level >= LOG_LEVELS.error) {
+      const errorMessage = error instanceof Error ? error.message : this.#safeStringify(error)
+      console.error(`[${this.#prefix}] ERROR: ${message}${errorMessage ? ` - ${errorMessage}` : ''}`)
+    }
   }
 }
 

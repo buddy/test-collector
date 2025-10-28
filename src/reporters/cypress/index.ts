@@ -1,7 +1,7 @@
 import BuddyCypressReporter from '@/reporters/cypress/reporter'
 import { getSafeReporter } from '@/utils/safe-reporter'
 
-const Reporter = getSafeReporter(BuddyCypressReporter)
+const Reporter = getSafeReporter(BuddyCypressReporter, 'cypress')
 
 export default Reporter
 

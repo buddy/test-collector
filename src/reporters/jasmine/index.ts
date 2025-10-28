@@ -1,7 +1,7 @@
 import BuddyJasmineReporter from '@/reporters/jasmine/reporter'
 import { getSafeReporter } from '@/utils/safe-reporter'
 
-const SafeReporter = getSafeReporter(BuddyJasmineReporter)
+const SafeReporter = getSafeReporter(BuddyJasmineReporter, 'jasmine')
 
 export default SafeReporter
 

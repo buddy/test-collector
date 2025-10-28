@@ -1,7 +1,7 @@
 import BuddyMochaReporter from '@/reporters/mocha/reporter'
 import { getSafeReporter } from '@/utils/safe-reporter'
 
-const Reporter = getSafeReporter(BuddyMochaReporter)
+const Reporter = getSafeReporter(BuddyMochaReporter, 'mocha')
 
 export default Reporter
 
