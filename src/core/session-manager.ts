@@ -109,11 +109,11 @@ class BuddyUnitTestSessionManager {
     }
   }
 
-  #initialize() {
+  async #initialize() {
     if (this.initialized) return
 
     try {
-      this.#config = new BuddyUnitTestCollectorConfig()
+      this.#config = await BuddyUnitTestCollectorConfig.create()
       this.#apiClient = new BuddyUnitTestApiClient(this.#config)
       this.initialized = true
       logger.debug(`${BuddyUnitTestSessionManager.displayName} initialized`)
@@ -128,7 +128,7 @@ class BuddyUnitTestSessionManager {
 
   async getOrCreateSession() {
     if (!this.initialized) {
-      this.#initialize()
+      await this.#initialize()
     }
 
     if (this.sessionId) return this.sessionId
@@ -184,7 +184,7 @@ class BuddyUnitTestSessionManager {
     }
 
     if (!this.initialized) {
-      this.#initialize()
+      await this.#initialize()
     }
 
     // Return early if config is not available (environment error case)

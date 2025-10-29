@@ -1,5 +1,3 @@
-import { CI_PROVIDER } from '@/core/types'
-
 interface StringConfig {
   type: 'string'
   required?: boolean
@@ -19,34 +17,6 @@ const environmentConfig = {
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
   BUDDY_API_FAILURE: { type: 'boolean' },
-
-  // Buddy environment variables
-  BUDDY: { type: 'boolean' },
-  BUDDY_RUN_HASH: { type: 'string' },
-  BUDDY_ACTION_RUN_HASH: { type: 'string' },
-  BUDDY_RUN_REF_NAME: { type: 'string' },
-  BUDDY_RUN_REF_TYPE: { type: 'string' },
-  BUDDY_RUN_COMMIT: { type: 'string' },
-  BUDDY_RUN_PRE_COMMIT: { type: 'string' },
-  BUDDY_RUN_BRANCH: { type: 'string' },
-  BUDDY_RUN_ID: { type: 'string' },
-  BUDDY_RUN_URL: { type: 'string' },
-  BUDDY_TRIGGERING_ACTOR_ID: { type: 'string' },
-
-  // GitHub Actions environment variables
-  GITHUB_REPOSITORY: { type: 'string' },
-  GITHUB_SHA: { type: 'string' },
-  GITHUB_REF: { type: 'string' },
-  GITHUB_REF_NAME: { type: 'string' },
-  GITHUB_REF_TYPE: { type: 'string' },
-  GITHUB_WORKFLOW: { type: 'string' },
-  GITHUB_RUN_ID: { type: 'string' },
-  GITHUB_RUN_NUMBER: { type: 'string' },
-  GITHUB_ACTOR: { type: 'string' },
-  GITHUB_ACTOR_ID: { type: 'string' },
-  GITHUB_SERVER_URL: { type: 'string' },
-  GITHUB_API_URL: { type: 'string' },
-  GITHUB_ACTIONS: { type: 'boolean' },
 } as const satisfies EnvironmentConfigSchema
 
 type EnvironmentConfig = {
@@ -163,22 +133,8 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
   return !falseValues.includes(value.toLowerCase().trim())
 }
 
-function detectCIProvider(): CI_PROVIDER {
-  const result = loadEnvironment()
-
-  if (result.variables.BUDDY) {
-    return CI_PROVIDER.BUDDY
-  }
-
-  if (result.variables.GITHUB_ACTIONS) {
-    return CI_PROVIDER.GITHUB_ACTION
-  }
-
-  return CI_PROVIDER.NONE
-}
-
 const environmentResult = loadEnvironment()
 export default environmentResult.variables
 export const environmentError = environmentResult.error
 
-export { setEnvironmentVariable, detectCIProvider, environmentConfig, type EnvironmentResult }
+export { setEnvironmentVariable, environmentConfig, type EnvironmentResult }

@@ -1,7 +1,7 @@
-import { execSync } from 'node:child_process'
+import { CI, getCiAndGitInfo } from '@buddy-works/ci-info'
 import { IncomingHttpHeaders } from 'node:http'
 import { CI_PROVIDER, IBuddyUTSession, IBuddyUTSessionsPayload, SESSION_REF_TYPE } from '@/core/types'
-import environment, { detectCIProvider, environmentConfig } from '@/utils/environment'
+import environment, { environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
 export class BuddyUnitTestCollectorConfig {
@@ -23,74 +23,73 @@ export class BuddyUnitTestCollectorConfig {
   runUrl?: IBuddyUTSessionsPayload['ci_run_url']
   runBranch?: string
 
-  static getRunRefType(runRefTypeEnvironment?: string): IBuddyUTSession['ref_type'] | undefined {
-    const validTypes = Object.values(SESSION_REF_TYPE)
+  /**
+   * Creates a new BuddyUnitTestCollectorConfig instance with async CI detection
+   * Uses @buddy-works/ci-info package to detect CI environment
+   * Falls back to manual detection if ci-info fails
+   */
+  static async create(): Promise<BuddyUnitTestCollectorConfig> {
+    try {
+      const ciInfo = await getCiAndGitInfo()
+      const ciProvider = CI_PROVIDER[ciInfo.ci]
+      const config = new BuddyUnitTestCollectorConfig()
 
-    const runRefTypeUpper = runRefTypeEnvironment?.toUpperCase()
-    if (!(runRefTypeUpper && (validTypes as string[]).includes(runRefTypeUpper))) return
+      config.ciProvider = ciProvider
 
-    return runRefTypeUpper as SESSION_REF_TYPE
-  }
+      config.runCommit = ciInfo.commit
+      if (ciInfo.branch !== undefined) {
+        config.runBranch = ciInfo.branch
+      }
 
-  static getTriggeringActorId(triggeringActorIdEnvironment?: string) {
-    if (!triggeringActorIdEnvironment) return
-    return Number(triggeringActorIdEnvironment)
+      // Set ref name and type based on tag or branch
+      if (ciInfo.tag) {
+        config.runRefName = ciInfo.tag
+        config.runRefType = SESSION_REF_TYPE.TAG
+      } else if (ciInfo.branch) {
+        config.runRefName = ciInfo.branch
+        config.runRefType = SESSION_REF_TYPE.BRANCH
+      }
+
+      // Map provider-specific properties for Buddy CI
+      if (ciInfo.ci === CI.BUDDY) {
+        config.executionId = ciInfo.executionId
+        config.actionExecutionId = ciInfo.actionExecutionId
+        config.triggeringActorId = ciInfo.invokerId
+      }
+
+      // Map provider-specific properties for GitHub Actions and CircleCI
+      if (
+        (ciInfo.ci === CI.GITHUB_ACTION || ciInfo.ci === CI.CIRCLE_CI) &&
+        'executionUrl' in ciInfo &&
+        ciInfo.executionUrl
+      ) {
+        config.runUrl = ciInfo.executionUrl
+      }
+
+      logger.debug('Config created successfully with ci-info integration')
+      return config
+    } catch (error) {
+      // If ci-info fails, fall back to manual detection
+      logger.warn('Failed to get CI info from @buddy-works/ci-info, falling back to manual detection', error)
+      return new BuddyUnitTestCollectorConfig()
+    }
   }
 
   constructor() {
-    this.ciProvider = detectCIProvider()
-
+    // Only initialize project-specific configuration
+    // CI detection is handled by the async create() factory method using ci-info
     this.#logEnvironmentVariables()
 
     this.utToken = environment.BUDDY_UT_TOKEN
     this.sessionId = environment.BUDDY_SESSION_ID
     this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
 
-    switch (this.ciProvider) {
-      case CI_PROVIDER.BUDDY: {
-        logger.debug('Loading Buddy CI configuration')
-
-        this.runRefName = environment.BUDDY_RUN_REF_NAME
-        this.runRefType = BuddyUnitTestCollectorConfig.getRunRefType(environment.BUDDY_RUN_REF_TYPE)
-        this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
-        this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
-        this.executionId = environment.BUDDY_RUN_HASH
-        this.actionExecutionId = environment.BUDDY_ACTION_RUN_HASH
-        this.runId = environment.BUDDY_RUN_ID
-        this.runUrl = environment.BUDDY_RUN_URL
-        this.triggeringActorId = BuddyUnitTestCollectorConfig.getTriggeringActorId(
-          environment.BUDDY_TRIGGERING_ACTOR_ID,
-        )
-        break
-      }
-      case CI_PROVIDER.GITHUB_ACTION: {
-        logger.debug('Loading GitHub Actions configuration')
-
-        const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
-        const repository = environment.GITHUB_REPOSITORY
-
-        this.runRefName = environment.GITHUB_REF_NAME
-        this.runRefType = BuddyUnitTestCollectorConfig.getRunRefType(environment.GITHUB_REF_TYPE)
-        this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
-        this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
-        this.runId = environment.GITHUB_RUN_ID
-        this.runUrl =
-          repository && environment.GITHUB_RUN_ID
-            ? `${serverUrl}/${repository}/actions/runs/${environment.GITHUB_RUN_ID}`
-            : undefined
-
-        break
-      }
-      default: {
-        logger.warn(`No supported CI environment detected: ${this.ciProvider}.`)
-        this.ciProvider = CI_PROVIDER.NONE
-        logger.debug(`Environment set to ${this.ciProvider} for compatibility.`)
-      }
-    }
+    // Set CI provider to NONE by default - will be overridden by create() method
+    this.ciProvider = CI_PROVIDER.NONE
 
     this.#logLoadedConfig()
 
-    logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName} (environment: ${this.ciProvider})`)
+    logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName}`)
   }
 
   #logEnvironmentVariables(): void {
@@ -126,36 +125,6 @@ export class BuddyUnitTestCollectorConfig {
     get apiBaseUrl() {
       const token = environment.BUDDY_UT_TOKEN
       return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
-    },
-
-    get runBranch() {
-      try {
-        return execSync('git rev-parse --abbrev-ref HEAD', {
-          encoding: 'utf8',
-        }).trim()
-      } catch {
-        return
-      }
-    },
-
-    get runCommit() {
-      try {
-        return execSync('git rev-parse HEAD', {
-          encoding: 'utf8',
-        }).trim()
-      } catch {
-        return
-      }
-    },
-
-    get runPreCommit() {
-      try {
-        return execSync('git rev-parse HEAD^1', {
-          encoding: 'utf8',
-        }).trim()
-      } catch {
-        return
-      }
     },
   }
 
