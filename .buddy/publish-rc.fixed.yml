@@ -5,9 +5,14 @@
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
   trigger_conditions:
-  - trigger_condition: SUCCESS_PIPELINE
-    project: test-collector
-    pipeline: run_all
+  - trigger_condition: OR
+    trigger_operands:
+    - trigger_condition: SUCCESS_PIPELINE
+      project: test-collector
+      pipeline: run_all
+    - trigger_condition: VAR_IS
+      trigger_variable_value: 1
+      trigger_variable_key: SKIP_RC_PUBLISH_CHECK
   variables:
   - key: SKIP_RC_PUBLISH_CHECK
   - key: VERSION_BUMP_TYPE
