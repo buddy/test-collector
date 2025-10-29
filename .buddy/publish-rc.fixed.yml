@@ -15,6 +15,7 @@
       trigger_variable_key: SKIP_RC_PUBLISH_CHECK
   variables:
   - key: SKIP_RC_PUBLISH_CHECK
+    value: 1
   - key: VERSION_BUMP_TYPE
   actions:
   - action: Select version bump
