@@ -124,6 +124,13 @@ export class BuddyUnitTestCollectorConfig {
   readonly #fallback = {
     get apiBaseUrl() {
       const token = environment.BUDDY_UT_TOKEN
+      const parts = token.split('_')
+
+      // for non-prod tokens, the api url is base64url encoded in the 3rd part
+      if (parts.length === 5 && parts[3]) {
+        return Buffer.from(parts[3], 'base64url').toString('utf8')
+      }
+
       return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
     },
   }
