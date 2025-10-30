@@ -1,6 +1,6 @@
 # @buddy-works/unit-tests
 
-[![NPM Version](https://img.shields.io/npm/v/%40buddy-works%2Funit-tests)](https://www.npmjs.com/package/@buddy-works/unit-tests)
+[![NPM Version](https://img.shields.io/npm/v/%40buddy-works%2Funit-tests?style=plastic)](https://www.npmjs.com/package/@buddy-works/unit-tests)
 
 Universal test results collector that sends real-time test results from popular JavaScript testing frameworks directly to your Buddy Works unit testing dashboard. Zero configuration required - just install, add to your test config, and go.
 
