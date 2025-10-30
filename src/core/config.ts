@@ -12,7 +12,7 @@ export class BuddyUnitTestCollectorConfig {
   apiBaseUrl: string
   runRefType?: IBuddyUTSessionsPayload['ref_type']
   sessionId?: IBuddyUTSession['id']
-  triggeringActorId?: NonNullable<IBuddyUTSessionsPayload['created_by']>['id']
+  invokerId?: NonNullable<IBuddyUTSessionsPayload['created_by']>['id']
 
   ciProvider: IBuddyUTSessionsPayload['ci_provider']
   executionId?: IBuddyUTSessionsPayload['execution_id']
@@ -54,7 +54,7 @@ export class BuddyUnitTestCollectorConfig {
       if (ciInfo.ci === CI.BUDDY) {
         config.executionId = ciInfo.executionId
         config.actionExecutionId = ciInfo.actionExecutionId
-        config.triggeringActorId = ciInfo.invokerId
+        config.invokerId = ciInfo.invokerId
       }
 
       // Map provider-specific properties for GitHub Actions and CircleCI
@@ -141,7 +141,7 @@ export class BuddyUnitTestCollectorConfig {
       ref_name: this.runRefName ?? this.runBranch,
       revision: this.runCommit,
       ci_provider: this.ciProvider,
-      ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
+      ...(this.invokerId && { created_by: { id: this.invokerId } }),
     }
 
     if (this.ciProvider === CI_PROVIDER.BUDDY) {
@@ -169,7 +169,7 @@ export class BuddyUnitTestCollectorConfig {
       utToken: this.utToken ? '***' : 'not set',
       apiBaseUrl: this.apiBaseUrl,
       sessionId: this.sessionId,
-      triggeringActorId: this.triggeringActorId,
+      invokerId: this.invokerId,
       runRefName: this.runRefName,
       runRefType: this.runRefType,
       runCommit: this.runCommit,
