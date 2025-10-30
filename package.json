@@ -1,6 +1,6 @@
 {
   "name": "@buddy-works/unit-tests",
-  "version": "0.20.0-rc.8",
+  "version": "0.20.0-rc.9",
   "description": "Universal test results collector for Jest, Jasmine, Mocha, Cypress, Playwright, and Vitest that sends results to Buddy Works API in real-time",
   "files": [
     "dist",
