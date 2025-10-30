@@ -14,6 +14,7 @@ const environmentConfig = {
   BUDDY_UT_TOKEN: { type: 'string', required: true, secret: true },
   CI: { type: 'boolean' },
   BUDDY_LOGGER_LEVEL: { type: 'string' },
+  BUDDY_DEV_LOGGER: { type: 'string' },
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
   BUDDY_API_FAILURE: { type: 'boolean' },

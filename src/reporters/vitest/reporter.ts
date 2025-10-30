@@ -40,8 +40,8 @@ export default class BuddyVitestReporter implements Reporter {
           return
         }
 
-        // Get relative file path from module
-        const relativeFilePath = test.module.relativeModuleId
+        const relativeFilePath = (test as unknown as { task: { suite: { file: { name: string } } } }).task.suite.file
+          .name
 
         // Map test result to our format
         const testResult = TestResultMapper.mapVitestResult(test, result, relativeFilePath)

@@ -43,6 +43,7 @@
     "format": "prettier --write --cache . && eslint . --cache --fix",
     "lint": "eslint . --cache --quiet",
     "lint:types": "tsc --skipLibCheck --noEmit",
+    "lint:multi": "./scripts/lint-multi-version.sh",
     "prepare": "husky && npm run build",
     "prepare:tests": "rimraf package && mkdir package && npm pack --pack-destination package && mv package/*.tgz unit-tests.tgz && rimraf package",
     "cleanup:tests": "rimraf examples/*/package-lock.json examples/*/node_modules",
@@ -51,7 +52,8 @@
     "test:playwright": "./scripts/test-playwright.sh",
     "test:jasmine": "./scripts/test-jasmine.sh",
     "test:mocha": "./scripts/test-mocha.sh",
-    "test:cypress": "./scripts/test-cypress.sh"
+    "test:cypress": "./scripts/test-cypress.sh",
+    "test:multi": "./scripts/test-multi-version.sh"
   },
   "dependencies": {
     "pathe": "2.0.3",
