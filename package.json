@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "pathe": "2.0.3",
-    "@buddy-works/ci-info": "1.1.0"
+    "@buddy-works/ci-info": "1.1.1"
   },
   "devDependencies": {
     "@eslint/js": "9.38.0",

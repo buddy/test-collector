@@ -14,7 +14,11 @@ export class BuddyUnitTestCollectorConfig {
 
   static async create(): Promise<BuddyUnitTestCollectorConfig> {
     try {
-      const ciInfo = await getCiAndGitInfo()
+      const ciInfo = await getCiAndGitInfo({
+        optionalGit: true,
+        skipBaseCommitDiscovery: true,
+        logger: logger.warn.bind(logger),
+      })
       return new BuddyUnitTestCollectorConfig(ciInfo)
     } catch (error) {
       logger.error('Failed to read environment information', error)
