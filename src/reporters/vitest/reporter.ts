@@ -1,6 +1,8 @@
+import type { Test } from '@vitest/runner'
 import type { Reporter, TestCase, Vitest } from 'vitest/node'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
+import { DeepPartial } from '@/core/types/utilities'
 import logger from '@/utils/logger'
 
 /**
@@ -35,15 +37,11 @@ export default class BuddyVitestReporter implements Reporter {
       try {
         const result = test.result()
 
-        // Only process tests with final states
         if (result.state !== 'passed' && result.state !== 'failed' && result.state !== 'skipped') {
           return
         }
 
-        const relativeFilePath = (test as unknown as { task: { suite: { file: { name: string } } } }).task.suite.file
-          .name
-
-        // Map test result to our format
+        const relativeFilePath = (test as unknown as DeepPartial<{ task: Test }>)?.task?.file?.name
         const testResult = TestResultMapper.mapVitestResult(test, result, relativeFilePath)
 
         await sessionManager.submitTestCase(testResult)
