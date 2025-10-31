@@ -11,6 +11,7 @@
       execute_commands:
         - npm ci
         - npm run build
+        - npm run lint:multi
         - npm run cleanup:tests
         - npm run prepare:tests
       shell: BASH

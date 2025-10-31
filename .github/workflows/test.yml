@@ -30,6 +30,9 @@ jobs:
       - name: Type check
         run: npm run lint:types
 
+      - name: Multi-version lint check
+        run: npm run lint:multi
+
       - name: Build package
         run: npm run build
 
