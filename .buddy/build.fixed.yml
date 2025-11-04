@@ -14,6 +14,8 @@
         - npm run lint:multi
         - npm run cleanup:tests
         - npm run prepare:tests
+      setup_commands:
+        - apt-get update && apt-get -y install jq
       shell: BASH
     - action: Publish tests package
       type: PUBLISH_PACKAGE_VERSION
