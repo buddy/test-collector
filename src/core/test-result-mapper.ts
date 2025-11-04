@@ -1,41 +1,38 @@
 import type { TestResult as JestTestResult } from '@jest/reporters'
-import { AssertionResult as JestAssertionResult } from '@jest/test-result'
+import type { AssertionResult as JestAssertionResult } from '@jest/test-result'
 import type { TestCase as PlaywrightTestCase, TestResult as PlaywrightTestResult } from '@playwright/test/reporter'
-import { Test as MochaTest } from 'mocha'
-import { RunnerTask as VitestRunnerTask, RunnerTaskResult as VitestRunnerTaskResult } from 'vitest'
-import { BUDDY_UNIT_TEST_STATUS, IBuddyUnitTestApiTestCase } from '@/core/types'
+import type { Test as MochaTest } from 'mocha'
+import type { TestCase as VitestTestCase, TestResult as VitestTestResult } from 'vitest/node'
+import { type IBuddyUTPreparsedTestCase, UT_TESTCASE_STATUS } from '@/core/types'
 import logger from '@/utils/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class TestResultMapper {
   static displayName = 'TestResultMapper'
 
-  static #toXml(object: Record<string, string | undefined>): string {
-    let xml = '<data>'
-    for (const [key, value] of Object.entries(object)) {
-      xml += value ? `<${key}><![CDATA[${value}]]></${key}>` : `<${key}></${key}>`
+  static #makeTestCase(
+    testcase: Omit<IBuddyUTPreparsedTestCase, 'data'>,
+    data: Omit<IBuddyUTPreparsedTestCase['data'], keyof typeof testcase>,
+  ): IBuddyUTPreparsedTestCase {
+    return {
+      ...testcase,
+      data: {
+        ...testcase,
+        ...data,
+        failure: testcase.status === UT_TESTCASE_STATUS.PASSED ? undefined : data.failure,
+      },
     }
-    xml += '</data>'
-    return xml
-  }
-
-  static #stripAnsiCodes(text: string): string {
-    // Remove ANSI escape codes for colors, formatting, etc.
-    // eslint-disable-next-line no-control-regex, unicorn/prefer-string-replace-all
-    return text.replace(/\u001B\[[0-9;]*[mGKHF]/g, '')
   }
 
   static #getStatusFromTestResult<T extends string>(
     testResult: T | undefined | null,
-    statusMap: Partial<Record<NonNullable<T>, BUDDY_UNIT_TEST_STATUS>>,
-  ): BUDDY_UNIT_TEST_STATUS {
+    statusMap: Partial<Record<NonNullable<T>, IBuddyUTPreparsedTestCase['status']>>,
+  ): IBuddyUTPreparsedTestCase['status'] {
     return (
       statusMap[testResult] ??
       (() => {
-        logger.debug(
-          `Unknown test result status: ${String(testResult)}. Defaulting to ${BUDDY_UNIT_TEST_STATUS.ERROR}.`,
-        )
-        return BUDDY_UNIT_TEST_STATUS.ERROR
+        logger.debug(`Unknown test result status: ${testResult}. Defaulting to ERROR.`)
+        return 'ERROR' as IBuddyUTPreparsedTestCase['status']
       })()
     )
   }
@@ -44,15 +41,15 @@ export default class TestResultMapper {
     assertionResult: JestAssertionResult,
     testResult: JestTestResult,
     relativeFilePath?: string,
-  ): IBuddyUnitTestApiTestCase {
+  ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(assertionResult.status, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skipped: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      todo: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      disabled: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      focused: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      skipped: UT_TESTCASE_STATUS.SKIPPED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
+      todo: UT_TESTCASE_STATUS.SKIPPED,
+      disabled: UT_TESTCASE_STATUS.SKIPPED,
+      focused: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available, otherwise use full path
@@ -66,27 +63,33 @@ export default class TestResultMapper {
     nameParts.push(assertionResult.title)
     const testName = nameParts.join(' > ')
 
-    const dataObject = {
-      errorMessage: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
-      errorStackTrace: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
-      messages: assertionResult.ancestorTitles.join(' > ') || '',
-    }
-
-    return {
-      name: testName,
-      classname: testGroupName,
-      test_group_name: testGroupName,
-      status,
-      time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
-      data: this.#toXml(dataObject),
-    } satisfies IBuddyUnitTestApiTestCase
+    return TestResultMapper.#makeTestCase(
+      {
+        name: testName,
+        classname: testGroupName,
+        test_group_name: testGroupName,
+        status,
+        time: assertionResult.duration ? assertionResult.duration / 1000 : 0,
+      },
+      {
+        failure: {
+          message:
+            assertionResult.failureDetails.length > 0
+              ? (assertionResult.failureDetails as { matcherResult?: { message: string } }[])
+                  .map((d) => d.matcherResult?.message ?? '')
+                  .join('\n')
+              : '',
+          stackTrace: assertionResult.failureMessages.length > 0 ? assertionResult.failureMessages.join('\n') : '',
+        },
+      },
+    )
   }
 
-  static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
+  static mapJasmineResult(result: jasmine.SpecResult, relativeFilePath?: string): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available
@@ -95,27 +98,28 @@ export default class TestResultMapper {
     // Use fullName as the complete test name (includes hierarchy)
     const testName = result.fullName || result.description
 
-    const dataObject = {
-      errorMessage: result.failedExpectations.map((exp) => exp.message).join('\n') || '',
-      errorStackTrace: result.failedExpectations.map((exp) => exp.stack).join('\n') || '',
-      messages: result.fullName || '',
-    }
-
-    return {
-      name: testName,
-      classname: testGroupName,
-      test_group_name: testGroupName,
-      status: status,
-      time: (result.duration ?? 0) / 1000 || 0,
-      data: this.#toXml(dataObject),
-    }
+    return TestResultMapper.#makeTestCase(
+      {
+        name: testName,
+        classname: testGroupName,
+        test_group_name: testGroupName,
+        status: status,
+        time: (result.duration ?? 0) / 1000 || 0,
+      },
+      {
+        failure: {
+          message: result.failedExpectations.map((exp) => exp.message).join('\n') || '',
+          stackTrace: result.failedExpectations.map((exp) => exp.stack).join('\n') || '',
+        },
+      },
+    )
   }
 
-  static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUnitTestApiTestCase {
+  static mapMochaResult(test: MochaTest, relativeFilePath?: string): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(test.state, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      pending: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
     })
 
     // Use relative file path as test group name if available
@@ -124,32 +128,33 @@ export default class TestResultMapper {
     // Build full test name with hierarchy
     const testName = test.fullTitle() || test.title
 
-    const dataObject = {
-      errorMessage: test.err ? test.err.message : '',
-      errorStackTrace: test.err ? test.err.stack : '',
-      messages: test.fullTitle() || '',
-    }
-
-    return {
-      name: testName,
-      classname: testGroupName,
-      test_group_name: testGroupName,
-      status: status,
-      time: test.duration ? test.duration / 1000 : 0,
-      data: this.#toXml(dataObject),
-    }
+    return TestResultMapper.#makeTestCase(
+      {
+        name: testName,
+        classname: testGroupName,
+        test_group_name: testGroupName,
+        status: status,
+        time: test.duration ? test.duration / 1000 : 0,
+      },
+      {
+        failure: {
+          stackTrace: test.err ? test.err.stack : '',
+          message: test.err ? test.err.message : '',
+        },
+      },
+    )
   }
 
   static mapPlaywrightResult(
     test: PlaywrightTestCase,
     result: PlaywrightTestResult,
     relativeFilePath?: string,
-  ): IBuddyUnitTestApiTestCase {
+  ): IBuddyUTPreparsedTestCase {
     const status = this.#getStatusFromTestResult(result.status, {
-      passed: BUDDY_UNIT_TEST_STATUS.PASSED,
-      failed: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skipped: BUDDY_UNIT_TEST_STATUS.SKIPPED,
-      timedOut: BUDDY_UNIT_TEST_STATUS.FAILED,
+      passed: UT_TESTCASE_STATUS.PASSED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      skipped: UT_TESTCASE_STATUS.SKIPPED,
+      timedOut: UT_TESTCASE_STATUS.FAILED,
     })
 
     // Use relative file path as test group name if available
@@ -178,74 +183,54 @@ export default class TestResultMapper {
     nameParts.push(test.title)
     const testName = nameParts.join(' > ')
 
-    const dataObject = {
-      errorMessage: result.error ? this.#stripAnsiCodes(result.error.message || '') : '',
-      errorStackTrace: result.error ? this.#stripAnsiCodes(result.error.stack || '') : '',
-      messages: test.location.file || '',
-    }
-
-    return {
-      name: testName,
-      classname: testGroupName,
-      test_group_name: testGroupName,
-      status: status,
-      time: result.duration ? result.duration / 1000 : 0,
-      data: this.#toXml(dataObject),
-    }
+    return TestResultMapper.#makeTestCase(
+      {
+        name: testName,
+        classname: testGroupName,
+        test_group_name: testGroupName,
+        status: status,
+        time: result.duration ? result.duration / 1000 : 0,
+      },
+      {
+        failure: {
+          message: result.error ? result.error.message || '' : '',
+          stackTrace: result.error ? result.error.stack || '' : '',
+        },
+      },
+    )
   }
 
   static mapVitestResult(
-    taskId: VitestRunnerTask['id'],
-    taskResult: VitestRunnerTaskResult,
-    task?: VitestRunnerTask,
+    test: VitestTestCase,
+    result: VitestTestResult,
     relativeFilePath?: string,
-  ): IBuddyUnitTestApiTestCase {
-    const status = this.#getStatusFromTestResult(taskResult.state, {
-      pass: BUDDY_UNIT_TEST_STATUS.PASSED,
-      fail: BUDDY_UNIT_TEST_STATUS.FAILED,
-      skip: BUDDY_UNIT_TEST_STATUS.SKIPPED,
+  ): IBuddyUTPreparsedTestCase {
+    const status = this.#getStatusFromTestResult(result.state, {
+      passed: UT_TESTCASE_STATUS.PASSED,
+      pending: UT_TESTCASE_STATUS.SKIPPED,
+      failed: UT_TESTCASE_STATUS.FAILED,
+      skipped: UT_TESTCASE_STATUS.SKIPPED,
     })
 
-    // Use relative file path as test group name if available
     const testGroupName = relativeFilePath || 'Unknown Test Group'
+    const testName = test.fullName
+    const duration = test.diagnostic()?.duration
 
-    // Build the full test name with hierarchy
-    let testName = 'Unknown Test'
-    if (task) {
-      const nameParts: string[] = []
-
-      // Add suite hierarchy if available
-      if (task.suite?.name) {
-        nameParts.push(task.suite.name)
-      }
-
-      // Add test name
-      if (task.name) {
-        nameParts.push(task.name)
-      } else if (taskId) {
-        nameParts.push(taskId)
-      }
-
-      testName = nameParts.join(' > ')
-    } else if (taskId) {
-      testName = taskId
-    }
-
-    const dataObject = {
-      errorMessage:
-        (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.message).join('\n') : '',
-      errorStackTrace:
-        (taskResult.errors?.length ?? 0) > 0 ? taskResult.errors?.map((error) => error.stack).join('\n') : '',
-      messages: task?.suite?.name || '',
-    }
-
-    return {
-      name: testName,
-      classname: testGroupName,
-      test_group_name: testGroupName,
-      status,
-      time: taskResult.duration ? taskResult.duration / 1000 : 0,
-      data: this.#toXml(dataObject),
-    }
+    return TestResultMapper.#makeTestCase(
+      {
+        name: testName,
+        classname: testGroupName,
+        test_group_name: testGroupName,
+        status,
+        time: duration ? duration / 1000 : 0,
+      },
+      {
+        failure: {
+          message:
+            (result.errors?.length ?? 0) > 0 ? (result.errors?.map((error) => error.message).join('\n') ?? '') : '',
+          stackTrace: (result.errors?.length ?? 0) > 0 ? result.errors?.map((error) => error.stack).join('\n') : '',
+        },
+      },
+    )
   }
 }

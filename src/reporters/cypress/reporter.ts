@@ -1,5 +1,6 @@
 import sessionManager from '@/core/session-manager'
 import BuddyMochaReporter from '@/reporters/mocha/reporter'
+import environment from '@/utils/environment'
 import logger from '@/utils/logger'
 
 /**
@@ -11,6 +12,9 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
   static displayName = 'BuddyCypressReporter'
 
   static async closeSession() {
+    // Note: Queue draining happens in onEnd() for each spec file
+    // This method runs in the after:run hook (Node.js process), while the queue
+    // exists in the browser process where reporters run, so we can't drain here
     await sessionManager.closeSession()
   }
 
@@ -19,14 +23,12 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
 
     try {
       // Check if session already exists (from previous spec files or environment)
-      const existingSessionId = sessionManager.sessionId || process.env.BUDDY_SESSION_ID
+      const existingSessionId = sessionManager.sessionId ?? environment.BUDDY_SESSION_ID
 
       if (existingSessionId) {
         logger.debug(`Reusing existing session: ${existingSessionId}`)
         // Set the session ID if not already set in session manager
-        if (!sessionManager.sessionId) {
-          sessionManager.sessionId = existingSessionId
-        }
+        sessionManager.sessionId ??= existingSessionId
       } else {
         // Only create new session if none exists
         logger.debug('Creating new session for Cypress')
@@ -43,8 +45,13 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
   async onEnd() {
     logger.debug('Cypress spec file completed')
 
+    // CRITICAL: Yield to event loop to allow queue's batch timer to fire
+    // Without this, onEnd() runs synchronously and drain() is called before
+    // the queue's automatic batch interval (3s) has had a chance to flush queued tests
+    await Promise.resolve()
+
     if (this.pendingSubmissions.size > 0) {
-      logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
+      logger.debug(`Waiting for ${this.pendingSubmissions.size} pending test submissions to complete`)
       const maxWaitTime = 10_000
       const startTime = Date.now()
 
@@ -53,22 +60,26 @@ export default class BuddyCypressReporter extends BuddyMochaReporter {
       }
 
       if (this.pendingSubmissions.size > 0) {
-        logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
+        logger.warn(`Timed out waiting for ${this.pendingSubmissions.size} test submissions`)
         sessionManager.markFrameworkError()
       } else {
         logger.debug('All test submissions completed')
       }
     }
 
-    // Flush the queue immediately to ensure all tests are submitted before spec process ends
-    // This is critical in Cypress because each spec runs in a separate process
-    try {
-      logger.debug('Flushing test case queue before spec process ends')
-      await sessionManager.apiClient.flushQueue()
-      logger.debug('Queue flushed successfully')
-    } catch (error) {
-      logger.error('Error flushing queue at spec end', error)
-      sessionManager.markFrameworkError()
+    // Drain the queue to ensure all queued tests are submitted before spec ends
+    // This must happen in onEnd() because after:run runs in a different process
+    const queueSize = sessionManager.apiClient.getQueueSize()
+    if (queueSize > 0) {
+      logger.debug(`Draining queue at spec end (${queueSize} tests queued)`)
+
+      try {
+        await sessionManager.apiClient.drainQueue()
+        logger.debug('Queue drained successfully')
+      } catch (error) {
+        logger.error('Error draining queue at spec end', error)
+        sessionManager.markFrameworkError()
+      }
     }
 
     // Keep session open - it will be closed by the after:run hook in setupNodeEvents

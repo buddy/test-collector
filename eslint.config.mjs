@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config([
   {
-    ignores: ['node_modules/**/*', 'examples/**/*', 'dist/**/*', '*.config.mjs'],
+    ignores: ['node_modules/**/*', 'examples/**/*', 'dist/**/*', '*.config.mjs', 'src/api/types/rest.ts'],
   },
   {
     files: ['**/*.{js,mjs,ts}'],
@@ -46,6 +46,16 @@ export default tseslint.config([
           ignorePrimitives: { string: true },
         },
       ],
+      'unicorn/prevent-abbreviations': [
+        2,
+        {
+          replacements: {
+            ref: false,
+          },
+        },
+      ],
+      '@typescript-eslint/restrict-template-expressions': [0, { allowNumber: true }],
+      'no-control-regex': 0,
     },
   },
 ])

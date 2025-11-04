@@ -14,35 +14,10 @@ const environmentConfig = {
   BUDDY_UT_TOKEN: { type: 'string', required: true, secret: true },
   CI: { type: 'boolean' },
   BUDDY_LOGGER_LEVEL: { type: 'string' },
+  BUDDY_DEV_LOGGER: { type: 'string' },
   BUDDY_API_URL: { type: 'string' },
   BUDDY_SESSION_ID: { type: 'string' },
   BUDDY_API_FAILURE: { type: 'boolean' },
-
-  // Buddy environment variables
-  BUDDY: { type: 'boolean' },
-  BUDDY_RUN_HASH: { type: 'string' },
-  BUDDY_RUN_REF_NAME: { type: 'string' },
-  BUDDY_RUN_REF_TYPE: { type: 'string' },
-  BUDDY_RUN_COMMIT: { type: 'string' },
-  BUDDY_RUN_PRE_COMMIT: { type: 'string' },
-  BUDDY_RUN_BRANCH: { type: 'string' },
-  BUDDY_RUN_URL: { type: 'string' },
-  BUDDY_TRIGGERING_ACTOR_ID: { type: 'string' },
-
-  // GitHub Actions environment variables
-  GITHUB_REPOSITORY: { type: 'string' },
-  GITHUB_SHA: { type: 'string' },
-  GITHUB_REF: { type: 'string' },
-  GITHUB_REF_NAME: { type: 'string' },
-  GITHUB_REF_TYPE: { type: 'string' },
-  GITHUB_WORKFLOW: { type: 'string' },
-  GITHUB_RUN_ID: { type: 'string' },
-  GITHUB_RUN_NUMBER: { type: 'string' },
-  GITHUB_ACTOR: { type: 'string' },
-  GITHUB_ACTOR_ID: { type: 'string' },
-  GITHUB_SERVER_URL: { type: 'string' },
-  GITHUB_API_URL: { type: 'string' },
-  GITHUB_ACTIONS: { type: 'boolean' },
 } as const satisfies EnvironmentConfigSchema
 
 type EnvironmentConfig = {
@@ -73,12 +48,15 @@ interface EnvironmentResult {
 }
 
 function loadEnvironment(): EnvironmentResult {
-  const entries = []
+  const variables = {} as EnvironmentConfig
 
+  // validate required variables at load time for early error detection
   for (const key of Object.keys(environmentConfig) as (keyof typeof environmentConfig)[]) {
     try {
-      const value = processConfigEntry(key, environmentConfig[key])
-      entries.push([key, value])
+      const config = environmentConfig[key]
+      if (config.type === 'string' && (config as StringConfig).required) {
+        getEnvironment(key as string, true)
+      }
     } catch (error: unknown) {
       return {
         error,
@@ -87,8 +65,19 @@ function loadEnvironment(): EnvironmentResult {
     }
   }
 
+  // define getters for all variables to read fresh from process.env
+  for (const key of Object.keys(environmentConfig) as (keyof typeof environmentConfig)[]) {
+    Object.defineProperty(variables, key, {
+      get() {
+        return processConfigEntry(key, environmentConfig[key])
+      },
+      enumerable: true,
+      configurable: true,
+    })
+  }
+
   return {
-    variables: Object.fromEntries(entries) as EnvironmentConfig,
+    variables,
   }
 }
 
@@ -109,13 +98,29 @@ function setEnvironmentVariable<K extends keyof typeof environmentConfig>(key: K
 function getEnvironment(key: string, required: true): string
 function getEnvironment(key: string, required?: false): string | undefined
 function getEnvironment(key: string, required = false): string | undefined {
+  const MISSING_REQUIRED_ENVIRONMENT_VARIABLE_ERROR = `Missing required configuration. Please set the ${key} environment variable.`
+
   const value = process.env[key]
 
-  if (value === undefined && required) {
-    throw new Error(`Missing required configuration. Please set the ${key} environment variable.`)
+  if (value === undefined) {
+    if (required) {
+      throw new Error(MISSING_REQUIRED_ENVIRONMENT_VARIABLE_ERROR)
+    }
+    return undefined
   }
 
-  return value
+  // Trim whitespace from string values
+  const trimmedValue = value.trim()
+
+  // Treat empty strings as undefined after trimming
+  if (trimmedValue === '') {
+    if (required) {
+      throw new Error(MISSING_REQUIRED_ENVIRONMENT_VARIABLE_ERROR)
+    }
+    return undefined
+  }
+
+  return trimmedValue
 }
 
 function getEnvironmentFlag(key: string, defaultValue = false): boolean {
@@ -129,28 +134,8 @@ function getEnvironmentFlag(key: string, defaultValue = false): boolean {
   return !falseValues.includes(value.toLowerCase().trim())
 }
 
-enum CI_PROVIDER {
-  BUDDY = 'BUDDY',
-  GITHUB_ACTION = 'GITHUB_ACTION',
-  NONE = 'NONE',
-}
-
-function detectCIProvider(): CI_PROVIDER {
-  const result = loadEnvironment()
-
-  if (result.variables.BUDDY) {
-    return CI_PROVIDER.BUDDY
-  }
-
-  if (result.variables.GITHUB_ACTIONS) {
-    return CI_PROVIDER.GITHUB_ACTION
-  }
-
-  return CI_PROVIDER.NONE
-}
-
 const environmentResult = loadEnvironment()
 export default environmentResult.variables
 export const environmentError = environmentResult.error
 
-export { setEnvironmentVariable, detectCIProvider, environmentConfig, CI_PROVIDER, type EnvironmentResult }
+export { setEnvironmentVariable, environmentConfig, type EnvironmentResult }

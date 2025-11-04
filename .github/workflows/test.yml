@@ -2,9 +2,6 @@ name: Build and Test All Frameworks
 
 on:
   push:
-    branches: ['master']
-  pull_request:
-    branches: ['master']
   workflow_dispatch:
 
 env:
@@ -31,6 +28,9 @@ jobs:
 
       - name: Type check
         run: npm run lint:types
+
+      - name: Multi-version lint check
+        run: npm run lint:multi
 
       - name: Build package
         run: npm run build

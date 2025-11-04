@@ -1,81 +1,42 @@
-import { execSync } from 'node:child_process'
+import { CI, CiInfo, getCiAndGitInfo } from '@buddy-works/ci-info'
 import { IncomingHttpHeaders } from 'node:http'
-import environment, { CI_PROVIDER, detectCIProvider, environmentConfig } from '@/utils/environment'
+import { CI_PROVIDER, IBuddyUTSession, IBuddyUTSessionsPayload, SESSION_REF_TYPE } from '@/core/types'
+import environment, { environmentConfig } from '@/utils/environment'
 import logger from '@/utils/logger'
 
-export default class BuddyUnitTestCollectorConfig {
+export class BuddyUnitTestCollectorConfig {
   static displayName = 'BuddyUnitTestCollectorConfig'
-  static libraryName = '@buddy-works/unit-tests'
-
-  ciProvider: CI_PROVIDER
 
   utToken: string
-  debugEnabled: boolean
   apiBaseUrl: string
-  runRefType?: string
-  sessionId?: string
-  triggeringActorId?: string
+  sessionId?: IBuddyUTSession['id']
+  ciInfo: CiInfo
 
-  runId?: string
-  runRefName?: string
-  runCommit?: string
-  runPreCommit?: string
-  runBranch?: string
-  runUrl?: string
-
-  constructor() {
-    this.ciProvider = detectCIProvider()
-
-    this.#logEnvironmentVariables()
-
-    this.utToken = environment.BUDDY_UT_TOKEN
-    this.debugEnabled = environment.BUDDY_LOGGER_LEVEL === 'debug'
-    this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
-    this.sessionId = environment.BUDDY_SESSION_ID
-
-    switch (this.ciProvider) {
-      case CI_PROVIDER.BUDDY: {
-        logger.debug('Loading Buddy CI configuration')
-
-        this.runRefName = environment.BUDDY_RUN_REF_NAME
-        this.runRefType = environment.BUDDY_RUN_REF_TYPE
-        this.runCommit = environment.BUDDY_RUN_COMMIT || this.#fallback.runCommit
-        this.runPreCommit = environment.BUDDY_RUN_PRE_COMMIT || this.#fallback.runPreCommit
-        this.runBranch = environment.BUDDY_RUN_BRANCH || this.#fallback.runBranch
-        this.runId = environment.BUDDY_RUN_HASH
-        this.runUrl = environment.BUDDY_RUN_URL
-        this.triggeringActorId = environment.BUDDY_TRIGGERING_ACTOR_ID
-        break
-      }
-      case CI_PROVIDER.GITHUB_ACTION: {
-        logger.debug('Loading GitHub Actions configuration')
-
-        const serverUrl = environment.GITHUB_SERVER_URL || 'https://github.com'
-        const repository = environment.GITHUB_REPOSITORY
-
-        this.runRefName = environment.GITHUB_REF_NAME
-        this.runRefType = environment.GITHUB_REF_TYPE?.toUpperCase()
-        this.runCommit = environment.GITHUB_SHA || this.#fallback.runCommit
-        this.runPreCommit = this.#fallback.runPreCommit
-        this.runBranch = environment.GITHUB_REF_NAME || this.#fallback.runBranch
-        this.runId = environment.GITHUB_RUN_ID
-        this.runUrl = repository && this.runId ? `${serverUrl}/${repository}/actions/runs/${this.runId}` : undefined
-
-        break
-      }
-      default: {
-        logger.warn(`No supported CI environment detected: ${this.ciProvider}.`)
-        this.ciProvider = CI_PROVIDER.NONE
-        logger.debug(`Environment set to ${this.ciProvider} for compatibility.`)
-      }
+  static async create(): Promise<BuddyUnitTestCollectorConfig> {
+    try {
+      const ciInfo = await getCiAndGitInfo({
+        optionalGit: true,
+        skipBaseCommitDiscovery: true,
+        logger: logger.warn.bind(logger),
+      })
+      return new BuddyUnitTestCollectorConfig(ciInfo)
+    } catch (error) {
+      logger.error('Failed to read environment information', error)
+      throw error
     }
-
-    this.#logLoadedConfig()
-
-    logger.debug(`Config loaded in ${BuddyUnitTestCollectorConfig.libraryName} (environment: ${this.ciProvider})`)
   }
 
-  #logEnvironmentVariables(): void {
+  constructor(ciInfo: CiInfo) {
+    this.utToken = environment.BUDDY_UT_TOKEN
+    this.sessionId = environment.BUDDY_SESSION_ID
+    this.apiBaseUrl = this.#normalizeApiUrl(environment.BUDDY_API_URL || this.#fallback.apiBaseUrl)
+    this.ciInfo = ciInfo
+
+    this.#logEnvironmentVariables()
+    this.#logLoadedConfig()
+  }
+
+  #logEnvironmentVariables() {
     const foundVariables = Object.entries(environmentConfig).flatMap(([key, config]) => {
       const value = environment[key as keyof typeof environment]
       if (value === undefined) {
@@ -95,7 +56,7 @@ export default class BuddyUnitTestCollectorConfig {
     }
   }
 
-  #normalizeApiUrl(url: string): string {
+  #normalizeApiUrl(url: string) {
     try {
       const normalized = new URL(url)
       return normalized.href.endsWith('/') ? normalized.href : `${normalized.href}/`
@@ -110,41 +71,11 @@ export default class BuddyUnitTestCollectorConfig {
       const parts = token.split('_')
 
       // for non-prod tokens, the api url is base64url encoded in the 3rd part
-      if (parts.length === 5) {
+      if (parts.length === 5 && parts[3]) {
         return Buffer.from(parts[3], 'base64url').toString('utf8')
       }
 
       return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
-    },
-
-    get runBranch() {
-      try {
-        return execSync('git rev-parse --abbrev-ref HEAD', {
-          encoding: 'utf8',
-        }).trim()
-      } catch {
-        return
-      }
-    },
-
-    get runCommit() {
-      try {
-        return execSync('git rev-parse HEAD', {
-          encoding: 'utf8',
-        }).trim()
-      } catch {
-        return
-      }
-    },
-
-    get runPreCommit() {
-      try {
-        return execSync('git rev-parse HEAD', {
-          encoding: 'utf8',
-        }).trim()
-      } catch {
-        return
-      }
     },
   }
 
@@ -155,37 +86,50 @@ export default class BuddyUnitTestCollectorConfig {
     }
   }
 
-  get sessionPayload() {
-    const payload = {
-      ref_type: this.runRefType,
-      ref_name: this.runRefName ?? this.runBranch,
-      from_revision: this.runPreCommit,
-      to_revision: this.runCommit,
-      ci_provider: this.ciProvider,
-      ...(this.triggeringActorId && { created_by: { id: this.triggeringActorId } }),
-      ...(this.runId && { run_id: this.runId }),
-      ...(this.runUrl && { run_url: this.runUrl }),
+  get sessionPayload(): IBuddyUTSessionsPayload {
+    const ciProvider = CI_PROVIDER[this.ciInfo.ci]
+
+    const basePayload: Partial<IBuddyUTSessionsPayload> = {
+      ref_type: this.ciInfo.refType as unknown as SESSION_REF_TYPE,
+      ref_name: this.ciInfo.refName ?? this.ciInfo.branch,
+      revision: this.ciInfo.commit,
+      ci_provider: ciProvider,
     }
 
-    logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type || 'unknown'})`)
-    return payload
+    if (this.ciInfo.ci === CI.BUDDY) {
+      const payload = {
+        ...basePayload,
+        ...(this.ciInfo.executionId && { execution_id: this.ciInfo.executionId }),
+        ...(this.ciInfo.actionExecutionId && { action_execution_id: this.ciInfo.actionExecutionId }),
+        ...(this.ciInfo.invokerId && { created_by: { id: this.ciInfo.invokerId } }),
+      }
+      logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type || 'unknown'})`)
+      return payload
+    } else if (
+      (this.ciInfo.ci === CI.GITHUB_ACTION || this.ciInfo.ci === CI.CIRCLE_CI) &&
+      'executionUrl' in this.ciInfo &&
+      this.ciInfo.executionUrl
+    ) {
+      const payload = {
+        ...basePayload,
+        ...(this.ciInfo.executionUrl && { ci_run_url: this.ciInfo.executionUrl }),
+      }
+      logger.debug(`Generated session payload for ${payload.ref_name || 'unknown'} (${payload.ref_type || 'unknown'})`)
+      return payload
+    } else {
+      logger.debug(
+        `Generated session payload for ${basePayload.ref_name || 'unknown'} (${basePayload.ref_type || 'unknown'})`,
+      )
+      return basePayload
+    }
   }
 
   #logLoadedConfig(): void {
     const config = {
-      ciProvider: this.ciProvider,
+      ciInfo: this.ciInfo,
       utToken: this.utToken ? '***' : 'not set',
-      debugEnabled: this.debugEnabled,
       apiBaseUrl: this.apiBaseUrl,
       sessionId: this.sessionId,
-      triggeringActorId: this.triggeringActorId,
-      runRefName: this.runRefName,
-      runRefType: this.runRefType,
-      runCommit: this.runCommit,
-      runPreCommit: this.runPreCommit,
-      runBranch: this.runBranch,
-      runId: this.runId,
-      runUrl: this.runUrl,
     }
 
     logger.debug('Loaded configuration:', config)

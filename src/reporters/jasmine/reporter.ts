@@ -54,6 +54,3 @@ class BuddyJasmineReporter implements jasmine.CustomReporter {
 }
 
 export default BuddyJasmineReporter
-
-// eslint-disable-next-line unicorn/prefer-module
-module.exports = BuddyJasmineReporter

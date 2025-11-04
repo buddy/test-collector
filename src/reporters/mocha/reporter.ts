@@ -2,7 +2,7 @@ import { MochaOptions, Runner, Test, reporters } from 'mocha'
 import { relative } from 'pathe'
 import sessionManager from '@/core/session-manager'
 import TestResultMapper from '@/core/test-result-mapper'
-import { IBuddyUnitTestApiTestCase } from '@/core/types'
+import { IBuddyUTPreparsedTestCase } from '@/core/types'
 import logger from '@/utils/logger'
 
 const { EVENT_RUN_BEGIN, EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_PENDING } = Runner.constants
@@ -23,16 +23,25 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
 
     this.pendingSubmissions = new Set()
 
-    this.runner.on(EVENT_RUN_BEGIN, () => {
-      void this.onStart()
-    })
-    this.runner.on(EVENT_RUN_END, () => {
-      void this.onEnd()
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.runner.on(EVENT_RUN_BEGIN, async () => {
+      await this.onStart()
     })
 
-    this.runner.on(EVENT_TEST_PENDING, this.onTestPending.bind(this))
-    this.runner.on(EVENT_TEST_PASS, this.onTestPass.bind(this))
-    this.runner.on(EVENT_TEST_FAIL, this.onTestFail.bind(this))
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.runner.on(EVENT_RUN_END, async () => {
+      await this.onEnd()
+    })
+
+    this.runner.on(EVENT_TEST_PENDING, (test) => {
+      this.onTestPending(test)
+    })
+    this.runner.on(EVENT_TEST_PASS, (test) => {
+      this.onTestPass(test)
+    })
+    this.runner.on(EVENT_TEST_FAIL, (test, error: Error) => {
+      this.onTestFail(test, error)
+    })
   }
 
   async onStart() {
@@ -85,14 +94,13 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     })
   }
 
-  async submitTestWithTracking(_test: Test, resultMapperFunction: () => IBuddyUnitTestApiTestCase) {
+  async submitTestWithTracking(_test: Test, resultMapperFunction: () => IBuddyUTPreparsedTestCase) {
     const submissionId = Symbol()
     this.pendingSubmissions.add(submissionId)
 
     try {
       const testResult = resultMapperFunction()
       await sessionManager.submitTestCase(testResult)
-      logger.debug(`Successfully submitted: ${testResult.name}`)
     } catch (error) {
       logger.error('Error processing Mocha test result', error)
       sessionManager.markFrameworkError()
@@ -124,7 +132,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
     logger.debug('Mocha test run completed')
 
     if (this.pendingSubmissions.size > 0) {
-      logger.debug(`Waiting for ${String(this.pendingSubmissions.size)} pending test submissions to complete`)
+      logger.debug(`Waiting for ${this.pendingSubmissions.size} pending test submissions to complete`)
 
       const maxWaitTime = 10_000
       const startTime = Date.now()
@@ -134,7 +142,7 @@ export default class BuddyMochaReporter implements Pick<reporters.Base, 'runner'
       }
 
       if (this.pendingSubmissions.size > 0) {
-        logger.warn(`Timed out waiting for ${String(this.pendingSubmissions.size)} test submissions`)
+        logger.warn(`Timed out waiting for ${this.pendingSubmissions.size} test submissions`)
         sessionManager.markFrameworkError()
       } else {
         logger.debug('All test submissions completed')
