@@ -64,7 +64,6 @@ class BuddyUnitTestSessionManager {
     } catch (error) {
       logger.error('Failed to create session', error)
       setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      // Don't throw - let the error be handled by the caller
     }
 
     return this.sessionId
