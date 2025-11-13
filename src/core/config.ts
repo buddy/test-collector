@@ -16,6 +16,7 @@ export class BuddyUnitTestCollectorConfig {
     try {
       const ciInfo = await getCiAndGitInfo({
         optionalGit: true,
+        skipCommitDetails: true,
         skipBaseCommitDiscovery: true,
         logger: logger.warn.bind(logger),
       })
