@@ -1,22 +1,22 @@
-import {
-  AddSessionRequestCi_provider,
-  AddSessionRequestRef_type,
-  ApiPaths,
-  PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus,
-  components,
-  paths,
-} from '@/api/types/rest'
+import { components, operations } from '@/api/types/rest'
 
-export const CI_PROVIDER = AddSessionRequestCi_provider
-export type CI_PROVIDER = AddSessionRequestCi_provider
+export type CI_PROVIDER = NonNullable<components['schemas']['AddSessionRequest']['ci_provider']>
+export const CI_PROVIDER = {
+  BUDDY: 'BUDDY',
+  GITHUB_ACTION: 'GITHUB_ACTION',
+  CIRCLE_CI: 'CIRCLE_CI',
+  NONE: 'NONE',
+} as const satisfies Record<CI_PROVIDER, CI_PROVIDER>
 
-export const SESSION_REF_TYPE = AddSessionRequestRef_type
-export type SESSION_REF_TYPE = AddSessionRequestRef_type
+export type SESSION_REF_TYPE = components['schemas']['AddSessionRequest']['ref_type']
 
-export const UT_TESTCASE_STATUS =
-  PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
-export type UT_TESTCASE_STATUS =
-  PathsWorkspacesWorkspace_domainProjectsProject_nameUnitTestsSuitesSuite_idSessionsSession_idCasesGetParametersQueryStatus
+export type UT_TESTCASE_STATUS = NonNullable<components['schemas']['AddTestCaseRequest']['status']>
+export const UT_TESTCASE_STATUS = {
+  PASSED: 'PASSED',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED',
+  ERROR: 'ERROR',
+} as const satisfies Record<UT_TESTCASE_STATUS, UT_TESTCASE_STATUS>
 
 // Note: API type definition says `id: number`, but API actually returns string IDs
 export type IBuddyUTSession = Omit<Required<components['schemas']['TestSessionView']>, 'id'> & {
@@ -24,11 +24,11 @@ export type IBuddyUTSession = Omit<Required<components['schemas']['TestSessionVi
 }
 
 export type IBuddyUTSessionsPayload = NonNullable<
-  paths[ApiPaths.addSessionByToken]['post']['requestBody']
+  operations['addSessionByToken']['requestBody']
 >['content']['application/json']
 
 export type IBuddyUTSessionsSuccessResponse = Required<
-  Omit<paths[ApiPaths.addSessionByToken]['post']['responses']['201']['content']['application/json'], 'id'> & {
+  Omit<operations['addSessionByToken']['responses']['201']['content']['application/json'], 'id'> & {
     id: string
   }
 >
@@ -36,11 +36,11 @@ export type IBuddyUTSessionsSuccessResponse = Required<
 export type IBuddyUTTestCase = Required<components['schemas']['AddTestCaseRequest']>
 
 export type IBuddyUTTestCasesBatchPayload = NonNullable<
-  paths[ApiPaths.addCasesByToken]['post']['requestBody']
+  operations['addCasesByToken']['requestBody']
 >['content']['application/json']
 
 export type IBuddyUTTestCasesBatchSuccessResponse = Required<
-  paths[ApiPaths.addCasesByToken]['post']['responses']['201']['content']['application/json']
+  operations['addCasesByToken']['responses']['201']['content']['application/json']
 >
 
 export interface IBuddyUTPreparsedTestCase extends Omit<IBuddyUTTestCase, 'data'> {
