@@ -29,15 +29,6 @@
     volume_mappings:
     - /:/buddy-works/unit-tests
     shell: BASH
-  - action: Build
-    type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: 22
-    execute_commands:
-    - npm run build
-    volume_mappings:
-    - /:/buddy-works/unit-tests
-    shell: BASH
   - action: Bump version
     type: BUILD
     docker_image_name: library/node
@@ -46,6 +37,15 @@
     - git config user.email "ci@buddy.works"
     - git config user.name "Buddy CI"
     - "npm version --preid rc $VERSION_BUMP_TYPE -m \"chore(release): bump version to %s\""
+    volume_mappings:
+    - /:/buddy-works/unit-tests
+    shell: BASH
+  - action: Build
+    type: BUILD
+    docker_image_name: library/node
+    docker_image_tag: 22
+    execute_commands:
+    - npm run build
     volume_mappings:
     - /:/buddy-works/unit-tests
     shell: BASH
