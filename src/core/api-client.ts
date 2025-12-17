@@ -124,26 +124,20 @@ export default class BuddyUnitTestApiClient {
   }
 
   async createSession() {
-    try {
-      logger.debug('Creating new test session')
+    logger.debug('Creating new test session')
 
-      const response = await this.#fetch<IBuddyUTSessionsSuccessResponse>('/unit-tests/sessions', {
-        method: 'POST',
-        body: JSON.stringify(this.#config.sessionPayload satisfies IBuddyUTSessionsPayload),
-      })
+    const response = await this.#fetch<IBuddyUTSessionsSuccessResponse>('/unit-tests/sessions', {
+      method: 'POST',
+      body: JSON.stringify(this.#config.sessionPayload satisfies IBuddyUTSessionsPayload),
+    })
 
-      const sessionId = response.id
-      logger.info(`Created Buddy unit tests session with ID`, sessionId)
+    const sessionId = response.id
+    logger.info(`Created Buddy unit tests session with ID`, sessionId)
 
-      // Initialize and start the queue for this session
-      this.#initializeQueue(sessionId)
+    // Initialize and start the queue for this session
+    this.#initializeQueue(sessionId)
 
-      return sessionId
-    } catch (error) {
-      logger.error('Failed to create session', error)
-      setEnvironmentVariable('BUDDY_API_FAILURE', true)
-      throw error
-    }
+    return sessionId
   }
 
   useExistingSession(sessionId: IBuddyUTSession['id']) {

@@ -16,6 +16,7 @@ export class BuddyUnitTestCollectorConfig {
     try {
       const ciInfo = await getCiAndGitInfo({
         optionalGit: true,
+        skipCommitDetails: true,
         skipBaseCommitDiscovery: true,
         logger: logger.warn.bind(logger),
       })
@@ -75,7 +76,15 @@ export class BuddyUnitTestCollectorConfig {
         return Buffer.from(parts[3], 'base64url').toString('utf8')
       }
 
-      return token.startsWith('bud_ut_eu') ? 'https://api.eu.buddy.works/' : 'https://api.buddy.works/'
+      if (token.startsWith('bud_ut_eu')) {
+        return 'https://api.eu.buddy.works/'
+      }
+
+      if (token.startsWith('bud_ut_asia')) {
+        return 'https://api.asia.buddy.works/'
+      }
+
+      return 'https://api.buddy.works/'
     },
   }
 
