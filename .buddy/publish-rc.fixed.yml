@@ -49,13 +49,6 @@
     volume_mappings:
     - /:/buddy-works/unit-tests
     shell: BASH
-  - action: Git Push
-    type: PUSH
-    push_tags: true
-    target_branch: $BUDDY_RUN_BRANCH
-    isolated: true
-    targets:
-    - project_repository
   - action: Publish
     type: BUILD
     docker_image_name: library/node
@@ -65,3 +58,10 @@
     volume_mappings:
     - /:/buddy-works/unit-tests
     shell: BASH
+  - action: Git Push
+    type: PUSH
+    push_tags: true
+    target_branch: $BUDDY_RUN_BRANCH
+    isolated: true
+    targets:
+    - project_repository
