@@ -77,7 +77,7 @@ export class BuddyUnitTestCollectorConfig {
       }
 
       if (token.startsWith('bud_ut_eu')) {
-        return 'https://api.buddy.works/'
+        return 'https://api.eu.buddy.works/'
       }
 
       if (token.startsWith('bud_ut_asia')) {
