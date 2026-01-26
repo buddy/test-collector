@@ -22,42 +22,45 @@
         premajor
   - action: Install packages
     type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: 22
     execute_commands:
     - npm ci
+    setup_commands:
+    - apt-get update && apt-get -y install curl
+    - curl -fsSL https://get.pnpm.io/install.sh | sh -
+    shell: BASH
     volume_mappings:
     - /:/buddy-works/unit-tests
-    shell: BASH
-  - action: Bump version
-    type: BUILD
     docker_image_name: library/node
     docker_image_tag: 22
+  - action: Bump version
+    type: BUILD
     execute_commands:
     - git config user.email "ci@buddy.works"
     - git config user.name "Buddy CI"
     - "npm version --preid rc $VERSION_BUMP_TYPE -m \"chore(release): bump version to %s\""
+    shell: BASH
     volume_mappings:
     - /:/buddy-works/unit-tests
-    shell: BASH
+    docker_image_name: library/node
+    docker_image_tag: 22
   - action: Build
     type: BUILD
-    docker_image_name: library/node
-    docker_image_tag: 22
     execute_commands:
     - npm run build
+    shell: BASH
     volume_mappings:
     - /:/buddy-works/unit-tests
-    shell: BASH
-  - action: Publish
-    type: BUILD
     docker_image_name: library/node
     docker_image_tag: 22
+  - action: Publish
+    type: BUILD
     execute_commands:
     - npm publish --no-git-checks --access public --tag rc
+    shell: BASH
     volume_mappings:
     - /:/buddy-works/unit-tests
-    shell: BASH
+    docker_image_name: library/node
+    docker_image_tag: 22
   - action: Git Push
     type: PUSH
     push_tags: true
