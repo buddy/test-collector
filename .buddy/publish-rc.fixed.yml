@@ -37,7 +37,7 @@
     execute_commands:
     - git config user.email "ci@buddy.works"
     - git config user.name "Buddy CI"
-    - "pnpm version --preid rc $VERSION_BUMP_TYPE -m \"chore(release): bump version to %s\""
+    - "npm version --preid rc $VERSION_BUMP_TYPE -m \"chore(release): bump version to %s\""
     shell: BASH
     volume_mappings:
     - /:/buddy-works/unit-tests
