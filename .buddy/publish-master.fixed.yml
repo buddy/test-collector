@@ -8,10 +8,6 @@
   - release
   variables:
   - key: VERSION_BUMP_TYPE
-  - key: npmrc
-    value: "//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
-    type: FILE
-    file_path: "~/.npmrc"
   trigger_conditions:
   - trigger_condition: SUCCESS_PIPELINE
     project: test-collector
