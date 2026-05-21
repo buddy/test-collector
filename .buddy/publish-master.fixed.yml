@@ -54,6 +54,11 @@
     - /:/buddy-works/unit-tests
     docker_image_name: library/node
     docker_image_tag: 22
+  - action: Publish npm package
+    type: NPM_PUBLISH
+    integration: npm
+    npm_registry: NPM
+    access: PUBLIC
   - action: Git Push
     type: PUSH
     push_tags: true
