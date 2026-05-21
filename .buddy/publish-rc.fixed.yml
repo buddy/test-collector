@@ -4,6 +4,8 @@
   always_from_scratch: true
   auto_clear_cache: true
   fail_on_prepare_env_warning: true
+  environments:
+  - release
   variables:
   - key: VERSION_BUMP_TYPE
   - key: npmrc
